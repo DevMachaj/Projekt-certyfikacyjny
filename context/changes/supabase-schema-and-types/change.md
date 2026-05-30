@@ -2,7 +2,7 @@
 id: supabase-schema-and-types
 roadmap_id: F-01
 title: Supabase schema and domain types
-status: implementing
+status: implemented
 created: 2026-05-30
 updated: 2026-05-30
 ---

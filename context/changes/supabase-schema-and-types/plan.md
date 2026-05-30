@@ -228,8 +228,8 @@ No performance concerns at MVP scale. Index optimization deferred to S-01/S-02 w
 
 #### Automated
 
-- [x] 3.1 Lint passes: `npm run lint`
-- [x] 3.2 Build passes: `npm run build`
+- [x] 3.1 Lint passes: `npm run lint` — 0190d29
+- [x] 3.2 Build passes: `npm run build` — 0190d29
 
 #### Manual
 
