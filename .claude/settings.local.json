@@ -2,7 +2,9 @@
   "permissions": {
     "allow": [
       "WebSearch",
-      "Bash(pbcopy)"
+      "Bash(pbcopy)",
+      "Bash(gh issue *)",
+      "Skill(10x-plan)"
     ]
   }
 }
