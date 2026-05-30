@@ -196,9 +196,9 @@ No performance concerns at MVP scale. Index optimization deferred to S-01/S-02 w
 
 #### Automated
 
-- [ ] 1.1 Migrations apply cleanly: `npx supabase db reset`
-- [ ] 1.2 Build passes: `npm run build`
-- [ ] 1.3 Lint passes: `npm run lint`
+- [x] 1.1 Migrations apply cleanly: `npx supabase db reset`
+- [x] 1.2 Build passes: `npm run build`
+- [x] 1.3 Lint passes: `npm run lint`
 
 #### Manual
 
