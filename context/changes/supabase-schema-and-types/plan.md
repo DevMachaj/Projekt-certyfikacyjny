@@ -214,8 +214,8 @@ No performance concerns at MVP scale. Index optimization deferred to S-01/S-02 w
 
 #### Automated
 
-- [x] 2.1 Lint passes: `npm run lint`
-- [x] 2.2 Build passes: `npm run build`
+- [x] 2.1 Lint passes: `npm run lint` — bec03c4
+- [x] 2.2 Build passes: `npm run build` — bec03c4
 
 #### Manual
 
@@ -228,8 +228,8 @@ No performance concerns at MVP scale. Index optimization deferred to S-01/S-02 w
 
 #### Automated
 
-- [ ] 3.1 Lint passes: `npm run lint`
-- [ ] 3.2 Build passes: `npm run build`
+- [x] 3.1 Lint passes: `npm run lint`
+- [x] 3.2 Build passes: `npm run build`
 
 #### Manual
 
