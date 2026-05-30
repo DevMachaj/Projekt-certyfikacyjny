@@ -364,17 +364,17 @@ None — the F-01 schema is sufficient; no new migrations.
 
 #### Automated
 
-- [x] 2.1 Type checking passes: `npm run build`
-- [x] 2.2 Linting passes: `npm run lint`
-- [x] 2.3 Formatting passes: `npm run format`
+- [x] 2.1 Type checking passes: `npm run build` — f679979
+- [x] 2.2 Linting passes: `npm run lint` — f679979
+- [x] 2.3 Formatting passes: `npm run format` — f679979
 
 #### Manual
 
-- [x] 2.4 `/products` while logged out redirects to `/auth/signin`
-- [x] 2.5 Empty catalog shows "Add your first product" CTA
-- [x] 2.6 Adding a product (with and without lead time) appears immediately, no full reload
-- [x] 2.7 Editing updates the row in place on save; per-field validation errors show
-- [x] 2.8 Delete confirmation modal names the product; confirming removes the row immediately
-- [x] 2.9 Network/validation error surfaces as an inline message, not silent failure
-- [x] 2.10 Two-account isolation: account B never sees account A's products
-- [x] 2.11 Cascade: deleting a product with sales entries removes those entries (Studio check)
+- [x] 2.4 `/products` while logged out redirects to `/auth/signin` — f679979
+- [x] 2.5 Empty catalog shows "Add your first product" CTA — f679979
+- [x] 2.6 Adding a product (with and without lead time) appears immediately, no full reload — f679979
+- [x] 2.7 Editing updates the row in place on save; per-field validation errors show — f679979
+- [x] 2.8 Delete confirmation modal names the product; confirming removes the row immediately — f679979
+- [x] 2.9 Network/validation error surfaces as an inline message, not silent failure — f679979
+- [x] 2.10 Two-account isolation: account B never sees account A's products — f679979
+- [x] 2.11 Cascade: deleting a product with sales entries removes those entries (Studio check) — f679979

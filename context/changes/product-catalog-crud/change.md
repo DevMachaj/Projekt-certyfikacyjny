@@ -2,7 +2,7 @@
 change_id: product-catalog-crud
 roadmap_id: S-01
 title: Product catalog CRUD — add / edit / delete
-status: implementing
+status: implemented
 created: 2026-05-30
 updated: 2026-05-30
 prd_refs: [US-02, FR-003, FR-004, FR-011]
