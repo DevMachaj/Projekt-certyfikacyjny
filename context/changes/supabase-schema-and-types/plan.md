@@ -11,6 +11,7 @@ No domain schema, types, or query patterns exist. The Supabase SSR client is ope
 ## Desired End State
 
 After this plan is complete:
+
 - `products` and `sales_entries` tables exist in Supabase with correct columns, CHECK constraints, and per-operation RLS policies
 - `npx supabase db reset` applies both migrations cleanly against a local Supabase instance
 - `src/types.ts` exports `Product`, `SalesEntry`, and `ClassificationState`

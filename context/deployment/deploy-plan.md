@@ -15,10 +15,10 @@
 
 Ustawiane w Cloudflare Dashboard (Workers & Pages → stockhelper → Settings → Variables):
 
-| Zmienna | Opis | Typ |
-|---|---|---|
+| Zmienna        | Opis                                       | Typ                |
+| -------------- | ------------------------------------------ | ------------------ |
 | `SUPABASE_URL` | URL projektu Supabase (cloud.supabase.com) | Secret (encrypted) |
-| `SUPABASE_KEY` | anon public key projektu Supabase | Secret (encrypted) |
+| `SUPABASE_KEY` | anon public key projektu Supabase          | Secret (encrypted) |
 
 GitHub Actions wymaga tych samych sekretów w GitHub Secrets (Settings → Secrets → Actions) wyłącznie do walidacji builda w CI.
 
@@ -26,23 +26,25 @@ GitHub Actions wymaga tych samych sekretów w GitHub Secrets (Settings → Secre
 
 ## Prerequisites — jednorazowa konfiguracja
 
-| Krok | Status |
-|---|---|
-| Konto Cloudflare | **GOTOWE** |
-| Konto Supabase | **GOTOWE** |
-| GitHub CLI (`gh`) | **GOTOWE** |
-| Node.js v22 | **GOTOWE** (v22.22.3) |
-| Wrangler CLI zalogowany | **GOTOWE** |
-| Supabase CLI zalogowany | **GOTOWE** |
+| Krok                                | Status                              |
+| ----------------------------------- | ----------------------------------- |
+| Konto Cloudflare                    | **GOTOWE**                          |
+| Konto Supabase                      | **GOTOWE**                          |
+| GitHub CLI (`gh`)                   | **GOTOWE**                          |
+| Node.js v22                         | **GOTOWE** (v22.22.3)               |
+| Wrangler CLI zalogowany             | **GOTOWE**                          |
+| Supabase CLI zalogowany             | **GOTOWE**                          |
 | Supabase CLI zlinkowany z projektem | **GOTOWE** (`douznsvdylvgwszypepy`) |
 
 ### Node.js v22
+
 ```bash
 node --version   # musi być v22.x.x
 nvm use 22       # jeśli nie
 ```
 
 ### Wrangler CLI (Cloudflare)
+
 ```bash
 npx wrangler --version
 npx wrangler login      # OAuth → otwiera przeglądarkę
@@ -50,6 +52,7 @@ npx wrangler whoami     # weryfikacja
 ```
 
 ### Supabase CLI
+
 ```bash
 brew install supabase/tap/supabase   # macOS
 supabase --version
@@ -57,6 +60,7 @@ supabase login                        # OAuth → cloud.supabase.com
 ```
 
 ### Linkowanie Supabase CLI z projektem produkcyjnym
+
 ```bash
 supabase link --project-ref <PROJECT_REF>
 # PROJECT_REF z URL: supabase.com/dashboard/project/<PROJECT_REF>
@@ -86,6 +90,7 @@ Konfiguracja jednorazowa w Cloudflare Dashboard:
 ## Migracje bazy danych
 
 ### Nowa migracja (schemat)
+
 ```bash
 supabase migration new <nazwa_migracji>
 # Edytuj plik w supabase/migrations/
@@ -93,6 +98,7 @@ supabase db push   # wypchnij na produkcję
 ```
 
 ### Status migracji
+
 ```bash
 supabase db remote status
 ```
@@ -102,18 +108,21 @@ supabase db remote status
 ## Komendy operacyjne
 
 ### Podgląd logów produkcji
+
 ```bash
 npx wrangler tail
 npx wrangler tail --format json   # JSON do parsowania
 ```
 
 ### Manualny emergency deploy
+
 ```bash
 npm run build
 npx wrangler deploy
 ```
 
 ### Rollback do poprzedniej wersji
+
 ```bash
 npx wrangler rollback
 # lub do konkretnej wersji:
@@ -121,6 +130,7 @@ npx wrangler rollback --deployment-id <ID>
 ```
 
 ### Lista deploymentów
+
 ```bash
 npx wrangler deployments list
 ```

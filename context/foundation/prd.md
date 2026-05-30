@@ -93,6 +93,7 @@ A multi-product dashboard exists that lists all of the owner's products grouped 
 ### Authentication
 
 - **FR-001:** Owner can register an account (email + password or OAuth). Priority: must-have
+
   > Socrates: Counter-argument considered: "registration friction kills early adoption — a trial mode should come first." Resolution: kept as written; account registration is the right gate from day one for a data-persistent app.
 
 - **FR-002:** Owner can log in and log out. Priority: must-have
@@ -101,9 +102,11 @@ A multi-product dashboard exists that lists all of the owner's products grouped 
 ### Product management
 
 - **FR-003:** Owner can add a product with the following fields: name, current stock quantity, supplier lead time (days), buffer days (default: 7, editable). Priority: must-have
+
   > Socrates: Delivery date removed — not needed for velocity calculation. Lead time and buffer days added — both required to compute reorder quantity in FR-007.
 
 - **FR-004:** Owner can view and edit a product (name, stock quantity, lead time, buffer days). Priority: must-have
+
   > Socrates: Counter-argument considered: "edit is over-engineered — delete + re-add is sufficient." Resolution: kept as must-have; stock quantity and lead time change with every reorder delivery, making edit a routine operation, not a rare correction.
 
 - **FR-011:** Owner can delete a product (with confirmation prompt). Deleting a product permanently removes all its associated sales entries. Priority: must-have
@@ -112,6 +115,7 @@ A multi-product dashboard exists that lists all of the owner's products grouped 
 ### Sales entries
 
 - **FR-005:** Owner can log a sales entry — units sold over a date range (start date to end date) — for a product. The app must reject any entry whose date range overlaps with an existing entry for the same product. Priority: must-have
+
   > Socrates: Counter-argument accepted: "overlapping date ranges silently corrupt velocity calculation." Resolution: overlap produces a validation error, not silent acceptance.
 
 - **FR-012:** Owner can delete a sales entry for a product. Priority: must-have
@@ -120,9 +124,11 @@ A multi-product dashboard exists that lists all of the owner's products grouped 
 ### Classification & recommendation
 
 - **FR-006:** Owner can see a velocity-based classification for each product. Valid states: Understocked / Watch / OK / Slow-mover / Insufficient data. The UI must display the threshold definition for each state (e.g., "Understocked — fewer than lead_time days of stock remaining at current velocity"). Priority: must-have
+
   > Socrates: Counter-argument accepted: "states are ambiguous without visible threshold definitions." Resolution: transparent thresholds are load-bearing for trust in the algorithm.
 
 - **FR-007:** Owner can see a specific recommended action for each classified product. For Understocked: "Order X units" where X = velocity × (lead_time_days + buffer_days). For Slow-movers: "Consider promotion." If lead time is not set, the app shows "Set lead time to get reorder suggestion" instead of a quantity. Priority: must-have
+
   > Socrates: Counter-argument accepted: "reorder quantity X is untrustworthy without lead time." Resolution: lead time is a required product field; formula is visible to the owner.
 
 - **FR-008:** Owner is shown an explicit "Insufficient data" state when a product has fewer than 7 days of non-overlapping sales history. This state clears automatically once the threshold is met. Priority: must-have
@@ -145,12 +151,12 @@ StockHelper automatically classifies every product into an actionable state and 
 
 ### Inputs (all owner-supplied)
 
-| Field | Source | Notes |
-|---|---|---|
-| Units sold + date range | Sales entry | Multiple entries per product allowed; no overlaps |
-| Current stock quantity | Product field | Owner updates after each delivery |
-| Supplier lead time (days) | Product field | Required for reorder quantity |
-| Buffer days | Product field | Default 7 days, owner-overridable |
+| Field                     | Source        | Notes                                             |
+| ------------------------- | ------------- | ------------------------------------------------- |
+| Units sold + date range   | Sales entry   | Multiple entries per product allowed; no overlaps |
+| Current stock quantity    | Product field | Owner updates after each delivery                 |
+| Supplier lead time (days) | Product field | Required for reorder quantity                     |
+| Buffer days               | Product field | Default 7 days, owner-overridable                 |
 
 ### Formulas
 
@@ -162,13 +168,13 @@ reorder_quantity      = velocity × (lead_time_days + buffer_days)
 
 ### Classification thresholds
 
-| State | Condition |
-|---|---|
-| Insufficient data | Fewer than 7 days of non-overlapping sales history |
-| Understocked | days_of_stock < lead_time_days |
-| Watch | lead_time_days ≤ days_of_stock < 2 × lead_time_days |
-| OK | 2 × lead_time_days ≤ days_of_stock < 90 days |
-| Slow-mover | days_of_stock ≥ 90 days OR velocity < 0.1 units/day |
+| State             | Condition                                           |
+| ----------------- | --------------------------------------------------- |
+| Insufficient data | Fewer than 7 days of non-overlapping sales history  |
+| Understocked      | days_of_stock < lead_time_days                      |
+| Watch             | lead_time_days ≤ days_of_stock < 2 × lead_time_days |
+| OK                | 2 × lead_time_days ≤ days_of_stock < 90 days        |
+| Slow-mover        | days_of_stock ≥ 90 days OR velocity < 0.1 units/day |
 
 ### Validation rules
 

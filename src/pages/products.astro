@@ -1,0 +1,24 @@
+---
+import Layout from "@/layouts/Layout.astro";
+import { createClient } from "@/lib/supabase";
+import { getProductsByUser } from "@/lib/db";
+import { ProductCatalog } from "@/components/products/ProductCatalog";
+import type { Product } from "@/types";
+
+const { user } = Astro.locals;
+
+// Middleware guards /products, so `user` is present here. `createClient` can still return null
+// when Supabase env is unset — fall back to an empty catalog (the config Banner warns about it)
+// rather than calling getProductsByUser on a null client.
+const supabase = createClient(Astro.request.headers, Astro.cookies);
+let initialProducts: Product[] = [];
+if (supabase && user) {
+  initialProducts = await getProductsByUser(supabase, user.id);
+}
+---
+
+<Layout title="Products">
+  <div class="bg-cosmic min-h-screen px-4 py-10">
+    <ProductCatalog client:load initialProducts={initialProducts} />
+  </div>
+</Layout>

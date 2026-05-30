@@ -22,14 +22,14 @@ The project is already fully configured for Cloudflare Workers — `@astrojs/clo
 
 ## Platform Comparison
 
-| Platform | CLI-first | Managed/Serverless | Agent-readable docs | Stable deploy API | MCP / Integration | Total |
-|---|---|---|---|---|---|---|
-| **Cloudflare Workers** | Pass | Pass | Pass | Pass | Pass | **5 / 5** |
-| Railway | Partial | Pass | Pass | Pass | Pass | **4.5 / 5** |
-| Fly.io | Pass | Pass | Partial | Pass | Partial | **4 / 5** |
-| Render | Partial | Pass | Pass | Partial | Pass | **4 / 5** |
-| Vercel | — | — | — | — | — | **DROPPED** (serverless-only, Q1 hard filter) |
-| Netlify | — | — | — | — | — | **DROPPED** (serverless-only, Q1 hard filter) |
+| Platform               | CLI-first | Managed/Serverless | Agent-readable docs | Stable deploy API | MCP / Integration | Total                                         |
+| ---------------------- | --------- | ------------------ | ------------------- | ----------------- | ----------------- | --------------------------------------------- |
+| **Cloudflare Workers** | Pass      | Pass               | Pass                | Pass              | Pass              | **5 / 5**                                     |
+| Railway                | Partial   | Pass               | Pass                | Pass              | Pass              | **4.5 / 5**                                   |
+| Fly.io                 | Pass      | Pass               | Partial             | Pass              | Partial           | **4 / 5**                                     |
+| Render                 | Partial   | Pass               | Pass                | Partial           | Pass              | **4 / 5**                                     |
+| Vercel                 | —         | —                  | —                   | —                 | —                 | **DROPPED** (serverless-only, Q1 hard filter) |
+| Netlify                | —         | —                  | —                   | —                 | —                 | **DROPPED** (serverless-only, Q1 hard filter) |
 
 **Scoring notes:**
 
@@ -101,48 +101,57 @@ Each failure is solvable in isolation; together they erode the "zero configurati
 
 ## Risk Register
 
-| Risk | Source | Likelihood | Impact | Mitigation |
-|---|---|---|---|---|
-| Supabase connection pool exhaustion (60-conn free limit) at traffic spikes | Unknown unknowns | Medium | High | Enable Cloudflare Hyperdrive before first public launch; configure Supabase project-level connection pooling (PgBouncer via Supabase dashboard) |
-| Worker library incompatibility (Canvas, CommonJS, native binaries) | Pre-mortem | Medium | Medium | Test each new npm dependency with `wrangler dev` (workerd runtime) before merging; avoid libraries with native addon dependencies |
-| CPU time limit (10 ms free / 30 ms paid) triggering 1101 errors on complex SSR | Devil's advocate | Medium | Medium | Upgrade to Workers Paid ($5/month) before public launch; profile CPU-bound SSR paths; move heavy computation to Supabase RPC if needed |
-| No automatic PR preview URLs | Unknown unknowns | High (it will be missing) | Low | Write a GitHub Actions workflow: deploy to named environment on PR open, tear down on close |
-| `astro:env/server` + `wrangler.jsonc` dual-config confusion causing prod 500s | Devil's advocate | Medium | High | Document both config surfaces in CLAUDE.md; always verify with `wrangler dev` before pushing; add a smoke test that hits `/auth/signin` post-deploy |
-| `wrangler.jsonc` misconfigured from toml-format tutorials | Unknown unknowns | Medium | Low | Keep `wrangler.jsonc` validated with `wrangler deploy --dry-run` in CI |
-| `nodejs_compat` flag missing causing cryptic runtime errors | Unknown unknowns | Low | Medium | Verify flag is present in `wrangler.jsonc` `compatibility_flags`; add to pre-deploy checklist |
-| Nightly background jobs (alerts) require Queues + second Worker | Pre-mortem | Low (post-MVP) | Low (MVP scope) | Defer to post-MVP; Cloudflare Queues + Scheduled Workers is the correct path when needed |
-| Adapter v13 integration breakage after Astro minor bump | Devil's advocate | Medium | Medium | Pin `@astrojs/cloudflare` version in `package.json`; review adapter CHANGELOG before running `npm update` |
+| Risk                                                                           | Source           | Likelihood                | Impact          | Mitigation                                                                                                                                          |
+| ------------------------------------------------------------------------------ | ---------------- | ------------------------- | --------------- | --------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Supabase connection pool exhaustion (60-conn free limit) at traffic spikes     | Unknown unknowns | Medium                    | High            | Enable Cloudflare Hyperdrive before first public launch; configure Supabase project-level connection pooling (PgBouncer via Supabase dashboard)     |
+| Worker library incompatibility (Canvas, CommonJS, native binaries)             | Pre-mortem       | Medium                    | Medium          | Test each new npm dependency with `wrangler dev` (workerd runtime) before merging; avoid libraries with native addon dependencies                   |
+| CPU time limit (10 ms free / 30 ms paid) triggering 1101 errors on complex SSR | Devil's advocate | Medium                    | Medium          | Upgrade to Workers Paid ($5/month) before public launch; profile CPU-bound SSR paths; move heavy computation to Supabase RPC if needed              |
+| No automatic PR preview URLs                                                   | Unknown unknowns | High (it will be missing) | Low             | Write a GitHub Actions workflow: deploy to named environment on PR open, tear down on close                                                         |
+| `astro:env/server` + `wrangler.jsonc` dual-config confusion causing prod 500s  | Devil's advocate | Medium                    | High            | Document both config surfaces in CLAUDE.md; always verify with `wrangler dev` before pushing; add a smoke test that hits `/auth/signin` post-deploy |
+| `wrangler.jsonc` misconfigured from toml-format tutorials                      | Unknown unknowns | Medium                    | Low             | Keep `wrangler.jsonc` validated with `wrangler deploy --dry-run` in CI                                                                              |
+| `nodejs_compat` flag missing causing cryptic runtime errors                    | Unknown unknowns | Low                       | Medium          | Verify flag is present in `wrangler.jsonc` `compatibility_flags`; add to pre-deploy checklist                                                       |
+| Nightly background jobs (alerts) require Queues + second Worker                | Pre-mortem       | Low (post-MVP)            | Low (MVP scope) | Defer to post-MVP; Cloudflare Queues + Scheduled Workers is the correct path when needed                                                            |
+| Adapter v13 integration breakage after Astro minor bump                        | Devil's advocate | Medium                    | Medium          | Pin `@astrojs/cloudflare` version in `package.json`; review adapter CHANGELOG before running `npm update`                                           |
 
 ## Getting Started
 
 The project is already configured for Cloudflare Workers. These are the exact commands for first deploy and ongoing ops:
 
 1. **Authenticate with Cloudflare**:
+
    ```bash
    npx wrangler login
    ```
+
    Opens a browser OAuth flow. Scope the resulting API token to Workers + this project only — no DNS, no billing, no other projects.
 
 2. **Set production secrets** (do this before the first deploy):
+
    ```bash
    npx wrangler secret put SUPABASE_URL
    npx wrangler secret put SUPABASE_KEY
    ```
+
    Each command prompts for the value interactively. Secrets are encrypted server-side and injected as environment variables at runtime. The `@astrojs/cloudflare` adapter reads them via `astro:env/server`.
 
 3. **Verify the build compiles for workerd**:
+
    ```bash
    npm run build
    ```
+
    Runs `astro build` with the Cloudflare adapter (via the Cloudflare Vite plugin) and emits a Workers-compatible bundle. A successful build here means the deploy will succeed.
 
 4. **Deploy to production**:
+
    ```bash
    npx wrangler deploy
    ```
+
    Uploads the bundle, returns a `*.workers.dev` URL within ~30 seconds. The Worker is live. **Do NOT use `wrangler pages deploy`** — that targets the deprecated Pages path; this adapter targets Workers only.
 
 5. **Tail live logs** (after deploy or during debugging):
+
    ```bash
    npx wrangler tail --format json
    # Filter to errors only:
@@ -159,6 +168,7 @@ The project is already configured for Cloudflare Workers. These are the exact co
 ## Out of Scope
 
 The following were not evaluated in this research:
+
 - Docker image configuration
 - CI/CD pipeline setup (GitHub Actions wiring for preview deployments)
 - Production-scale architecture (multi-region, HA, DR)

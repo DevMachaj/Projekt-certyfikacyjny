@@ -16,25 +16,27 @@ Both tables live in Supabase, protected by per-operation RLS policies so each ow
 
 ## Key Decisions Made
 
-| Decision | Choice | Why (1 sentence) |
-| --- | --- | --- |
-| Date column type | `DATE` (not TIMESTAMPTZ) | PRD's velocity formula uses calendar days; no intra-day precision needed |
-| `lead_time_days` nullability | Nullable, no default | FR-007 explicitly supports "if lead time is not set" as a valid product state |
-| Cascade delete | DB-level `ON DELETE CASCADE` | Enforced at DB level so API bugs can't leave orphaned sales entries |
-| Numeric CHECK constraints | Yes — on all numeric fields | Prevents corrupted velocity inputs (0 or negative values) at the source |
-| RLS policy structure | Per-operation (4 per table) | CLAUDE.md mandates granular per-operation policies; independently auditable |
-| TypeScript types | Manual `interface` types | No Supabase CLI dependency at build time; compatible with Cloudflare Workers CI |
-| `buffer_days` default | `DEFAULT 7` at DB level | Correct-by-default even if API omits the field; matches PRD "default: 7" |
+| Decision                     | Choice                       | Why (1 sentence)                                                                |
+| ---------------------------- | ---------------------------- | ------------------------------------------------------------------------------- |
+| Date column type             | `DATE` (not TIMESTAMPTZ)     | PRD's velocity formula uses calendar days; no intra-day precision needed        |
+| `lead_time_days` nullability | Nullable, no default         | FR-007 explicitly supports "if lead time is not set" as a valid product state   |
+| Cascade delete               | DB-level `ON DELETE CASCADE` | Enforced at DB level so API bugs can't leave orphaned sales entries             |
+| Numeric CHECK constraints    | Yes — on all numeric fields  | Prevents corrupted velocity inputs (0 or negative values) at the source         |
+| RLS policy structure         | Per-operation (4 per table)  | CLAUDE.md mandates granular per-operation policies; independently auditable     |
+| TypeScript types             | Manual `interface` types     | No Supabase CLI dependency at build time; compatible with Cloudflare Workers CI |
+| `buffer_days` default        | `DEFAULT 7` at DB level      | Correct-by-default even if API omits the field; matches PRD "default: 7"        |
 
 ## Scope
 
 **In scope:**
+
 - `supabase/migrations/20260530000001_create_products.sql`
 - `supabase/migrations/20260530000002_create_sales_entries.sql`
 - `src/types.ts` — `Product`, `SalesEntry`, `ClassificationState`
 - `src/lib/db.ts` — `getProductsByUser`, `getSalesEntriesByProduct`
 
 **Out of scope:**
+
 - Domain API routes (S-01, S-02)
 - UI changes
 - Computed types like `ProductWithClassification` (S-02)
@@ -47,11 +49,11 @@ Schema-first: Phase 1 locks the DB contract, Phase 2 mirrors it in TypeScript, P
 
 ## Phases at a Glance
 
-| Phase | What it delivers | Key risk |
-| --- | --- | --- |
-| 1. Database Schema | `products` + `sales_entries` tables, constraints, 8 RLS policies | Incorrect policy on `sales_entries` INSERT allows cross-user product association |
-| 2. TypeScript Domain Types | `src/types.ts` with `Product`, `SalesEntry`, `ClassificationState` | Type field mismatch with schema propagates as errors in all downstream slices |
-| 3. Reference Query Patterns | `src/lib/db.ts` with two typed query helpers | SSR client type incompatibility blocks S-01/S-02 from using the pattern |
+| Phase                       | What it delivers                                                   | Key risk                                                                         |
+| --------------------------- | ------------------------------------------------------------------ | -------------------------------------------------------------------------------- |
+| 1. Database Schema          | `products` + `sales_entries` tables, constraints, 8 RLS policies   | Incorrect policy on `sales_entries` INSERT allows cross-user product association |
+| 2. TypeScript Domain Types  | `src/types.ts` with `Product`, `SalesEntry`, `ClassificationState` | Type field mismatch with schema propagates as errors in all downstream slices    |
+| 3. Reference Query Patterns | `src/lib/db.ts` with two typed query helpers                       | SSR client type incompatibility blocks S-01/S-02 from using the pattern          |
 
 **Prerequisites:** Docker installed (for `npx supabase start`); Supabase project credentials in `.dev.vars`  
 **Estimated effort:** ~1 session across 3 phases (small changes; most time is schema design, already settled here)

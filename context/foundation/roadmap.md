@@ -27,12 +27,12 @@ Small e-commerce store owners have sales history in their shop platforms (Shopif
 
 ## At a glance
 
-| ID   | Change ID                      | Outcome (user can …)                                                          | Prerequisites | PRD refs                                              | Status   |
-| ---- | ------------------------------ | ----------------------------------------------------------------------------- | ------------- | ----------------------------------------------------- | -------- |
-| F-01 | supabase-schema-and-types      | (foundation) schema + RLS policies + domain types in place                    | —             | NFR-003, FR-001, FR-002, FR-003, FR-005               | ready    |
-| S-01 | product-catalog-crud           | add, edit, and delete products in their catalog                               | F-01          | US-02, FR-003, FR-004, FR-011                         | proposed |
-| S-02 | sales-entry-and-classification | log and delete sales entries and see the classification + recommendation       | F-01, S-01    | US-01, US-03, FR-005, FR-006, FR-007, FR-008, FR-012  | proposed |
-| S-03 | classification-dashboard       | view all products grouped by classification state on the dashboard            | S-02          | FR-009                                                | proposed |
+| ID   | Change ID                      | Outcome (user can …)                                                     | Prerequisites | PRD refs                                             | Status   |
+| ---- | ------------------------------ | ------------------------------------------------------------------------ | ------------- | ---------------------------------------------------- | -------- |
+| F-01 | supabase-schema-and-types      | (foundation) schema + RLS policies + domain types in place               | —             | NFR-003, FR-001, FR-002, FR-003, FR-005              | ready    |
+| S-01 | product-catalog-crud           | add, edit, and delete products in their catalog                          | F-01          | US-02, FR-003, FR-004, FR-011                        | proposed |
+| S-02 | sales-entry-and-classification | log and delete sales entries and see the classification + recommendation | F-01, S-01    | US-01, US-03, FR-005, FR-006, FR-007, FR-008, FR-012 | proposed |
+| S-03 | classification-dashboard       | view all products grouped by classification state on the dashboard       | S-02          | FR-009                                               | proposed |
 
 ## Baseline
 
@@ -75,7 +75,7 @@ Foundations below assume these are present and do NOT re-scaffold them.
 - **Risk:** Cascade-delete behavior (FR-011: deleting a product must remove all associated sales entries) must be implemented at the database level (foreign key cascade) or explicitly in the API handler; misimplementation risks orphaned `sales_entries` rows that later classification queries silently pick up, producing wrong velocity calculations.
 - **Status:** proposed
 
-### S-02: Sales entry logging and velocity classification *(North star)*
+### S-02: Sales entry logging and velocity classification _(North star)_
 
 - **Outcome:** owner can log one or more non-overlapping sales entries (units sold, start date, end date) for a product — with overlapping ranges rejected — and immediately see the resulting velocity classification (Understocked / Watch / OK / Slow-mover / Insufficient data) with the threshold definition for that state and the specific recommended action ("Order X units" / "Consider promotion" / "Set lead time to get reorder suggestion"); owner can also delete a sales entry and see the classification recalculate immediately.
 - **Change ID:** sales-entry-and-classification
@@ -102,12 +102,12 @@ Foundations below assume these are present and do NOT re-scaffold them.
 
 ## Backlog Handoff
 
-| Roadmap ID | Change ID                      | Suggested issue title                                              | Ready for `/10x-plan` | Notes                                    |
-| ---------- | ------------------------------ | ------------------------------------------------------------------ | --------------------- | ---------------------------------------- |
-| F-01       | supabase-schema-and-types      | Schema: products + sales_entries tables with RLS                   | yes                   | Run `/10x-plan supabase-schema-and-types` |
-| S-01       | product-catalog-crud           | Feature: product catalog — add / edit / delete                     | no                    | Requires F-01 to be done first            |
-| S-02       | sales-entry-and-classification | Feature: sales entry logging + velocity classification (north star) | no                   | Requires F-01 + S-01 to be done first    |
-| S-03       | classification-dashboard       | Feature: dashboard grouped by classification state                 | no                    | Requires S-02 to be done first            |
+| Roadmap ID | Change ID                      | Suggested issue title                                               | Ready for `/10x-plan` | Notes                                     |
+| ---------- | ------------------------------ | ------------------------------------------------------------------- | --------------------- | ----------------------------------------- |
+| F-01       | supabase-schema-and-types      | Schema: products + sales_entries tables with RLS                    | yes                   | Run `/10x-plan supabase-schema-and-types` |
+| S-01       | product-catalog-crud           | Feature: product catalog — add / edit / delete                      | no                    | Requires F-01 to be done first            |
+| S-02       | sales-entry-and-classification | Feature: sales entry logging + velocity classification (north star) | no                    | Requires F-01 + S-01 to be done first     |
+| S-03       | classification-dashboard       | Feature: dashboard grouped by classification state                  | no                    | Requires S-02 to be done first            |
 
 ## Open Roadmap Questions
 

@@ -40,10 +40,10 @@ StockHelper is a solo, 3-week after-hours web app with auth and a relational dat
 
 ## Pre-scaffold verification
 
-| Signal      | Value                                | Severity | Notes                                                      |
-| ----------- | ------------------------------------ | -------- | ---------------------------------------------------------- |
-| npm package | not run                              | —        | cmd_template starts with `git clone`; npm step skipped     |
-| GitHub repo | not run                              | —        | `gh` CLI not installed; recency check unavailable          |
+| Signal      | Value   | Severity | Notes                                                  |
+| ----------- | ------- | -------- | ------------------------------------------------------ |
+| npm package | not run | —        | cmd_template starts with `git clone`; npm step skipped |
+| GitHub repo | not run | —        | `gh` CLI not installed; recency check unavailable      |
 
 ## Scaffold log
 
@@ -69,43 +69,44 @@ StockHelper is a solo, 3-week after-hours web app with auth and a relational dat
 
 #### MODERATE findings
 
-| Package                  | Direct? | Advisory                                                    | Fix available?                                           |
-| ------------------------ | ------- | ----------------------------------------------------------- | -------------------------------------------------------- |
-| `@astrojs/check`         | yes     | via `@astrojs/language-server` → `volar-service-yaml` chain | Downgrade to `@astrojs/check@0.9.2` (breaking change)   |
-| `@astrojs/language-server` | no    | via `volar-service-yaml` → `yaml-language-server` → `yaml` | Linked to `@astrojs/check` fix                          |
-| `@cloudflare/vite-plugin`| no      | via `miniflare`, `wrangler`, `ws`                           | `npm audit fix`                                          |
-| `miniflare`              | no      | via `ws` (uninitialized memory disclosure)                  | `npm audit fix`                                          |
-| `volar-service-yaml`     | no      | via `yaml-language-server` → `yaml` (stack overflow)        | Linked to `@astrojs/check` fix                          |
-| `wrangler`               | yes     | via `miniflare`                                             | `npm audit fix`                                          |
-| `ws`                     | no      | `GHSA-58qx-3vcg-4xpx`: uninitialized memory disclosure (CVSS 4.4) | `npm audit fix`                                 |
-| `yaml`                   | no      | `GHSA-48c2-rrv3-qjmp`: stack overflow on deeply nested YAML (CVSS 4.3) | Linked to `@astrojs/check` fix                |
-| `yaml-language-server`   | no      | via `yaml`                                                  | Linked to `@astrojs/check` fix                          |
+| Package                    | Direct? | Advisory                                                               | Fix available?                                        |
+| -------------------------- | ------- | ---------------------------------------------------------------------- | ----------------------------------------------------- |
+| `@astrojs/check`           | yes     | via `@astrojs/language-server` → `volar-service-yaml` chain            | Downgrade to `@astrojs/check@0.9.2` (breaking change) |
+| `@astrojs/language-server` | no      | via `volar-service-yaml` → `yaml-language-server` → `yaml`             | Linked to `@astrojs/check` fix                        |
+| `@cloudflare/vite-plugin`  | no      | via `miniflare`, `wrangler`, `ws`                                      | `npm audit fix`                                       |
+| `miniflare`                | no      | via `ws` (uninitialized memory disclosure)                             | `npm audit fix`                                       |
+| `volar-service-yaml`       | no      | via `yaml-language-server` → `yaml` (stack overflow)                   | Linked to `@astrojs/check` fix                        |
+| `wrangler`                 | yes     | via `miniflare`                                                        | `npm audit fix`                                       |
+| `ws`                       | no      | `GHSA-58qx-3vcg-4xpx`: uninitialized memory disclosure (CVSS 4.4)      | `npm audit fix`                                       |
+| `yaml`                     | no      | `GHSA-48c2-rrv3-qjmp`: stack overflow on deeply nested YAML (CVSS 4.3) | Linked to `@astrojs/check` fix                        |
+| `yaml-language-server`     | no      | via `yaml`                                                             | Linked to `@astrojs/check` fix                        |
 
 Most moderate findings are dev-tooling (linter, language server, Cloudflare local dev) and do not affect the production runtime. The HIGH `devalue` finding and the `ws` findings are also transitive dev-tooling; assess per your risk tolerance.
 
 ## Hints recorded but not acted on
 
-| Hint                    | Value             |
-| ----------------------- | ----------------- |
-| bootstrapper_confidence | first-class       |
-| quality_override        | false             |
-| path_taken              | standard          |
-| self_check_answers      | null              |
-| team_size               | solo              |
-| deployment_target       | cloudflare-pages  |
-| ci_provider             | github-actions    |
+| Hint                    | Value                |
+| ----------------------- | -------------------- |
+| bootstrapper_confidence | first-class          |
+| quality_override        | false                |
+| path_taken              | standard             |
+| self_check_answers      | null                 |
+| team_size               | solo                 |
+| deployment_target       | cloudflare-pages     |
+| ci_provider             | github-actions       |
 | ci_default_flow         | auto-deploy-on-merge |
-| has_auth                | true              |
-| has_payments            | false             |
-| has_realtime            | false             |
-| has_ai                  | false             |
-| has_background_jobs     | false             |
+| has_auth                | true                 |
+| has_payments            | false                |
+| has_realtime            | false                |
+| has_ai                  | false                |
+| has_background_jobs     | false                |
 
 ## Next steps
 
 Next: run `/10x-agents-md` to set up agent context (`CLAUDE.md`, `AGENTS.md`). For now, your project is scaffolded and verified — happy hacking.
 
 Useful manual steps in the meantime:
+
 - Upgrade Node.js to v22 (the starter requires it; `.nvmrc` in the project root specifies the version).
 - `git init` (if you have not already) to start your own repo history.
 - Review the `CLAUDE.md` the starter ships — the next skill (`/10x-agents-md`) will review and extend it.
