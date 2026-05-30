@@ -5,8 +5,8 @@
 - **Runtime:** Cloudflare Workers
 - **Adapter:** `@astrojs/cloudflare` v13 (Workers only — nie Pages)
 - **Worker name:** `stockhelper`
-- **URL produkcji:** `https://stockhelper.<account>.workers.dev` *(uzupełnij po pierwszym deploy)*
-- **CD:** Cloudflare Git Integration (auto-deploy na push do `master`)
+- **URL produkcji:** `https://stockhelper.dev-machaj.workers.dev`
+- **CD:** Cloudflare Git Integration (auto-deploy na push do `main`)
 - **CI:** GitHub Actions (lint + build check na PR, bez deploymentu)
 
 ---
@@ -25,6 +25,16 @@ GitHub Actions wymaga tych samych sekretów w GitHub Secrets (Settings → Secre
 ---
 
 ## Prerequisites — jednorazowa konfiguracja
+
+| Krok | Status |
+|---|---|
+| Konto Cloudflare | **GOTOWE** |
+| Konto Supabase | **GOTOWE** |
+| GitHub CLI (`gh`) | **GOTOWE** |
+| Node.js v22 | **GOTOWE** (v22.22.3) |
+| Wrangler CLI zalogowany | **GOTOWE** |
+| Supabase CLI zalogowany | **GOTOWE** |
+| Supabase CLI zlinkowany z projektem | **GOTOWE** (`douznsvdylvgwszypepy`) |
 
 ### Node.js v22
 ```bash
@@ -62,14 +72,14 @@ Konfiguracja jednorazowa w Cloudflare Dashboard:
 1. [dash.cloudflare.com](https://dash.cloudflare.com) → **Workers & Pages → Create → Connect to Git**
 2. Authorize GitHub → wybierz repozytorium
 3. Konfiguracja buildu:
-   - Branch: `master`
+   - Branch: `main`
    - Build command: `npm run build`
    - Build output directory: `dist`
    - Root directory: `/`
 4. Environment variables (Production): `SUPABASE_URL` + `SUPABASE_KEY` jako Secret
 5. Kliknij **Deploy** — pierwszy build uruchomiony przez Cloudflare
 
-**Od teraz:** push do `master` → automatyczny deploy przez Cloudflare.
+**Od teraz:** push do `main` → automatyczny deploy przez Cloudflare.
 
 ---
 
@@ -120,5 +130,5 @@ npx wrangler deployments list
 ## Linki
 
 - Cloudflare Dashboard: [dash.cloudflare.com](https://dash.cloudflare.com)
-- Supabase Dashboard: [supabase.com/dashboard/project/<PROJECT_REF>](https://supabase.com/dashboard)
+- Supabase Dashboard: [supabase.com/dashboard/project/douznsvdylvgwszypepy](https://supabase.com/dashboard/project/douznsvdylvgwszypepy)
 - Wrangler docs: [developers.cloudflare.com/workers/wrangler](https://developers.cloudflare.com/workers/wrangler)
