@@ -1,5 +1,6 @@
-import type { SupabaseClient } from "@supabase/supabase-js";
+import type { PostgrestError, SupabaseClient } from "@supabase/supabase-js";
 import type { Product, SalesEntry } from "@/types";
+import type { ProductInput, ProductUpdateInput } from "@/lib/validation/product";
 
 export async function getProductsByUser(supabase: SupabaseClient, userId: string): Promise<Product[]> {
   const { data, error } = await supabase
@@ -10,6 +11,46 @@ export async function getProductsByUser(supabase: SupabaseClient, userId: string
 
   if (error) throw error;
   return data as Product[];
+}
+
+export async function createProduct(supabase: SupabaseClient, userId: string, input: ProductInput): Promise<Product> {
+  const { data, error } = (await supabase
+    .from("products")
+    .insert({ ...input, user_id: userId })
+    .select("*")
+    .single()) as { data: Product | null; error: PostgrestError | null };
+
+  if (error) throw error;
+  if (!data) throw new Error("Insert returned no row");
+  return data;
+}
+
+export async function updateProduct(
+  supabase: SupabaseClient,
+  id: string,
+  patch: ProductUpdateInput,
+): Promise<Product | null> {
+  // `products.updated_at` has no DB trigger (DEFAULT now() on insert only), so we set it
+  // explicitly here — otherwise it stays frozen at the insert timestamp across edits.
+  const { data, error } = (await supabase
+    .from("products")
+    .update({ ...patch, updated_at: new Date().toISOString() })
+    .eq("id", id)
+    .select("*")
+    .maybeSingle()) as { data: Product | null; error: PostgrestError | null };
+
+  if (error) throw error;
+  return data;
+}
+
+export async function deleteProduct(supabase: SupabaseClient, id: string): Promise<boolean> {
+  const { data, error } = (await supabase.from("products").delete().eq("id", id).select("id")) as {
+    data: { id: string }[] | null;
+    error: PostgrestError | null;
+  };
+
+  if (error) throw error;
+  return (data?.length ?? 0) > 0;
 }
 
 export async function getSalesEntriesByProduct(supabase: SupabaseClient, productId: string): Promise<SalesEntry[]> {
