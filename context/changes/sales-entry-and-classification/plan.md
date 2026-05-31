@@ -519,32 +519,32 @@ but if a dev DB has stray rows, clear them or `supabase db reset` before applyin
 
 #### Automated
 
-- [x] 1.1 Engine unit tests pass: `npm test`
-- [x] 1.2 Type checking passes: `npm run build`
-- [x] 1.3 Linting passes: `npm run lint`
-- [x] 1.4 Formatting passes: `npm run format`
+- [x] 1.1 Engine unit tests pass: `npm test` — 0fd601c
+- [x] 1.2 Type checking passes: `npm run build` — 0fd601c
+- [x] 1.3 Linting passes: `npm run lint` — 0fd601c
+- [x] 1.4 Formatting passes: `npm run format` — 0fd601c
 
 #### Manual
 
-- [x] 1.5 Worked-example output matches the PRD threshold table (Understocked + Slow-mover spot-checks)
+- [x] 1.5 Worked-example output matches the PRD threshold table (Understocked + Slow-mover spot-checks) — 0fd601c
 
 ### Phase 2: Overlap constraint, validation schema, db helpers, sales-entry API
 
 #### Automated
 
-- [ ] 2.1 Migration applies cleanly: `npx supabase start` / `supabase db reset` with no errors
-- [ ] 2.2 Type checking passes: `npm run build`
-- [ ] 2.3 Linting passes: `npm run lint`
-- [ ] 2.4 Formatting passes: `npm run format`
+- [x] 2.1 Migration applies cleanly: `npx supabase start` / `supabase db reset` with no errors
+- [x] 2.2 Type checking passes: `npm run build`
+- [x] 2.3 Linting passes: `npm run lint`
+- [x] 2.4 Formatting passes: `npm run format`
 
 #### Manual
 
-- [ ] 2.5 `POST` valid entry → `201` with entry + classification; row under correct user/product
-- [ ] 2.6 Overlapping `POST` → `409` clear message, no row inserted
-- [ ] 2.7 DB exclusion constraint rejects an overlapping insert made directly in Studio
-- [ ] 2.8 Future `end_date` / `units_sold <= 0` / `end < start` → `400` with issues
-- [ ] 2.9 `DELETE` → `200` recomputed classification; deleting to `< 7` days reverts to Insufficient data; unknown id → `404`
-- [ ] 2.10 No-session → `401`; foreign product id → `404` (isolation)
+- [x] 2.5 `POST` valid entry → `201` with entry + classification; row under correct user/product
+- [x] 2.6 Overlapping `POST` → `409` clear message, no row inserted
+- [x] 2.7 DB exclusion constraint rejects an overlapping insert made directly in Studio
+- [x] 2.8 Future `end_date` / `units_sold <= 0` / `end < start` → `400` with issues
+- [x] 2.9 `DELETE` → `200` recomputed classification; deleting to `< 7` days reverts to Insufficient data; unknown id → `404`
+- [x] 2.10 No-session → `401`; foreign product id → `404` (isolation)
 
 ### Phase 3: Product detail page + sales-entry island
 
