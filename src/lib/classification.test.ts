@@ -1,0 +1,201 @@
+import { describe, expect, it } from "vitest";
+import { classify, entryDays, THRESHOLD_DEFINITIONS, totalHistoryDays, velocityOf } from "@/lib/classification";
+import type { Product, SalesEntry } from "@/types";
+
+function makeProduct(overrides: Partial<Product> = {}): Product {
+  return {
+    id: "p1",
+    user_id: "u1",
+    name: "Test product",
+    stock_quantity: 10,
+    lead_time_days: 5,
+    buffer_days: 7,
+    created_at: "2026-01-01T00:00:00Z",
+    updated_at: "2026-01-01T00:00:00Z",
+    ...overrides,
+  };
+}
+
+let entryCounter = 0;
+function makeEntry(units: number, start: string, end: string): SalesEntry {
+  entryCounter += 1;
+  return {
+    id: `e${entryCounter}`,
+    product_id: "p1",
+    user_id: "u1",
+    units_sold: units,
+    start_date: start,
+    end_date: end,
+    created_at: "2026-01-01T00:00:00Z",
+  };
+}
+
+describe("day-count helpers", () => {
+  it("counts a single-day entry as 1 inclusive day", () => {
+    expect(entryDays(makeEntry(3, "2026-01-01", "2026-01-01"))).toBe(1);
+  });
+
+  it("counts a multi-day entry inclusively: (end − start) + 1", () => {
+    expect(entryDays(makeEntry(3, "2026-01-01", "2026-01-05"))).toBe(5);
+  });
+
+  it("spans a 100-day range correctly across months (2026-01-01..2026-04-10)", () => {
+    expect(entryDays(makeEntry(5, "2026-01-01", "2026-04-10"))).toBe(100);
+  });
+
+  it("sums totalHistoryDays across multiple non-overlapping entries", () => {
+    const entries = [makeEntry(3, "2026-01-01", "2026-01-05"), makeEntry(4, "2026-02-01", "2026-02-04")];
+    expect(totalHistoryDays(entries)).toBe(5 + 4);
+  });
+
+  it("velocityOf is total units ÷ total days, and null with no history", () => {
+    expect(velocityOf([makeEntry(10, "2026-01-01", "2026-01-05")])).toBe(2); // 10 / 5
+    expect(velocityOf([])).toBeNull();
+  });
+});
+
+describe("Insufficient data (FR-008)", () => {
+  it("returns Insufficient data below 7 days of history", () => {
+    const result = classify(makeProduct(), [makeEntry(10, "2026-01-01", "2026-01-05")]); // 5 days
+    expect(result.state).toBe("Insufficient data");
+    expect(result.recommendation).toEqual({ kind: "none" });
+    expect(result.velocity).toBe(2); // velocity still computed (10/5) but state is gated
+    expect(result.daysOfStock).toBeNull();
+  });
+
+  it("clears once history reaches 7 days", () => {
+    const result = classify(makeProduct({ stock_quantity: 25, lead_time_days: 10 }), [
+      makeEntry(7, "2026-01-01", "2026-01-07"), // exactly 7 days, velocity 1
+    ]);
+    expect(result.state).not.toBe("Insufficient data");
+  });
+
+  it("handles zero entries without dividing by zero", () => {
+    const result = classify(makeProduct(), []);
+    expect(result.state).toBe("Insufficient data");
+    expect(result.velocity).toBeNull();
+    expect(result.daysOfStock).toBeNull();
+    expect(result.totalDays).toBe(0);
+    expect(result.totalUnits).toBe(0);
+  });
+});
+
+describe("Slow-mover gate (precedence over day-bands)", () => {
+  it("is Slow-mover when velocity < 0.1, even with days_of_stock < 90", () => {
+    // 5 units / 100 days = 0.05/day; stock 1 → days_of_stock 20 (< 90)
+    const result = classify(makeProduct({ stock_quantity: 1, lead_time_days: 5 }), [
+      makeEntry(5, "2026-01-01", "2026-04-10"),
+    ]);
+    expect(result.state).toBe("Slow-mover");
+    expect(result.recommendation).toEqual({ kind: "promote" });
+  });
+
+  it("is Slow-mover when days_of_stock >= 90 with velocity >= 0.1", () => {
+    // 7 units / 7 days = 1/day; stock 90 → days_of_stock 90
+    const result = classify(makeProduct({ stock_quantity: 90, lead_time_days: 5 }), [
+      makeEntry(7, "2026-01-01", "2026-01-07"),
+    ]);
+    expect(result.state).toBe("Slow-mover");
+  });
+
+  it("velocity < 0.1 wins over an OK day-band (precedence case)", () => {
+    // 5 units / 100 days = 0.05/day; lead 5 → 2×lead 10; stock 2 → days_of_stock 40 (OK band [10,90))
+    const result = classify(makeProduct({ stock_quantity: 2, lead_time_days: 5 }), [
+      makeEntry(5, "2026-01-01", "2026-04-10"),
+    ]);
+    expect(result.daysOfStock).toBeCloseTo(40);
+    expect(result.state).toBe("Slow-mover"); // not OK
+  });
+});
+
+describe("lead-time bands", () => {
+  it("Understocked when days_of_stock < lead_time, with a specific reorder quantity", () => {
+    // velocity 1 (7/7); lead 10; stock 5 → days_of_stock 5 < 10
+    const result = classify(makeProduct({ stock_quantity: 5, lead_time_days: 10, buffer_days: 7 }), [
+      makeEntry(7, "2026-01-01", "2026-01-07"),
+    ]);
+    expect(result.state).toBe("Understocked");
+    // reorder = ceil(velocity × (lead + buffer)) = ceil(1 × 17) = 17
+    expect(result.recommendation).toEqual({ kind: "order", units: 17 });
+  });
+
+  it("rounds the reorder quantity up (Math.ceil) for fractional velocity", () => {
+    // velocity 10/7 ≈ 1.4286; lead 3, buffer 7; stock 1 → days_of_stock ≈ 0.7 < 3
+    const result = classify(makeProduct({ stock_quantity: 1, lead_time_days: 3, buffer_days: 7 }), [
+      makeEntry(10, "2026-01-01", "2026-01-07"),
+    ]);
+    expect(result.state).toBe("Understocked");
+    // ceil(1.4286 × 10) = ceil(14.286) = 15
+    expect(result.recommendation).toEqual({ kind: "order", units: 15 });
+  });
+
+  it("Watch at the lower boundary days_of_stock == lead_time", () => {
+    // velocity 1; lead 10; stock 10 → days_of_stock 10 == lead → Watch (Understocked is < lead)
+    const result = classify(makeProduct({ stock_quantity: 10, lead_time_days: 10 }), [
+      makeEntry(7, "2026-01-01", "2026-01-07"),
+    ]);
+    expect(result.state).toBe("Watch");
+    expect(result.recommendation).toEqual({ kind: "none" });
+  });
+
+  it("Watch within [lead, 2×lead)", () => {
+    // velocity 1; lead 10; stock 15 → days_of_stock 15 ∈ [10, 20)
+    const result = classify(makeProduct({ stock_quantity: 15, lead_time_days: 10 }), [
+      makeEntry(7, "2026-01-01", "2026-01-07"),
+    ]);
+    expect(result.state).toBe("Watch");
+  });
+
+  it("OK at the boundary days_of_stock == 2×lead_time", () => {
+    // velocity 1; lead 10; stock 20 → days_of_stock 20 == 2×lead → OK (Watch is < 2×lead)
+    const result = classify(makeProduct({ stock_quantity: 20, lead_time_days: 10 }), [
+      makeEntry(7, "2026-01-01", "2026-01-07"),
+    ]);
+    expect(result.state).toBe("OK");
+    expect(result.recommendation).toEqual({ kind: "none" });
+  });
+
+  it("OK within [2×lead, 90)", () => {
+    // velocity 1; lead 10; stock 25 → days_of_stock 25 ∈ [20, 90)
+    const result = classify(makeProduct({ stock_quantity: 25, lead_time_days: 10 }), [
+      makeEntry(7, "2026-01-01", "2026-01-07"),
+    ]);
+    expect(result.state).toBe("OK");
+  });
+});
+
+describe("null lead time (FR-007)", () => {
+  it("is OK with a set-lead-time recommendation when not a Slow-mover", () => {
+    // velocity 1 (≥ 0.1); stock 25 → days_of_stock 25 (< 90); lead null
+    const result = classify(makeProduct({ stock_quantity: 25, lead_time_days: null }), [
+      makeEntry(7, "2026-01-01", "2026-01-07"),
+    ]);
+    expect(result.state).toBe("OK");
+    expect(result.recommendation).toEqual({ kind: "set-lead-time" });
+  });
+
+  it("is still Slow-mover when velocity < 0.1 even without a lead time", () => {
+    // 5 units / 100 days = 0.05/day; lead null; stock 1 → days_of_stock 20
+    const result = classify(makeProduct({ stock_quantity: 1, lead_time_days: null }), [
+      makeEntry(5, "2026-01-01", "2026-04-10"),
+    ]);
+    expect(result.state).toBe("Slow-mover");
+    expect(result.recommendation).toEqual({ kind: "promote" });
+  });
+});
+
+describe("threshold labels", () => {
+  it("sets thresholdLabel to the assigned state's definition", () => {
+    const result = classify(makeProduct({ stock_quantity: 5, lead_time_days: 10 }), [
+      makeEntry(7, "2026-01-01", "2026-01-07"),
+    ]);
+    expect(result.thresholdLabel).toBe(THRESHOLD_DEFINITIONS[result.state]);
+    expect(result.thresholdLabel).toBe(THRESHOLD_DEFINITIONS.Understocked);
+  });
+
+  it("exposes a definition for every one of the five states", () => {
+    expect(Object.keys(THRESHOLD_DEFINITIONS).sort()).toEqual(
+      ["Insufficient data", "OK", "Slow-mover", "Understocked", "Watch"].sort(),
+    );
+  });
+});
