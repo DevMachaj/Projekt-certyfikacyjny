@@ -1,0 +1,62 @@
+---
+import Layout from "@/layouts/Layout.astro";
+import { createClient } from "@/lib/supabase";
+import { getProductById, getSalesEntriesByProduct } from "@/lib/db";
+import { classify, type ClassificationResult } from "@/lib/classification";
+import { ProductDetail } from "@/components/sales/ProductDetail";
+import type { Product, SalesEntry } from "@/types";
+
+const { id } = Astro.params;
+const { user } = Astro.locals;
+
+// Middleware guards /products (and its sub-paths), so `user` is present. `createClient` can still
+// return null when Supabase env is unset. A foreign/unknown product is RLS-scoped to null → we
+// render a 404 not-found state (isolation) rather than leaking another account's data.
+const supabase = createClient(Astro.request.headers, Astro.cookies);
+
+let product: Product | null = null;
+let entries: SalesEntry[] = [];
+let classification: ClassificationResult | null = null;
+
+if (supabase && user && id) {
+  product = await getProductById(supabase, id);
+  if (product) {
+    entries = await getSalesEntriesByProduct(supabase, id);
+    classification = classify(product, entries);
+  }
+}
+
+if (!product) {
+  Astro.response.status = 404;
+}
+---
+
+<Layout title={product ? product.name : "Product not found"}>
+  <div class="bg-cosmic min-h-screen px-4 py-10">
+    <div class="mx-auto w-full max-w-3xl">
+      <a
+        href="/products"
+        class="mb-6 inline-flex items-center gap-1 text-sm text-blue-100/70 transition-colors hover:text-white"
+      >
+        ← Back to products
+      </a>
+      {
+        product && classification ? (
+          <ProductDetail
+            client:load
+            product={product}
+            initialEntries={entries}
+            initialClassification={classification}
+          />
+        ) : (
+          <div class="rounded-2xl border border-white/10 bg-white/5 p-12 text-center">
+            <p class="mb-1 text-lg font-medium text-white">Product not found</p>
+            <p class="text-sm text-blue-100/60">
+              This product doesn't exist or isn't in your catalog. Head back to your products.
+            </p>
+          </div>
+        )
+      }
+    </div>
+  </div>
+</Layout>

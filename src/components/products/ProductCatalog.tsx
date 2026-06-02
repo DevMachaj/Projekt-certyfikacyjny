@@ -157,7 +157,12 @@ export function ProductCatalog({ initialProducts }: Props) {
               className="flex items-center justify-between rounded-xl border border-white/10 bg-white/5 px-4 py-3"
             >
               <div className="min-w-0">
-                <p className="truncate font-medium text-white">{product.name}</p>
+                <a
+                  href={`/products/${product.id}`}
+                  className="block truncate font-medium text-white hover:text-purple-200 hover:underline"
+                >
+                  {product.name}
+                </a>
                 <p className="mt-0.5 text-sm text-blue-100/60">
                   Stock: {product.stock_quantity} · Lead time:{" "}
                   {product.lead_time_days != null ? `${product.lead_time_days}d` : "not set"} · Buffer:{" "}

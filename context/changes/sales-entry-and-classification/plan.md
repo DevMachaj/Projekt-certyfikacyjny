@@ -532,28 +532,28 @@ but if a dev DB has stray rows, clear them or `supabase db reset` before applyin
 
 #### Automated
 
-- [x] 2.1 Migration applies cleanly: `npx supabase start` / `supabase db reset` with no errors
-- [x] 2.2 Type checking passes: `npm run build`
-- [x] 2.3 Linting passes: `npm run lint`
-- [x] 2.4 Formatting passes: `npm run format`
+- [x] 2.1 Migration applies cleanly: `npx supabase start` / `supabase db reset` with no errors — 9a1e587
+- [x] 2.2 Type checking passes: `npm run build` — 9a1e587
+- [x] 2.3 Linting passes: `npm run lint` — 9a1e587
+- [x] 2.4 Formatting passes: `npm run format` — 9a1e587
 
 #### Manual
 
-- [x] 2.5 `POST` valid entry → `201` with entry + classification; row under correct user/product
-- [x] 2.6 Overlapping `POST` → `409` clear message, no row inserted
-- [x] 2.7 DB exclusion constraint rejects an overlapping insert made directly in Studio
-- [x] 2.8 Future `end_date` / `units_sold <= 0` / `end < start` → `400` with issues
-- [x] 2.9 `DELETE` → `200` recomputed classification; deleting to `< 7` days reverts to Insufficient data; unknown id → `404`
-- [x] 2.10 No-session → `401`; foreign product id → `404` (isolation)
+- [x] 2.5 `POST` valid entry → `201` with entry + classification; row under correct user/product — 9a1e587
+- [x] 2.6 Overlapping `POST` → `409` clear message, no row inserted — 9a1e587
+- [x] 2.7 DB exclusion constraint rejects an overlapping insert made directly in Studio — 9a1e587
+- [x] 2.8 Future `end_date` / `units_sold <= 0` / `end < start` → `400` with issues — 9a1e587
+- [x] 2.9 `DELETE` → `200` recomputed classification; deleting to `< 7` days reverts to Insufficient data; unknown id → `404` — 9a1e587
+- [x] 2.10 No-session → `401`; foreign product id → `404` (isolation) — 9a1e587
 
 ### Phase 3: Product detail page + sales-entry island
 
 #### Automated
 
-- [ ] 3.1 Type checking passes: `npm run build`
-- [ ] 3.2 Linting passes: `npm run lint`
-- [ ] 3.3 Formatting passes: `npm run format`
-- [ ] 3.4 Engine tests still pass: `npm test`
+- [x] 3.1 Type checking passes: `npm run build`
+- [x] 3.2 Linting passes: `npm run lint`
+- [x] 3.3 Formatting passes: `npm run format`
+- [x] 3.4 Engine tests still pass: `npm test`
 
 #### Manual
 
