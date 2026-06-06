@@ -2,7 +2,7 @@
 change_id: classification-dashboard
 roadmap_id: S-03
 title: Classification dashboard
-status: implementing
+status: implemented
 created: 2026-06-06
 updated: 2026-06-06
 prd_refs: [FR-009, NFR-001, NFR-003]

@@ -304,15 +304,15 @@ None — no schema or data changes. Pure application code.
 
 #### Automated
 
-- [x] 2.1 Type checking passes: `npm run build`
-- [x] 2.2 Linting passes: `npm run lint`
-- [x] 2.3 Existing unit tests still pass: `npx vitest run`
+- [x] 2.1 Type checking passes: `npm run build` — 6a5f2b2
+- [x] 2.2 Linting passes: `npm run lint` — 6a5f2b2
+- [x] 2.3 Existing unit tests still pass: `npx vitest run` — 6a5f2b2
 
 #### Manual
 
-- [x] 2.4 Groups render in fixed order, alphabetical within group, empty groups hidden
-- [x] 2.5 Each card's recommendation matches the detail page
-- [x] 2.6 New account sees the empty-state CTA
-- [x] 2.7 "Manage products" and "Sign out" work from the dashboard
-- [x] 2.8 Two domain queries, not N+1
-- [x] 2.9 Second account cannot see the first account's products (NFR-003)
+- [x] 2.4 Groups render in fixed order, alphabetical within group, empty groups hidden — 6a5f2b2
+- [x] 2.5 Each card's recommendation matches the detail page — 6a5f2b2
+- [x] 2.6 New account sees the empty-state CTA — 6a5f2b2
+- [x] 2.7 "Manage products" and "Sign out" work from the dashboard — 6a5f2b2
+- [x] 2.8 Two domain queries, not N+1 — 6a5f2b2
+- [x] 2.9 Second account cannot see the first account's products (NFR-003) — 6a5f2b2
