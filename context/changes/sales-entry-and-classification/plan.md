@@ -557,11 +557,11 @@ but if a dev DB has stray rows, clear them or `supabase db reset` before applyin
 
 #### Manual
 
-- [x] 3.5 `/products/[id]` while logged out redirects to `/auth/signin`
-- [x] 3.6 No-entry product shows "Insufficient data" + log-first prompt
-- [x] 3.7 Crossing 7 days flips to a real classification within ~1s, correct threshold + recommendation (Understocked "Order N units"; no-lead-time "Set lead time…")
-- [x] 3.8 Overlapping range shows the 409 message; no entry added
-- [x] 3.9 Deleting recalculates in place (~1s); deleting to `< 7` days reverts to Insufficient data
-- [x] 3.10 Slow-mover product shows "Consider promotion"
-- [x] 3.11 Catalog rows link to detail; back-link returns to `/products`
-- [x] 3.12 Two-account isolation: account B cannot open A's detail page or see A's entries
+- [x] 3.5 `/products/[id]` while logged out redirects to `/auth/signin` — 088aa63
+- [x] 3.6 No-entry product shows "Insufficient data" + log-first prompt — 088aa63
+- [x] 3.7 Crossing 7 days flips to a real classification within ~1s, correct threshold + recommendation (Understocked "Order N units"; no-lead-time "Set lead time…") — 088aa63
+- [x] 3.8 Overlapping range shows the 409 message; no entry added — 088aa63
+- [x] 3.9 Deleting recalculates in place (~1s); deleting to `< 7` days reverts to Insufficient data — 088aa63
+- [x] 3.10 Slow-mover product shows "Consider promotion" — 088aa63
+- [x] 3.11 Catalog rows link to detail; back-link returns to `/products` — 088aa63
+- [x] 3.12 Two-account isolation: account B cannot open A's detail page or see A's entries — 088aa63
