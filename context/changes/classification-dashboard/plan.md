@@ -292,27 +292,27 @@ None — no schema or data changes. Pure application code.
 
 #### Automated
 
-- [x] 1.1 Type checking passes: `npm run build`
-- [x] 1.2 Linting passes: `npm run lint`
-- [x] 1.3 Unit tests pass incl. new `groupProductsByState` suite: `npx vitest run`
+- [x] 1.1 Type checking passes: `npm run build` — f76a54c
+- [x] 1.2 Linting passes: `npm run lint` — f76a54c
+- [x] 1.3 Unit tests pass incl. new `groupProductsByState` suite: `npx vitest run` — f76a54c
 
 #### Manual
 
-- [x] 1.4 Product detail page renders unchanged after constant extraction
+- [x] 1.4 Product detail page renders unchanged after constant extraction — f76a54c
 
 ### Phase 2: Dashboard page
 
 #### Automated
 
-- [ ] 2.1 Type checking passes: `npm run build`
-- [ ] 2.2 Linting passes: `npm run lint`
-- [ ] 2.3 Existing unit tests still pass: `npx vitest run`
+- [x] 2.1 Type checking passes: `npm run build`
+- [x] 2.2 Linting passes: `npm run lint`
+- [x] 2.3 Existing unit tests still pass: `npx vitest run`
 
 #### Manual
 
-- [ ] 2.4 Groups render in fixed order, alphabetical within group, empty groups hidden
-- [ ] 2.5 Each card's recommendation matches the detail page
-- [ ] 2.6 New account sees the empty-state CTA
-- [ ] 2.7 "Manage products" and "Sign out" work from the dashboard
-- [ ] 2.8 Two domain queries, not N+1
-- [ ] 2.9 Second account cannot see the first account's products (NFR-003)
+- [x] 2.4 Groups render in fixed order, alphabetical within group, empty groups hidden
+- [x] 2.5 Each card's recommendation matches the detail page
+- [x] 2.6 New account sees the empty-state CTA
+- [x] 2.7 "Manage products" and "Sign out" work from the dashboard
+- [x] 2.8 Two domain queries, not N+1
+- [x] 2.9 Second account cannot see the first account's products (NFR-003)

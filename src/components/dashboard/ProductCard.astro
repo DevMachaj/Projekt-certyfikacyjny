@@ -1,0 +1,27 @@
+---
+import { recommendationText, type ClassificationResult } from "@/lib/classification";
+import { STATE_STYLES } from "@/lib/classification-ui";
+import { cn } from "@/lib/utils";
+import type { Product } from "@/types";
+
+interface Props {
+  product: Product;
+  classification: ClassificationResult;
+}
+
+const { product, classification } = Astro.props;
+const action = recommendationText(classification.recommendation, classification.state);
+---
+
+<a
+  href={`/products/${product.id}`}
+  class="group flex flex-col gap-3 rounded-2xl border border-white/10 bg-white/5 p-5 transition-colors hover:border-white/25 hover:bg-white/10"
+>
+  <div class="flex flex-wrap items-center justify-between gap-2">
+    <h3 class="font-semibold text-white">{product.name}</h3>
+    <span class:list={cn("rounded-full border px-3 py-1 text-xs font-medium", STATE_STYLES[classification.state])}>
+      {classification.state}
+    </span>
+  </div>
+  <p class="text-sm text-blue-100/70">{action}</p>
+</a>
