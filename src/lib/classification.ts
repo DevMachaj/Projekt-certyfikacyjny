@@ -57,6 +57,32 @@ export const THRESHOLD_DEFINITIONS: Record<ClassificationState, string> = {
   "Slow-mover": "90 or more days of stock remaining, or selling fewer than 0.1 units/day.",
 };
 
+/**
+ * Fixed display order for classification states (FR-009 dashboard group order). Canonical here
+ * so every view — the detail panel and the dashboard — shares one source and cannot drift.
+ */
+export const STATE_ORDER: ClassificationState[] = ["Understocked", "Watch", "OK", "Slow-mover", "Insufficient data"];
+
+/**
+ * Plain-text recommended action for a classification result — the single source of the wording
+ * shown on both the detail panel and the dashboard card. Presentation (icons) stays in the view;
+ * the words live here so they cannot fork.
+ */
+export function recommendationText(rec: Recommendation, state: ClassificationState): string {
+  switch (rec.kind) {
+    case "order":
+      return `Order ${rec.units} units`;
+    case "promote":
+      return "Consider promotion";
+    case "set-lead-time":
+      return "Set lead time to get reorder suggestion";
+    case "none":
+      return state === "Insufficient data"
+        ? "Log at least 7 days of non-overlapping sales to get a classification."
+        : "No action needed right now.";
+  }
+}
+
 /** Parse a `YYYY-MM-DD` date string to a UTC epoch (ms), avoiding local-timezone off-by-one. */
 function parseUTC(date: string): number {
   const [year, month, day] = date.split("-").map(Number);

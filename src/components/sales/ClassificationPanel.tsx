@@ -1,5 +1,12 @@
 import { CheckCircle2, CircleHelp, ShoppingCart, TrendingDown } from "lucide-react";
-import { THRESHOLD_DEFINITIONS, type ClassificationResult, type Recommendation } from "@/lib/classification";
+import {
+  recommendationText,
+  STATE_ORDER,
+  THRESHOLD_DEFINITIONS,
+  type ClassificationResult,
+  type Recommendation,
+} from "@/lib/classification";
+import { STATE_STYLES } from "@/lib/classification-ui";
 import { cn } from "@/lib/utils";
 import type { ClassificationState, Product } from "@/types";
 
@@ -8,33 +15,22 @@ interface Props {
   product: Product;
 }
 
-/** Fixed display order (matches the PRD dashboard order S-03 will reuse). */
-const STATE_ORDER: ClassificationState[] = ["Understocked", "Watch", "OK", "Slow-mover", "Insufficient data"];
-
-const STATE_STYLES: Record<ClassificationState, string> = {
-  Understocked: "bg-red-500/20 text-red-200 border-red-400/40",
-  Watch: "bg-amber-500/20 text-amber-200 border-amber-400/40",
-  OK: "bg-emerald-500/20 text-emerald-200 border-emerald-400/40",
-  "Slow-mover": "bg-purple-500/20 text-purple-200 border-purple-400/40",
-  "Insufficient data": "bg-white/10 text-blue-100/70 border-white/20",
-};
-
-function recommendationLine(rec: Recommendation, state: ClassificationState): { icon: React.ReactNode; text: string } {
+/** Icon per recommendation kind; the wording is sourced from the shared `recommendationText()`. */
+function recommendationIcon(rec: Recommendation, state: ClassificationState): React.ReactNode {
   switch (rec.kind) {
     case "order":
-      return { icon: <ShoppingCart className="size-5" />, text: `Order ${rec.units} units` };
+      return <ShoppingCart className="size-5" />;
     case "promote":
-      return { icon: <TrendingDown className="size-5" />, text: "Consider promotion" };
+      return <TrendingDown className="size-5" />;
     case "set-lead-time":
-      return { icon: <CircleHelp className="size-5" />, text: "Set lead time to get reorder suggestion" };
+      return <CircleHelp className="size-5" />;
     case "none":
-      return state === "Insufficient data"
-        ? {
-            icon: <CircleHelp className="size-5" />,
-            text: "Log at least 7 days of non-overlapping sales to get a classification.",
-          }
-        : { icon: <CheckCircle2 className="size-5" />, text: "No action needed right now." };
+      return state === "Insufficient data" ? <CircleHelp className="size-5" /> : <CheckCircle2 className="size-5" />;
   }
+}
+
+function recommendationLine(rec: Recommendation, state: ClassificationState): { icon: React.ReactNode; text: string } {
+  return { icon: recommendationIcon(rec, state), text: recommendationText(rec, state) };
 }
 
 function fmt(value: number | null, digits = 2): string {

@@ -75,6 +75,17 @@ export async function getSalesEntriesByProduct(supabase: SupabaseClient, product
   return data as SalesEntry[];
 }
 
+export async function getSalesEntriesByUser(supabase: SupabaseClient, userId: string): Promise<SalesEntry[]> {
+  const { data, error } = await supabase
+    .from("sales_entries")
+    .select("*")
+    .eq("user_id", userId)
+    .order("start_date", { ascending: true });
+
+  if (error) throw error;
+  return data as SalesEntry[];
+}
+
 export async function createSalesEntry(
   supabase: SupabaseClient,
   userId: string,
