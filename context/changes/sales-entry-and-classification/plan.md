@@ -550,18 +550,18 @@ but if a dev DB has stray rows, clear them or `supabase db reset` before applyin
 
 #### Automated
 
-- [x] 3.1 Type checking passes: `npm run build`
-- [x] 3.2 Linting passes: `npm run lint`
-- [x] 3.3 Formatting passes: `npm run format`
-- [x] 3.4 Engine tests still pass: `npm test`
+- [x] 3.1 Type checking passes: `npm run build` — 8a35d89
+- [x] 3.2 Linting passes: `npm run lint` — 8a35d89
+- [x] 3.3 Formatting passes: `npm run format` — 8a35d89
+- [x] 3.4 Engine tests still pass: `npm test` — 8a35d89
 
 #### Manual
 
-- [ ] 3.5 `/products/[id]` while logged out redirects to `/auth/signin`
-- [ ] 3.6 No-entry product shows "Insufficient data" + log-first prompt
-- [ ] 3.7 Crossing 7 days flips to a real classification within ~1s, correct threshold + recommendation (Understocked "Order N units"; no-lead-time "Set lead time…")
-- [ ] 3.8 Overlapping range shows the 409 message; no entry added
-- [ ] 3.9 Deleting recalculates in place (~1s); deleting to `< 7` days reverts to Insufficient data
-- [ ] 3.10 Slow-mover product shows "Consider promotion"
-- [ ] 3.11 Catalog rows link to detail; back-link returns to `/products`
-- [ ] 3.12 Two-account isolation: account B cannot open A's detail page or see A's entries
+- [x] 3.5 `/products/[id]` while logged out redirects to `/auth/signin`
+- [x] 3.6 No-entry product shows "Insufficient data" + log-first prompt
+- [x] 3.7 Crossing 7 days flips to a real classification within ~1s, correct threshold + recommendation (Understocked "Order N units"; no-lead-time "Set lead time…")
+- [x] 3.8 Overlapping range shows the 409 message; no entry added
+- [x] 3.9 Deleting recalculates in place (~1s); deleting to `< 7` days reverts to Insufficient data
+- [x] 3.10 Slow-mover product shows "Consider promotion"
+- [x] 3.11 Catalog rows link to detail; back-link returns to `/products`
+- [x] 3.12 Two-account isolation: account B cannot open A's detail page or see A's entries

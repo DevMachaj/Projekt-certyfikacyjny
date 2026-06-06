@@ -6,7 +6,8 @@ import { z } from "zod";
  *
  * Rules mirror the DB CHECK constraints in
  * `supabase/migrations/20260530000002_create_sales_entries.sql` so client and server agree:
- *   - units_sold > 0
+ *   - units_sold >= 0 (a logged period may have zero sales — this lowers velocity rather
+ *     than being omitted, so dead periods are not silently dropped from the rate calc)
  *   - end_date >= start_date
  * plus a data-quality rule the DB does not enforce:
  *   - end_date may not be in the future (you cannot have sold units on days that haven't happened),
@@ -36,7 +37,7 @@ const dateString = z.string().refine(isRealDate, "Date must be a valid calendar 
 
 export const salesEntrySchema = z
   .object({
-    units_sold: z.number().int("Units sold must be a whole number").positive("Units sold must be greater than 0"),
+    units_sold: z.number().int("Units sold must be a whole number").nonnegative("Units sold cannot be negative"),
     start_date: dateString,
     end_date: dateString,
   })

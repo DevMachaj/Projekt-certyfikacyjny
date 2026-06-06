@@ -101,13 +101,21 @@ export function classify(product: Product, entries: SalesEntry[]): Classificatio
     return base("Insufficient data", { velocity: totalDays > 0 ? totalUnits / totalDays : null });
   }
 
-  // velocity > 0 here: totalDays ≥ 7 implies ≥ 1 entry, and every entry has units_sold > 0.
+  // velocity ≥ 0 here (totalDays ≥ 7 implies ≥ 1 entry); units_sold ≥ 0 means a product
+  // logged over a period with no sales has velocity 0 — and therefore no finite stock runway.
   const velocity = totalUnits / totalDays;
-  const daysOfStock = product.stock_quantity / velocity;
 
   // (2) Slow-mover gate — checked before the lead-time bands so a barely-selling item
-  //     surfaces as Slow-mover even when its day-band would read OK.
-  if (velocity < SLOW_VELOCITY || daysOfStock >= SLOW_DAYS_OF_STOCK) {
+  //     surfaces as Slow-mover even when its day-band would read OK. A barely-selling item
+  //     still reports its (finite) days-of-stock; only a true zero-velocity product has none.
+  if (velocity < SLOW_VELOCITY) {
+    const daysOfStock = velocity > 0 ? product.stock_quantity / velocity : null;
+    return base("Slow-mover", { velocity, daysOfStock, recommendation: { kind: "promote" } });
+  }
+
+  // velocity ≥ 0.1 here, so days-of-stock is finite (no ÷0).
+  const daysOfStock = product.stock_quantity / velocity;
+  if (daysOfStock >= SLOW_DAYS_OF_STOCK) {
     return base("Slow-mover", { velocity, daysOfStock, recommendation: { kind: "promote" } });
   }
 

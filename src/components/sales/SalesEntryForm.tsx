@@ -15,7 +15,7 @@ type FieldErrors = Partial<Record<keyof SalesEntryInput, string>>;
 
 /**
  * Add-entry form. Validates against the same `salesEntrySchema` the API uses, so client and
- * server agree (units > 0, real ISO dates, end >= start, no future end_date). Field errors map
+ * server agree (units >= 0, real ISO dates, end >= start, no future end_date). Field errors map
  * per input; server errors (e.g. the 409 overlap message) surface via `ServerError`.
  */
 export function SalesEntryForm({ onSubmit, pending, serverError }: Props) {

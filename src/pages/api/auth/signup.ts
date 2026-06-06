@@ -10,10 +10,17 @@ export const POST: APIRoute = async (context) => {
   if (!supabase) {
     return context.redirect(`/auth/signup?error=${encodeURIComponent("Supabase is not configured")}`);
   }
-  const { error } = await supabase.auth.signUp({ email, password });
+  const { data, error } = await supabase.auth.signUp({ email, password });
 
   if (error) {
     return context.redirect(`/auth/signup?error=${encodeURIComponent(error.message)}`);
+  }
+
+  // When email confirmations are disabled, signUp returns an active session and the SSR
+  // client has already persisted the auth cookies — the user is logged in, so send them in.
+  // When confirmations are enabled, no session is returned and they must confirm by email first.
+  if (data.session) {
+    return context.redirect("/");
   }
 
   return context.redirect("/auth/confirm-email");

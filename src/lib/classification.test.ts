@@ -108,6 +108,29 @@ describe("Slow-mover gate (precedence over day-bands)", () => {
   });
 });
 
+describe("zero-sales periods (units_sold = 0)", () => {
+  it("is a Slow-mover at velocity 0 with no divide-by-zero", () => {
+    // 0 units / 10 days = 0/day; stock 10 — days_of_stock would be ∞, so it stays null
+    const result = classify(makeProduct({ stock_quantity: 10, lead_time_days: 5 }), [
+      makeEntry(0, "2026-01-01", "2026-01-10"),
+    ]);
+    expect(result.state).toBe("Slow-mover");
+    expect(result.velocity).toBe(0);
+    expect(result.daysOfStock).toBeNull();
+    expect(result.recommendation).toEqual({ kind: "promote" });
+  });
+
+  it("lets a zero-sales period lower velocity rather than being dropped", () => {
+    // 10 units over 5 active days + 0 over the next 15 days = 10 / 20 = 0.5/day
+    // (vs 2/day if the dead period were omitted)
+    const entries = [makeEntry(10, "2026-01-01", "2026-01-05"), makeEntry(0, "2026-01-06", "2026-01-20")];
+    expect(velocityOf(entries)).toBe(0.5);
+    const result = classify(makeProduct({ stock_quantity: 25, lead_time_days: 10 }), entries);
+    expect(result.velocity).toBe(0.5);
+    expect(result.daysOfStock).toBe(50); // 25 / 0.5
+  });
+});
+
 describe("lead-time bands", () => {
   it("Understocked when days_of_stock < lead_time, with a specific reorder quantity", () => {
     // velocity 1 (7/7); lead 10; stock 5 → days_of_stock 5 < 10
