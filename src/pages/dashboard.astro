@@ -3,9 +3,7 @@ import Layout from "@/layouts/Layout.astro";
 import ProductCard from "@/components/dashboard/ProductCard.astro";
 import { createClient } from "@/lib/supabase";
 import { getProductsByUser, getSalesEntriesByUser } from "@/lib/db";
-import { classify } from "@/lib/classification";
-import { groupProductsByState, type ProductClassification } from "@/lib/dashboard";
-import type { SalesEntry } from "@/types";
+import { classifyUserCatalog, groupProductsByState } from "@/lib/dashboard";
 
 const { user } = Astro.locals;
 
@@ -21,20 +19,8 @@ if (supabase && user) {
     const products = await getProductsByUser(supabase, user.id);
     const entries = await getSalesEntriesByUser(supabase, user.id);
 
-    const entriesByProduct = new Map<string, SalesEntry[]>();
-    for (const entry of entries) {
-      const list = entriesByProduct.get(entry.product_id);
-      if (list) list.push(entry);
-      else entriesByProduct.set(entry.product_id, [entry]);
-    }
-
     // `products` is already name-sorted by getProductsByUser, so within-group order is alphabetical.
-    const items: ProductClassification[] = products.map((product) => ({
-      product,
-      classification: classify(product, entriesByProduct.get(product.id) ?? []),
-    }));
-
-    groups = groupProductsByState(items);
+    groups = groupProductsByState(classifyUserCatalog(products, entries));
   } catch {
     // Degrade to the empty state rather than 500-ing the page (e.g. transient DB error or
     // a missing remote migration). `groups` stays [].
