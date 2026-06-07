@@ -13,7 +13,12 @@ const { user } = Astro.locals;
 const supabase = createClient(Astro.request.headers, Astro.cookies);
 let initialProducts: Product[] = [];
 if (supabase && user) {
-  initialProducts = await getProductsByUser(supabase, user.id);
+  try {
+    initialProducts = await getProductsByUser(supabase, user.id);
+  } catch {
+    // Fall back to an empty catalog rather than 500-ing the whole page.
+    initialProducts = [];
+  }
 }
 ---
 

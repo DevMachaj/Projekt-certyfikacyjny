@@ -33,12 +33,16 @@ export const PATCH: APIRoute = async (context) => {
     return Response.json({ error: "Missing product id" }, { status: 400 });
   }
 
-  const product = await updateProduct(supabase, id, parsed.data);
-  if (!product) {
-    return Response.json({ error: "Product not found" }, { status: 404 });
-  }
+  try {
+    const product = await updateProduct(supabase, id, parsed.data);
+    if (!product) {
+      return Response.json({ error: "Product not found" }, { status: 404 });
+    }
 
-  return Response.json({ product }, { status: 200 });
+    return Response.json({ product }, { status: 200 });
+  } catch {
+    return Response.json({ error: "Failed to update product" }, { status: 500 });
+  }
 };
 
 export const DELETE: APIRoute = async (context) => {
@@ -58,10 +62,14 @@ export const DELETE: APIRoute = async (context) => {
   }
 
   // Deleting the product row removes its sales entries via DB ON DELETE CASCADE.
-  const removed = await deleteProduct(supabase, id);
-  if (!removed) {
-    return Response.json({ error: "Product not found" }, { status: 404 });
-  }
+  try {
+    const removed = await deleteProduct(supabase, id);
+    if (!removed) {
+      return Response.json({ error: "Product not found" }, { status: 404 });
+    }
 
-  return new Response(null, { status: 204 });
+    return new Response(null, { status: 204 });
+  } catch {
+    return Response.json({ error: "Failed to delete product" }, { status: 500 });
+  }
 };

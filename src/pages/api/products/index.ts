@@ -16,8 +16,12 @@ export const GET: APIRoute = async (context) => {
     return Response.json({ error: "Supabase is not configured" }, { status: 503 });
   }
 
-  const products = await getProductsByUser(supabase, user.id);
-  return Response.json({ products }, { status: 200 });
+  try {
+    const products = await getProductsByUser(supabase, user.id);
+    return Response.json({ products }, { status: 200 });
+  } catch {
+    return Response.json({ error: "Failed to load products" }, { status: 500 });
+  }
 };
 
 export const POST: APIRoute = async (context) => {
@@ -43,6 +47,10 @@ export const POST: APIRoute = async (context) => {
     return Response.json({ error: "Validation failed", issues: parsed.error.issues }, { status: 400 });
   }
 
-  const product = await createProduct(supabase, user.id, parsed.data);
-  return Response.json({ product }, { status: 201 });
+  try {
+    const product = await createProduct(supabase, user.id, parsed.data);
+    return Response.json({ product }, { status: 201 });
+  } catch {
+    return Response.json({ error: "Failed to create product" }, { status: 500 });
+  }
 };
