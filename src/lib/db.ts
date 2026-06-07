@@ -103,8 +103,16 @@ export async function createSalesEntry(
   return data;
 }
 
-export async function deleteSalesEntry(supabase: SupabaseClient, id: string): Promise<boolean> {
-  const { data, error } = (await supabase.from("sales_entries").delete().eq("id", id).select("id")) as {
+export async function deleteSalesEntry(supabase: SupabaseClient, id: string, productId: string): Promise<boolean> {
+  // Scope by product_id as well as id so an entry can only be deleted via its own product's
+  // route — a mismatched product_id matches no row (→ 404) rather than deleting + recomputing
+  // against the wrong product's entry set. RLS still enforces per-user ownership.
+  const { data, error } = (await supabase
+    .from("sales_entries")
+    .delete()
+    .eq("id", id)
+    .eq("product_id", productId)
+    .select("id")) as {
     data: { id: string }[] | null;
     error: PostgrestError | null;
   };

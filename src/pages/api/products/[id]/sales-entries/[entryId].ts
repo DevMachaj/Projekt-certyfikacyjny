@@ -21,19 +21,23 @@ export const DELETE: APIRoute = async (context) => {
     return Response.json({ error: "Missing product or entry id" }, { status: 400 });
   }
 
-  // Load the parent product first — RLS-scoped, so a foreign/unknown product surfaces as 404 (isolation).
-  const product = await getProductById(supabase, id);
-  if (!product) {
-    return Response.json({ error: "Product not found" }, { status: 404 });
-  }
+  try {
+    // Load the parent product first — RLS-scoped, so a foreign/unknown product surfaces as 404 (isolation).
+    const product = await getProductById(supabase, id);
+    if (!product) {
+      return Response.json({ error: "Product not found" }, { status: 404 });
+    }
 
-  const removed = await deleteSalesEntry(supabase, entryId);
-  if (!removed) {
-    return Response.json({ error: "Sales entry not found" }, { status: 404 });
-  }
+    const removed = await deleteSalesEntry(supabase, entryId, id);
+    if (!removed) {
+      return Response.json({ error: "Sales entry not found" }, { status: 404 });
+    }
 
-  // Recompute over the remaining entries — may revert to "Insufficient data" if < 7 days remain (US-03).
-  const entries = await getSalesEntriesByProduct(supabase, id);
-  const classification = classify(product, entries);
-  return Response.json({ classification }, { status: 200 });
+    // Recompute over the remaining entries — may revert to "Insufficient data" if < 7 days remain (US-03).
+    const entries = await getSalesEntriesByProduct(supabase, id);
+    const classification = classify(product, entries);
+    return Response.json({ classification }, { status: 200 });
+  } catch {
+    return Response.json({ error: "Failed to delete sales entry" }, { status: 500 });
+  }
 };

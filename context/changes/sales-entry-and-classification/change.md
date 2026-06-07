@@ -2,9 +2,9 @@
 change_id: sales-entry-and-classification
 roadmap_id: S-02
 title: Sales entry logging + velocity classification (north star)
-status: implemented
+status: impl_reviewed
 created: 2026-05-31
-updated: 2026-06-06
+updated: 2026-06-07
 prd_refs: [US-01, US-03, FR-005, FR-006, FR-007, FR-008, FR-012, NFR-001]
 prerequisites: [F-01 supabase-schema-and-types, S-01 product-catalog-crud]
 ---

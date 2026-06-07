@@ -36,14 +36,18 @@ export const GET: APIRoute = async (context) => {
     return Response.json({ error: "Missing product id" }, { status: 400 });
   }
 
-  const product = await getProductById(supabase, id);
-  if (!product) {
-    return Response.json({ error: "Product not found" }, { status: 404 });
-  }
+  try {
+    const product = await getProductById(supabase, id);
+    if (!product) {
+      return Response.json({ error: "Product not found" }, { status: 404 });
+    }
 
-  const entries = await getSalesEntriesByProduct(supabase, id);
-  const classification = classify(product, entries);
-  return Response.json({ entries, classification }, { status: 200 });
+    const entries = await getSalesEntriesByProduct(supabase, id);
+    const classification = classify(product, entries);
+    return Response.json({ entries, classification }, { status: 200 });
+  } catch {
+    return Response.json({ error: "Failed to load sales entries" }, { status: 500 });
+  }
 };
 
 export const POST: APIRoute = async (context) => {
@@ -74,32 +78,36 @@ export const POST: APIRoute = async (context) => {
     return Response.json({ error: "Validation failed", issues: parsed.error.issues }, { status: 400 });
   }
 
-  const product = await getProductById(supabase, id);
-  if (!product) {
-    return Response.json({ error: "Product not found" }, { status: 404 });
-  }
-
-  // API-layer overlap check (friendly 409). The DB exclusion constraint is the backstop below.
-  const existing = await getSalesEntriesByProduct(supabase, id);
-  const conflict = existing.some((entry) =>
-    rangesOverlap(parsed.data.start_date, parsed.data.end_date, entry.start_date, entry.end_date),
-  );
-  if (conflict) {
-    return Response.json({ error: OVERLAP_MESSAGE }, { status: 409 });
-  }
-
-  let entry: SalesEntry;
   try {
-    entry = await createSalesEntry(supabase, user.id, id, parsed.data);
-  } catch (err) {
-    const code = (err as Partial<PostgrestError>).code;
-    if (code === EXCLUSION_VIOLATION) {
+    const product = await getProductById(supabase, id);
+    if (!product) {
+      return Response.json({ error: "Product not found" }, { status: 404 });
+    }
+
+    // API-layer overlap check (friendly 409). The DB exclusion constraint is the backstop below.
+    const existing = await getSalesEntriesByProduct(supabase, id);
+    const conflict = existing.some((entry) =>
+      rangesOverlap(parsed.data.start_date, parsed.data.end_date, entry.start_date, entry.end_date),
+    );
+    if (conflict) {
       return Response.json({ error: OVERLAP_MESSAGE }, { status: 409 });
     }
-    throw err;
-  }
 
-  // Recompute over the post-insert set (existing + new) so the UI updates in one round-trip (NFR-001).
-  const classification = classify(product, [...existing, entry]);
-  return Response.json({ entry, classification }, { status: 201 });
+    let entry: SalesEntry;
+    try {
+      entry = await createSalesEntry(supabase, user.id, id, parsed.data);
+    } catch (err) {
+      const code = (err as Partial<PostgrestError>).code;
+      if (code === EXCLUSION_VIOLATION) {
+        return Response.json({ error: OVERLAP_MESSAGE }, { status: 409 });
+      }
+      throw err;
+    }
+
+    // Recompute over the post-insert set (existing + new) so the UI updates in one round-trip (NFR-001).
+    const classification = classify(product, [...existing, entry]);
+    return Response.json({ entry, classification }, { status: 201 });
+  } catch {
+    return Response.json({ error: "Failed to create sales entry" }, { status: 500 });
+  }
 };

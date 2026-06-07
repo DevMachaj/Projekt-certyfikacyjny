@@ -511,6 +511,23 @@ but if a dev DB has stray rows, clear them or `supabase db reset` before applyin
   `src/components/products/ProductCatalog.tsx`, `src/components/products/ProductForm.tsx`,
   `src/pages/products.astro`, `src/middleware.ts`
 
+## Addenda (post-implementation)
+
+These changes landed in this slice but were not in the original "Changes Required"
+scope. Recorded here (impl-review 2026-06-07) so the plan matches the implementation.
+
+- **signup redirect fix** (`src/pages/api/auth/signup.ts`, commit `088aa63`) — despite the
+  "No changes to auth flow" guardrail, signup now returns `redirect("/")` early when
+  `data.session` exists (email confirmation disabled), so the user lands logged-in instead
+  of on a confirm-email dead-end. Reviewed as a contained, correct UX bugfix with no
+  security regression (no fabricated session, static redirect targets, error path unchanged).
+  Accepted as an addendum rather than reverted.
+- **`units_sold >= 0`** (`supabase/migrations/20260606000001_sales_entries_allow_zero_units.sql`)
+  — the plan specified `units_sold > 0`; a later migration relaxed the DB CHECK to `>= 0` and
+  `salesEntrySchema` was updated to match, so owners can log zero-sales periods. The
+  classification engine treats the resulting `velocity = 0` as Slow-mover (no divide-by-zero),
+  covered by a dedicated test. Coordinated and internally consistent.
+
 ## Progress
 
 > Convention: `- [ ]` pending, `- [x]` done. Append ` — <commit sha>` when a step lands. Do not rename step titles. See `references/progress-format.md`.
