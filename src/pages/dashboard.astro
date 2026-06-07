@@ -17,23 +17,29 @@ const supabase = createClient(Astro.request.headers, Astro.cookies);
 let groups: ReturnType<typeof groupProductsByState> = [];
 
 if (supabase && user) {
-  const products = await getProductsByUser(supabase, user.id);
-  const entries = await getSalesEntriesByUser(supabase, user.id);
+  try {
+    const products = await getProductsByUser(supabase, user.id);
+    const entries = await getSalesEntriesByUser(supabase, user.id);
 
-  const entriesByProduct = new Map<string, SalesEntry[]>();
-  for (const entry of entries) {
-    const list = entriesByProduct.get(entry.product_id);
-    if (list) list.push(entry);
-    else entriesByProduct.set(entry.product_id, [entry]);
+    const entriesByProduct = new Map<string, SalesEntry[]>();
+    for (const entry of entries) {
+      const list = entriesByProduct.get(entry.product_id);
+      if (list) list.push(entry);
+      else entriesByProduct.set(entry.product_id, [entry]);
+    }
+
+    // `products` is already name-sorted by getProductsByUser, so within-group order is alphabetical.
+    const items: ProductClassification[] = products.map((product) => ({
+      product,
+      classification: classify(product, entriesByProduct.get(product.id) ?? []),
+    }));
+
+    groups = groupProductsByState(items);
+  } catch {
+    // Degrade to the empty state rather than 500-ing the page (e.g. transient DB error or
+    // a missing remote migration). `groups` stays [].
+    groups = [];
   }
-
-  // `products` is already name-sorted by getProductsByUser, so within-group order is alphabetical.
-  const items: ProductClassification[] = products.map((product) => ({
-    product,
-    classification: classify(product, entriesByProduct.get(product.id) ?? []),
-  }));
-
-  groups = groupProductsByState(items);
 }
 
 const hasProducts = groups.length > 0;

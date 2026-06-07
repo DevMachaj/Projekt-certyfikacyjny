@@ -2,9 +2,9 @@
 change_id: classification-dashboard
 roadmap_id: S-03
 title: Classification dashboard
-status: implemented
+status: impl_reviewed
 created: 2026-06-06
-updated: 2026-06-06
+updated: 2026-06-07
 prd_refs: [FR-009, NFR-001, NFR-003]
 prerequisites: [F-01 supabase-schema-and-types, S-01 product-catalog-crud, S-02 sales-entry-and-classification]
 ---
