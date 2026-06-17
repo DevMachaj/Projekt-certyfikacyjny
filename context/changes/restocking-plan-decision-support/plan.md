@@ -259,13 +259,13 @@ No data migration. No new secret (reuses `ANTHROPIC_API_KEY`). The response body
 
 #### Automated
 
-- [x] 3.1 Lint/type check passes: `npm run lint`
-- [x] 3.2 Build succeeds: `npm run build`
-- [x] 3.3 Existing tests still pass: `npm test`
+- [x] 3.1 Lint/type check passes: `npm run lint` — 322a34b
+- [x] 3.2 Build succeeds: `npm run build` — 322a34b
+- [x] 3.3 Existing tests still pass: `npm test` — 322a34b
 
 #### Manual
 
-- [x] 3.4 Button shows headline + ranked explained list (urgency order); Watch shows "Monitor" + reason, no quantity
-- [x] 3.5 Key unset → labeled fallback with deterministic reasons (engine numbers intact) or clear 503
-- [x] 3.6 Account with nothing to reorder → "Nothing to reorder this week" headline
-- [x] 3.7 Button disabled while pending; network/500 surfaces a readable message
+- [x] 3.4 Button shows headline + ranked explained list (urgency order); Watch shows "Monitor" + reason, no quantity — 322a34b
+- [x] 3.5 Key unset → labeled fallback with deterministic reasons (engine numbers intact) or clear 503 — 322a34b
+- [x] 3.6 Account with nothing to reorder → "Nothing to reorder this week" headline — 322a34b
+- [x] 3.7 Button disabled while pending; network/500 surfaces a readable message — 322a34b
