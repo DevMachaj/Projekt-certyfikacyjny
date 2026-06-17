@@ -391,28 +391,28 @@ No data migration. New secret `ANTHROPIC_API_KEY` must be provisioned per enviro
 
 #### Automated
 
-- [x] 4.1 Lint/type check passes: `npm run lint`
-- [x] 4.2 Build succeeds: `npm run build`
-- [x] 4.3 Existing tests still pass: `npm test`
+- [x] 4.1 Lint/type check passes: `npm run lint` — 7a3f47f
+- [x] 4.2 Build succeeds: `npm run build` — 7a3f47f
+- [x] 4.3 Existing tests still pass: `npm test` — 7a3f47f
 
 #### Manual
 
-- [x] 4.4 Authed POST with products → 200 `source: "ai"`
-- [ ] 4.5 Key unset → 503 `{ error: "AI summary is not configured" }`
-- [ ] 4.6 No Understocked/Watch → 200 `source: "empty"`, no Anthropic call made
-- [x] 4.7 Unauthenticated → 401
+- [x] 4.4 Authed POST with products → 200 `source: "ai"` — 7a3f47f
+- [x] 4.5 Key unset → 503 `{ error: "AI summary is not configured" }` — 7a3f47f
+- [x] 4.6 No Understocked/Watch → 200 `source: "empty"`, no Anthropic call made — 7a3f47f
+- [x] 4.7 Unauthenticated → 401 — 7a3f47f
 
 ### Phase 5: Dashboard island (button + result panel)
 
 #### Automated
 
-- [ ] 5.1 Lint/type check passes: `npm run lint`
-- [ ] 5.2 Build succeeds: `npm run build`
-- [ ] 5.3 Existing tests still pass: `npm test`
+- [x] 5.1 Lint/type check passes: `npm run lint`
+- [x] 5.2 Build succeeds: `npm run build`
+- [x] 5.3 Existing tests still pass: `npm test`
 
 #### Manual
 
-- [ ] 5.4 Button shows AI plan with per-product actions; Watch shows "Monitor", no quantity
-- [ ] 5.5 Key unset → labeled fallback (engine numbers intact) or clear 503 message
-- [ ] 5.6 Account with nothing to reorder → "Nothing to reorder this week"
-- [ ] 5.7 Button disabled while pending; network/500 surfaces a readable message
+- [x] 5.4 Button shows AI plan with per-product actions; Watch shows "Monitor", no quantity
+- [x] 5.5 Key unset → labeled fallback (engine numbers intact) or clear 503 message
+- [x] 5.6 Account with nothing to reorder → "Nothing to reorder this week"
+- [x] 5.7 Button disabled while pending; network/500 surfaces a readable message

@@ -1,6 +1,7 @@
 ---
 import Layout from "@/layouts/Layout.astro";
 import ProductCard from "@/components/dashboard/ProductCard.astro";
+import { RestockingPlan } from "@/components/dashboard/RestockingPlan";
 import { createClient } from "@/lib/supabase";
 import { getProductsByUser, getSalesEntriesByUser } from "@/lib/db";
 import { classifyUserCatalog, groupProductsByState } from "@/lib/dashboard";
@@ -60,6 +61,8 @@ const hasProducts = groups.length > 0;
           </form>
         </div>
       </header>
+
+      <RestockingPlan client:load />
 
       {
         hasProducts ? (
