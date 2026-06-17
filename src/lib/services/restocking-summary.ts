@@ -8,26 +8,42 @@ const MAX_TOKENS = 1024;
 const TIMEOUT_MS = 10_000;
 
 /**
- * The model is asked for **only** the summary prose. The per-product `items` are always the
- * engine-built deterministic plan — never the model's output — so a hallucinated or prompt-injected
- * response can only affect wording, never a displayed product, quantity, or state. `additionalProperties`
- * is `false` and `weekly_summary` is required per the structured-outputs contract.
+ * The model returns **only** a headline plus a per-product `reason` keyed by product name. The
+ * item list, order, actions, and quantities are always the engine-built deterministic plan — the
+ * merge keys AI reasons onto engine items by exact name (`mergeAiReasons`), so a hallucinated or
+ * prompt-injected response can only affect the headline and reason prose, never a displayed
+ * product, quantity, action, or order. `additionalProperties: false` + `required` per the
+ * structured-outputs contract.
  */
-const SUMMARY_SCHEMA = {
+const PLAN_SCHEMA = {
   type: "object",
   additionalProperties: false,
   properties: {
-    weekly_summary: { type: "string" },
+    headline: { type: "string" },
+    items: {
+      type: "array",
+      items: {
+        type: "object",
+        additionalProperties: false,
+        properties: {
+          product: { type: "string" },
+          reason: { type: "string" },
+        },
+        required: ["product", "reason"],
+      },
+    },
   },
-  required: ["weekly_summary"],
+  required: ["headline", "items"],
 } as const;
 
 const SYSTEM_PROMPT =
-  "You are writing a short weekly restocking summary for a small-business owner. " +
-  "You will receive a JSON list of products the inventory engine has already decided on, each with a fixed action. " +
-  "Restate the engine's plan as one or two plain, encouraging sentences. " +
-  "Do NOT invent products, change quantities, or recompute anything — every product, number, and action is already decided. " +
-  "Return only the weekly_summary field.";
+  "You are writing a prioritized weekly restocking decision for a small-business owner. " +
+  "You receive a JSON list of products the inventory engine has already decided on, ordered most-urgent first, " +
+  "each with its state, action, units, daysOfStock (days of stock left), leadTime (reorder lead time in days), and velocity. " +
+  "Write a one-sentence headline framing the week's priorities, then for each product one short sentence explaining " +
+  "WHY it needs attention now, grounded in the supplied numbers (e.g. days of stock against the lead time). " +
+  "Do NOT change the order, the actions, the quantities, or invent products — those are already decided by the engine. " +
+  "Reference each product by its exact name in the items array.";
 
 /** Thrown when the AI summary feature is not configured (no `ANTHROPIC_API_KEY`). Routes map this to a 503. */
 export class AiUnconfiguredError extends Error {
@@ -42,13 +58,19 @@ export function isConfigured(): boolean {
   return Boolean(ANTHROPIC_API_KEY);
 }
 
+/** The AI-authored prose contract: a headline plus a reason per product (matched back by name). */
+export interface AiPlanResponse {
+  headline: string;
+  items: { product: string; reason: string }[];
+}
+
 /**
- * Validate an Anthropic Messages API response down to `{ weekly_summary: string }`. Pure and
- * total — returns `null` on any structural mismatch (missing/empty content, non-text block,
- * truncated or non-JSON text, missing or non-string `weekly_summary`) so the caller falls back.
- * The LLM is never asked for `items`; only the summary prose is read here.
+ * Validate an Anthropic Messages API response down to `{ headline, items: [{ product, reason }] }`.
+ * Pure and total — returns `null` on any structural mismatch (missing/empty content, non-text block,
+ * truncated or non-JSON text, missing/non-string `headline`, `items` not an array, or any item
+ * missing a string `product`/`reason`) so the caller falls back.
  */
-export function parseSummaryResponse(body: unknown): { weekly_summary: string } | null {
+export function parsePlanResponse(body: unknown): AiPlanResponse | null {
   if (typeof body !== "object" || body === null) return null;
   const content = (body as { content?: unknown }).content;
   if (!Array.isArray(content) || content.length === 0) return null;
@@ -64,20 +86,48 @@ export function parseSummaryResponse(body: unknown): { weekly_summary: string } 
     return null;
   }
   if (typeof parsed !== "object" || parsed === null) return null;
-  const weekly_summary = (parsed as { weekly_summary?: unknown }).weekly_summary;
-  if (typeof weekly_summary !== "string") return null;
-  return { weekly_summary };
+  const headline = (parsed as { headline?: unknown }).headline;
+  const rawItems = (parsed as { items?: unknown }).items;
+  if (typeof headline !== "string" || !Array.isArray(rawItems)) return null;
+
+  const items: { product: string; reason: string }[] = [];
+  for (const raw of rawItems) {
+    if (typeof raw !== "object" || raw === null) return null;
+    const product = (raw as { product?: unknown }).product;
+    const reason = (raw as { reason?: unknown }).reason;
+    if (typeof product !== "string" || typeof reason !== "string") return null;
+    items.push({ product, reason });
+  }
+  return { headline, items };
 }
 
 /**
- * Turn the engine's candidates into a plan with an AI-reworded summary, degrading to the
- * deterministic plan on any failure.
+ * Overlay the AI's prose onto the engine-built plan. The AI headline replaces `weekly_summary`, and
+ * each engine item's `reason` is replaced **only** when the AI supplied a reason for that exact
+ * `product` name. Engine items are the iteration source, so a product the AI invented is silently
+ * dropped, and an engine item the AI omitted keeps its deterministic reason. Order, action, units,
+ * and facts are never touched — they stay engine-authoritative.
+ */
+export function mergeAiReasons(plan: RestockPlan, parsed: AiPlanResponse): RestockPlan {
+  const reasonByProduct = new Map(parsed.items.map((it) => [it.product, it.reason]));
+  return {
+    weekly_summary: parsed.headline,
+    items: plan.items.map((item) => {
+      const aiReason = reasonByProduct.get(item.product);
+      return aiReason ? { ...item, reason: aiReason } : item;
+    }),
+  };
+}
+
+/**
+ * Turn the engine's candidates into a prioritized plan with an AI-authored headline and per-item
+ * reasons, degrading to the deterministic plan on any failure.
  *
- * The deterministic plan is built first and is the single source of truth: its `items` are returned
- * on **both** the `"ai"` and `"fallback"` paths, so the model only ever contributes summary prose.
- * Throws `AiUnconfiguredError` when no key is set (route → 503). Any other failure — non-2xx, a
- * `stop_reason` other than `end_turn`, unparseable output, network error, or timeout — is caught here
- * and resolves to `source: "fallback"`; it is never propagated.
+ * The deterministic plan is built first and is the single source of truth for order, items, actions,
+ * quantities, and facts; the AI contributes only the headline and reason prose, merged back by
+ * product name (`mergeAiReasons`). Throws `AiUnconfiguredError` when no key is set (route → 503). Any
+ * other failure — non-2xx, a `stop_reason` other than `end_turn`, unparseable output, network error,
+ * or timeout — is caught here and resolves to `source: "fallback"`; it is never propagated.
  */
 export async function summarizeRestockPlan(
   candidates: RestockCandidate[],
@@ -105,7 +155,7 @@ export async function summarizeRestockPlan(
         max_tokens: MAX_TOKENS,
         system: SYSTEM_PROMPT,
         messages: [{ role: "user", content: JSON.stringify({ candidates }) }],
-        output_config: { format: { type: "json_schema", schema: SUMMARY_SCHEMA } },
+        output_config: { format: { type: "json_schema", schema: PLAN_SCHEMA } },
       }),
       signal: controller.signal,
     });
@@ -115,10 +165,10 @@ export async function summarizeRestockPlan(
     // A "refusal" or "max_tokens" stop_reason yields unusable/truncated JSON — fall back.
     if (data.stop_reason !== "end_turn") return { ...plan, source: "fallback" };
 
-    const parsed = parseSummaryResponse(data);
+    const parsed = parsePlanResponse(data);
     if (!parsed) return { ...plan, source: "fallback" };
 
-    return { weekly_summary: parsed.weekly_summary, items: plan.items, source: "ai" };
+    return { ...mergeAiReasons(plan, parsed), source: "ai" };
   } catch {
     // Network error, timeout/abort, or malformed JSON — degrade to the deterministic plan.
     return { ...plan, source: "fallback" };

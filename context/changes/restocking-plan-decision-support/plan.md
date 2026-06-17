@@ -235,25 +235,25 @@ No data migration. No new secret (reuses `ANTHROPIC_API_KEY`). The response body
 
 #### Automated
 
-- [x] 1.1 Unit tests pass: `npm test`
-- [x] 1.2 Lint/type check passes: `npm run lint`
-- [x] 1.3 Build succeeds: `npm run build`
+- [x] 1.1 Unit tests pass: `npm test` — 9a51075
+- [x] 1.2 Lint/type check passes: `npm run lint` — 9a51075
+- [x] 1.3 Build succeeds: `npm run build` — 9a51075
 
 #### Manual
 
-- [x] 1.4 Test cases confirm urgency ordering and Watch reasons carry no order quantity
+- [x] 1.4 Test cases confirm urgency ordering and Watch reasons carry no order quantity — 9a51075
 
 ### Phase 2: Service + route — widen the AI contract
 
 #### Automated
 
-- [ ] 2.1 Unit tests pass: `npm test`
-- [ ] 2.2 Lint/type check passes: `npm run lint`
-- [ ] 2.3 Build succeeds with `ANTHROPIC_API_KEY` unset: `npm run build`
+- [x] 2.1 Unit tests pass: `npm test`
+- [x] 2.2 Lint/type check passes: `npm run lint`
+- [x] 2.3 Build succeeds with `ANTHROPIC_API_KEY` unset: `npm run build`
 
 #### Manual
 
-- [ ] 2.4 Live key → `source: "ai"` with headline + per-item reasons in engine order; unknown product dropped; unset → 503; non-200 → `source: "fallback"` with deterministic reasons
+- [x] 2.4 Live key → `source: "ai"` with headline + per-item reasons in engine order; unknown product dropped; unset → 503; non-200 → `source: "fallback"` with deterministic reasons
 
 ### Phase 3: Island — ranked list with "why" + inline facts
 
