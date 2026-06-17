@@ -17,11 +17,13 @@ async function readError(res: Response, fallback: string): Promise<string> {
 }
 
 /**
- * Dashboard island: a button that asks the route for the weekly restocking plan and renders it.
- * The engine builds the per-product `items` on every path; the AI only rewords `weekly_summary`
- * on the `"ai"` path. A `"fallback"` source shows a small "AI summary unavailable" note (engine
- * numbers intact); `"empty"` shows the nothing-to-reorder message. Mirrors the existing island
- * pattern (local `readError`, `useState` for pending/error).
+ * Dashboard island: a button that asks the route for the prioritized weekly restocking plan and
+ * renders it. The engine builds the items, their order, actions, quantities, and facts on every
+ * path; the AI authors only the `weekly_summary` headline and each item's `reason` on the `"ai"`
+ * path (deterministic otherwise). Each row pairs the reason with the engine's own facts line so AI
+ * prose sits next to verifiable numbers. A `"fallback"` source shows a small note (engine numbers
+ * intact); `"empty"` shows the nothing-to-reorder message. Mirrors the existing island pattern
+ * (local `readError`, `useState` for pending/error).
  */
 export function RestockingPlan() {
   const [pending, setPending] = useState(false);
@@ -54,7 +56,7 @@ export function RestockingPlan() {
             Weekly restocking plan
           </h2>
           <p className="mt-1 text-sm text-blue-100/60">
-            An AI-written summary of what to reorder, built from your engine classifications.
+            A prioritized weekly plan — what to reorder first and why, built from your engine classifications.
           </p>
         </div>
         <Button onClick={() => void generate()} disabled={pending}>
@@ -88,18 +90,23 @@ export function RestockingPlan() {
                   AI summary unavailable — showing a basic plan.
                 </p>
               )}
-              <p className="text-sm text-blue-100/90">{plan.weekly_summary}</p>
-              <ul className="mt-3 space-y-2">
+              <p className="text-sm font-medium text-blue-100/90">{plan.weekly_summary}</p>
+              <ol className="mt-3 space-y-2">
                 {plan.items.map((item) => (
-                  <li
-                    key={item.product}
-                    className="flex items-center justify-between rounded-lg border border-white/10 bg-white/5 px-3 py-2 text-sm"
-                  >
-                    <span className="font-medium text-white">{item.product}</span>
-                    <span className="text-blue-100/70">{item.action}</span>
+                  <li key={item.product} className="rounded-lg border border-white/10 bg-white/5 px-3 py-2 text-sm">
+                    <div className="flex flex-wrap items-center justify-between gap-2">
+                      <span className="font-medium text-white">{item.product}</span>
+                      <span className="text-blue-100/70">{item.action}</span>
+                    </div>
+                    <p className="mt-1 text-blue-100/80">{item.reason}</p>
+                    {item.daysOfStock != null && item.leadTime != null && (
+                      <p className="mt-1 text-xs text-blue-100/50">
+                        {Math.round(item.daysOfStock)}d stock · {item.leadTime}d lead time
+                      </p>
+                    )}
                   </li>
                 ))}
-              </ul>
+              </ol>
             </>
           )}
         </div>

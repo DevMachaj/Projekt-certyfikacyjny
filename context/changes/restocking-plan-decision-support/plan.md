@@ -247,25 +247,25 @@ No data migration. No new secret (reuses `ANTHROPIC_API_KEY`). The response body
 
 #### Automated
 
-- [x] 2.1 Unit tests pass: `npm test`
-- [x] 2.2 Lint/type check passes: `npm run lint`
-- [x] 2.3 Build succeeds with `ANTHROPIC_API_KEY` unset: `npm run build`
+- [x] 2.1 Unit tests pass: `npm test` — e9fe1a5
+- [x] 2.2 Lint/type check passes: `npm run lint` — e9fe1a5
+- [x] 2.3 Build succeeds with `ANTHROPIC_API_KEY` unset: `npm run build` — e9fe1a5
 
 #### Manual
 
-- [x] 2.4 Live key → `source: "ai"` with headline + per-item reasons in engine order; unknown product dropped; unset → 503; non-200 → `source: "fallback"` with deterministic reasons
+- [x] 2.4 Live key → `source: "ai"` with headline + per-item reasons in engine order; unknown product dropped; unset → 503; non-200 → `source: "fallback"` with deterministic reasons — e9fe1a5
 
 ### Phase 3: Island — ranked list with "why" + inline facts
 
 #### Automated
 
-- [ ] 3.1 Lint/type check passes: `npm run lint`
-- [ ] 3.2 Build succeeds: `npm run build`
-- [ ] 3.3 Existing tests still pass: `npm test`
+- [x] 3.1 Lint/type check passes: `npm run lint`
+- [x] 3.2 Build succeeds: `npm run build`
+- [x] 3.3 Existing tests still pass: `npm test`
 
 #### Manual
 
-- [ ] 3.4 Button shows headline + ranked explained list (urgency order); Watch shows "Monitor" + reason, no quantity
-- [ ] 3.5 Key unset → labeled fallback with deterministic reasons (engine numbers intact) or clear 503
-- [ ] 3.6 Account with nothing to reorder → "Nothing to reorder this week" headline
-- [ ] 3.7 Button disabled while pending; network/500 surfaces a readable message
+- [x] 3.4 Button shows headline + ranked explained list (urgency order); Watch shows "Monitor" + reason, no quantity
+- [x] 3.5 Key unset → labeled fallback with deterministic reasons (engine numbers intact) or clear 503
+- [x] 3.6 Account with nothing to reorder → "Nothing to reorder this week" headline
+- [x] 3.7 Button disabled while pending; network/500 surfaces a readable message
