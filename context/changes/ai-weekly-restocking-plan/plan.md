@@ -354,38 +354,38 @@ No data migration. New secret `ANTHROPIC_API_KEY` must be provisioned per enviro
 
 #### Automated
 
-- [x] 1.1 Unit tests pass: `npm test`
-- [x] 1.2 Type checking / lint passes: `npm run lint`
-- [x] 1.3 Production build succeeds: `npm run build`
+- [x] 1.1 Unit tests pass: `npm test` — 811093f
+- [x] 1.2 Type checking / lint passes: `npm run lint` — 811093f
+- [x] 1.3 Production build succeeds: `npm run build` — 811093f
 
 #### Manual
 
-- [x] 1.4 `/dashboard` renders identically for an account with sales data
-- [x] 1.5 Empty/unconfigured states still degrade gracefully (no 500)
+- [x] 1.4 `/dashboard` renders identically for an account with sales data — 811093f
+- [x] 1.5 Empty/unconfigured states still degrade gracefully (no 500) — 811093f
 
 ### Phase 2: Pure restock selection + deterministic plan
 
 #### Automated
 
-- [ ] 2.1 Unit tests pass: `npm test`
-- [ ] 2.2 Lint/type check passes: `npm run lint`
-- [ ] 2.3 Build succeeds: `npm run build`
+- [x] 2.1 Unit tests pass: `npm test` — 29b5153
+- [x] 2.2 Lint/type check passes: `npm run lint` — 29b5153
+- [x] 2.3 Build succeeds: `npm run build` — 29b5153
 
 #### Manual
 
-- [ ] 2.4 Test cases confirm Watch never emits a quantity and excluded states are excluded
+- [x] 2.4 Test cases confirm Watch never emits a quantity and excluded states are excluded — 29b5153
 
 ### Phase 3: Anthropic service module + secret wiring
 
 #### Automated
 
-- [ ] 3.1 Unit tests pass: `npm test`
-- [ ] 3.2 Lint/type check passes: `npm run lint`
-- [ ] 3.3 Build succeeds with `ANTHROPIC_API_KEY` unset (confirms `optional`): `npm run build`
+- [x] 3.1 Unit tests pass: `npm test`
+- [x] 3.2 Lint/type check passes: `npm run lint`
+- [x] 3.3 Build succeeds with `ANTHROPIC_API_KEY` unset (confirms `optional`): `npm run build`
 
 #### Manual
 
-- [ ] 3.4 Live key → `source: "ai"`; unset → `AiUnconfiguredError`; simulated non-200 → `source: "fallback"`
+- [x] 3.4 Live key → `source: "ai"`; unset → `AiUnconfiguredError`; simulated non-200 → `source: "fallback"`
 
 ### Phase 4: `POST /api/restocking-plan` route
 
