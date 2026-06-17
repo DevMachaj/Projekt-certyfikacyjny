@@ -15,7 +15,7 @@ hints:
   has_auth: true
   has_payments: false
   has_realtime: false
-  has_ai: false
+  has_ai: true
   has_background_jobs: false
 ---
 

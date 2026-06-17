@@ -196,7 +196,7 @@ Flat user model for MVP: one account maps to one store. No role separation — t
 
 - **No shop platform integrations** — sales data is entered manually. No API sync or webhook listeners for shop platforms.
 - **No multi-store management** — one account manages exactly one store. No switch-store UI or cross-store aggregates.
-- **No demand forecasting** — StockHelper classifies current inventory state from historical data. No future velocity projections, seasonal curves, or demand prediction.
+- **No demand forecasting** — StockHelper classifies current inventory state from historical data, and AI generates a restocking summary from those current classifications. It does NOT predict future demand, project future velocity, or model seasonality.
 - **No purchasing action execution** — the app generates a recommendation only. No purchase orders, supplier emails, or procurement tool integrations.
 - **No mobile layout** — desktop browsers only. No touch UX, small-screen layouts, or PWA features.
 

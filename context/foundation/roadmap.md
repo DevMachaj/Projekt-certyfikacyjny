@@ -3,7 +3,7 @@ project: StockHelper
 version: 1
 status: draft
 created: 2026-05-30
-updated: 2026-05-30
+updated: 2026-06-17
 prd_version: 1
 main_goal: market-feedback
 top_blocker: capacity
@@ -29,10 +29,14 @@ Small e-commerce store owners have sales history in their shop platforms (Shopif
 
 | ID   | Change ID                      | Outcome (user can …)                                                     | Prerequisites | PRD refs                                             | Status   |
 | ---- | ------------------------------ | ------------------------------------------------------------------------ | ------------- | ---------------------------------------------------- | -------- |
-| F-01 | supabase-schema-and-types      | (foundation) schema + RLS policies + domain types in place               | —             | NFR-003, FR-001, FR-002, FR-003, FR-005              | ready    |
-| S-01 | product-catalog-crud           | add, edit, and delete products in their catalog                          | F-01          | US-02, FR-003, FR-004, FR-011                        | proposed |
-| S-02 | sales-entry-and-classification | log and delete sales entries and see the classification + recommendation | F-01, S-01    | US-01, US-03, FR-005, FR-006, FR-007, FR-008, FR-012 | proposed |
-| S-03 | classification-dashboard       | view all products grouped by classification state on the dashboard       | S-02          | FR-009                                               | proposed |
+| F-01 | supabase-schema-and-types      | (foundation) schema + RLS policies + domain types in place               | —             | NFR-003, FR-001, FR-002, FR-003, FR-005              | impl_reviewed |
+| S-01 | product-catalog-crud           | add, edit, and delete products in their catalog                          | F-01          | US-02, FR-003, FR-004, FR-011                        | impl_reviewed |
+| S-02 | sales-entry-and-classification | log and delete sales entries and see the classification + recommendation | F-01, S-01    | US-01, US-03, FR-005, FR-006, FR-007, FR-008, FR-012 | impl_reviewed |
+| S-03 | classification-dashboard       | view all products grouped by classification state on the dashboard       | S-02          | FR-009                                               | impl_reviewed |
+| S-04 | ai-weekly-restocking-plan      | click a button to get one AI-generated weekly restocking summary         | S-03          | US-01, FR-006, FR-007                                | impl_reviewed |
+| S-05 | restocking-plan-decision-support | get a prioritized, explained weekly restocking decision (not just a restatement) | S-04    | US-01, FR-006, FR-007                                | implemented |
+| S-06 | ux-improvements                | bulk-action a candidate review, reset a review session, see clear loading states | F-01    | NFR-001                                              | planned     |
+| S-07 | account-deletion-and-data-retention | delete their account and have associated data removed per a retention policy | F-01    | NFR-003, FR-001, FR-002                              | planned     |
 
 ## Baseline
 
@@ -59,7 +63,7 @@ Foundations below assume these are present and do NOT re-scaffold them.
 - **Blockers:** —
 - **Unknowns:** —
 - **Risk:** Schema decisions (column types for `start_date`/`end_date` in `sales_entries`, whether `lead_time_days` is nullable, cascade-delete behavior from `products` → `sales_entries`) propagate to all downstream slices; an incorrect schema requires a Supabase migration plus a type refactor across the codebase. Sequenced first to contain this risk before any domain logic is written.
-- **Status:** ready
+- **Status:** impl_reviewed
 
 ## Slices
 
@@ -73,7 +77,7 @@ Foundations below assume these are present and do NOT re-scaffold them.
 - **Blockers:** —
 - **Unknowns:** —
 - **Risk:** Cascade-delete behavior (FR-011: deleting a product must remove all associated sales entries) must be implemented at the database level (foreign key cascade) or explicitly in the API handler; misimplementation risks orphaned `sales_entries` rows that later classification queries silently pick up, producing wrong velocity calculations.
-- **Status:** proposed
+- **Status:** impl_reviewed
 
 ### S-02: Sales entry logging and velocity classification _(North star)_
 
@@ -86,7 +90,7 @@ Foundations below assume these are present and do NOT re-scaffold them.
 - **Unknowns:**
   - Where should date-range overlap validation live — database constraint, API-layer check, or both? Owner: developer. Block: no (PRD specifies the outcome clearly; the implementation decision belongs to `/10x-plan`).
 - **Risk:** The overlap validation (FR-005) is the trickiest implementation detail in the PRD — a gap silently corrupts the velocity calculation that all classification thresholds depend on. NFR-001 requires classification to update within 1 second; the computation is arithmetic but the full Supabase round-trip (write entry → re-query all entries → compute velocity → render) must fit within that window.
-- **Status:** proposed
+- **Status:** impl_reviewed
 
 ### S-03: Classification dashboard
 
@@ -98,7 +102,57 @@ Foundations below assume these are present and do NOT re-scaffold them.
 - **Blockers:** —
 - **Unknowns:** —
 - **Risk:** Low implementation risk — the grouping and sort order are fully specified in the PRD. The main risk is query design: fetching all products with their current classification in a single efficient query (or a predictable set of queries) rather than N+1 per product; this matters for the 1-second NFR-001 constraint as the catalog grows.
-- **Status:** proposed
+- **Status:** impl_reviewed
+
+### S-04: AI weekly restocking plan
+
+- **Outcome:** owner can click a button and get one AI-generated weekly restocking summary of what to reorder, built from the products the deterministic engine has already classified as Understocked or Watch. The engine still makes the business decision (which products need restocking and the recommended quantity); the AI only summarizes those existing recommendations into a single readable weekly plan.
+- **Change ID:** ai-weekly-restocking-plan
+- **PRD refs:** US-01 (the classification + recommendation the summary is built from), FR-006 (the Understocked / Watch classification states that select which products enter the summary), FR-007 (the recommended action — "Order X units" — the summary restates per product)
+- **Prerequisites:** S-03
+- **Parallel with:** —
+- **Blockers:** —
+- **Unknowns:** —
+- **Risk:** First slice that integrates an LLM. The deterministic engine still makes the business decision — which products are Understocked/Watch and the reorder quantity — and the AI only summarizes that existing output, so a bad or hallucinated LLM response can mislead the wording of the summary but cannot corrupt the underlying recommendation or classification.
+- **Status:** impl_reviewed
+
+### S-05: Restocking plan decision support
+
+- **Outcome:** the AI weekly restocking plan now **prioritizes and explains** instead of merely restating the engine's output — the deterministic engine orders restock candidates by urgency and computes the supporting facts, and the AI adds a weekly headline plus a one-line "why" per product. Quantities, states, actions, selection, and ordering stay engine-authoritative; the AI contributes prose only, with a deterministic-reason fallback when the LLM is unavailable. Enhancement to S-04.
+- **Change ID:** restocking-plan-decision-support
+- **PRD refs:** US-01 (the restocking decision the plan now supports rather than restates), FR-006 (the Understocked / Watch states that select candidates), FR-007 (the recommended action / quantity the plan prioritizes and explains)
+- **Prerequisites:** S-04
+- **Parallel with:** —
+- **Blockers:** —
+- **Unknowns:** —
+- **Risk:** The engine remains the sole author of which products to restock, the quantities, and the ordering; the AI only adds prose, so a bad or hallucinated LLM response can degrade the wording of the headline or "why" line but cannot corrupt the recommendation, selection, or order. The deterministic fallback keeps the panel strictly better than the dashboard tiles when the LLM is unavailable.
+- **Status:** implemented — framed in `context/changes/ai-weekly-restocking-plan/frame.md` (HIGH confidence); plan in `context/changes/restocking-plan-decision-support/plan.md`. (`/10x-archive` will flip this to `done`.)
+
+### S-06: UX improvements
+
+- **Outcome:** owner can apply bulk actions during candidate review (instead of one-at-a-time), reset a review session to start over, and see clear loading states while data is fetching — closing three friction points observed while building S-01 through S-04.
+- **Change ID:** ux-improvements
+- **PRD refs:** NFR-001 (perceived responsiveness — explicit loading states keep the UI legible while the sub-1-second update completes). The bulk-action and reset-session gaps are field-discovered UX needs, not in PRD v1.
+- **Prerequisites:** F-01
+- **Parallel with:** S-07 (both depend only on F-01 and are independent of the core classification/restocking sequence)
+- **Blockers:** —
+- **Unknowns:**
+  - Which screens get bulk actions and what the action set is (e.g. bulk delete) — Owner: developer. Block: no (`/10x-plan` scopes the surface).
+- **Risk:** Low — surface-level UX work with no schema or classification-engine changes. The main risk is scope creep: "UX improvements" is broad, so the plan should fix the action set to the three observed gaps (bulk actions, session reset, loading states) and defer anything else to the backlog.
+- **Status:** planned
+
+### S-07: Account deletion and data retention
+
+- **Outcome:** owner can permanently delete their account, with all associated data (products, sales entries) removed according to a defined retention policy. A separate project area from the classification / restocking core — it concerns the account lifecycle and data-retention contract, not velocity logic.
+- **Change ID:** account-deletion-and-data-retention
+- **PRD refs:** NFR-003 (data isolation — deletion is the end-of-lifecycle half of the same per-user data contract), FR-001 / FR-002 (account lifecycle the deletion path extends). The account-deletion flow and retention policy are not specified in PRD v1; this slice introduces them.
+- **Prerequisites:** F-01
+- **Parallel with:** S-06 (separate project area; independent of the classification and restocking slices, and both depend only on F-01)
+- **Blockers:** —
+- **Unknowns:**
+  - Retention policy: hard delete vs. soft delete with a retention window, and any legal/GDPR-style requirements. Owner: product. Block: **yes** — the policy must be decided before the deletion path can be planned, since it determines the data model and the irreversibility of the operation.
+- **Risk:** Account deletion is destructive and irreversible; it must cascade correctly (reusing the F-01 / S-01 cascade behavior so no `products` or `sales_entries` rows are orphaned) and honor whatever retention requirements apply. Mis-scoping retention (hard vs. soft delete) has compliance implications that are expensive to reverse after launch.
+- **Status:** planned
 
 ## Backlog Handoff
 
@@ -108,6 +162,10 @@ Foundations below assume these are present and do NOT re-scaffold them.
 | S-01       | product-catalog-crud           | Feature: product catalog — add / edit / delete                      | no                    | Requires F-01 to be done first            |
 | S-02       | sales-entry-and-classification | Feature: sales entry logging + velocity classification (north star) | no                    | Requires F-01 + S-01 to be done first     |
 | S-03       | classification-dashboard       | Feature: dashboard grouped by classification state                  | no                    | Requires S-02 to be done first            |
+| S-04       | ai-weekly-restocking-plan      | Feature: AI weekly restocking plan (LLM summary)                    | no                    | Requires S-03 to be done first            |
+| S-05       | restocking-plan-decision-support | Enhancement: restocking plan — prioritize + explain               | n/a                   | Implemented; see plan.md                  |
+| S-06       | ux-improvements                | UX: bulk review actions, session reset, loading states              | no                    | Requires F-01; parallel with S-04         |
+| S-07       | account-deletion-and-data-retention | Feature: account deletion + data retention policy              | no                    | Separate area; needs retention policy decided first |
 
 ## Open Roadmap Questions
 
