@@ -113,7 +113,7 @@ describe("deterministicReason", () => {
 
 describe("buildDeterministicPlan", () => {
   it("returns the empty-case summary and no items for []", () => {
-    expect(buildDeterministicPlan([])).toEqual({ weekly_summary: "Nothing to reorder this week.", items: [] });
+    expect(buildDeterministicPlan([])).toEqual({ headline: "Nothing to reorder this week.", items: [] });
   });
 
   it("enriches each candidate into an item with action, deterministic reason, and facts", () => {
@@ -134,7 +134,7 @@ describe("buildDeterministicPlan", () => {
     });
     expect(plan.items[0].reason).toContain("2 days of stock");
     expect(plan.items[1]).toMatchObject({ product: "gadget", action: "Monitor", units: null, state: "Watch" });
-    expect(plan.weekly_summary).toContain("1 product to reorder");
-    expect(plan.weekly_summary).toContain("1 to monitor");
+    expect(plan.headline).toContain("1 product to reorder");
+    expect(plan.headline).toContain("1 to monitor");
   });
 });

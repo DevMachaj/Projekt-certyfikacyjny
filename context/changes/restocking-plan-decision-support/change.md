@@ -1,7 +1,7 @@
 ---
 change_id: restocking-plan-decision-support
 title: Restocking plan — from restatement to a prioritized, explained weekly decision
-status: implemented
+status: impl_reviewed
 created: 2026-06-17
 updated: 2026-06-17
 archived_at: null

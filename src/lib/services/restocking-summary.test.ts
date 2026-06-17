@@ -49,7 +49,7 @@ describe("parsePlanResponse", () => {
 
 describe("mergeAiReasons", () => {
   const plan: RestockPlan = {
-    weekly_summary: "Engine summary.",
+    headline: "Engine summary.",
     items: [item("Widget", "deterministic widget reason"), item("Gadget", "deterministic gadget reason")],
   };
 
@@ -61,7 +61,7 @@ describe("mergeAiReasons", () => {
         { product: "Gadget", reason: "AI gadget reason" },
       ],
     });
-    expect(merged.weekly_summary).toBe("AI headline.");
+    expect(merged.headline).toBe("AI headline.");
     expect(merged.items.map((i) => i.reason)).toEqual(["AI widget reason", "AI gadget reason"]);
   });
 

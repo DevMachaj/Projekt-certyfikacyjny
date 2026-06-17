@@ -29,7 +29,7 @@ export interface RestockPlanItem {
 
 export interface RestockPlan {
   /** One-sentence headline framing the week. Deterministic by default; AI-authored on the "ai" path. */
-  weekly_summary: string;
+  headline: string;
   items: RestockPlanItem[];
 }
 
@@ -100,7 +100,7 @@ export function deterministicReason(c: RestockCandidate): string {
  */
 export function buildDeterministicPlan(candidates: RestockCandidate[]): RestockPlan {
   if (candidates.length === 0) {
-    return { weekly_summary: "Nothing to reorder this week.", items: [] };
+    return { headline: "Nothing to reorder this week.", items: [] };
   }
 
   const toOrder = candidates.filter((c) => c.state === "Understocked").length;
@@ -109,7 +109,7 @@ export function buildDeterministicPlan(candidates: RestockCandidate[]): RestockP
   const parts: string[] = [];
   if (toOrder > 0) parts.push(`${toOrder} product${toOrder === 1 ? "" : "s"} to reorder`);
   if (toMonitor > 0) parts.push(`${toMonitor} to monitor`);
-  const weekly_summary = `Weekly restocking plan: ${parts.join(" and ")} — listed most urgent first.`;
+  const headline = `Weekly restocking plan: ${parts.join(" and ")} — listed most urgent first.`;
 
   const items: RestockPlanItem[] = candidates.map((c) => ({
     product: c.product,
@@ -120,5 +120,5 @@ export function buildDeterministicPlan(candidates: RestockCandidate[]): RestockP
     units: c.units,
     state: c.state,
   }));
-  return { weekly_summary, items };
+  return { headline, items };
 }

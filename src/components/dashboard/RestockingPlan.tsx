@@ -19,7 +19,7 @@ async function readError(res: Response, fallback: string): Promise<string> {
 /**
  * Dashboard island: a button that asks the route for the prioritized weekly restocking plan and
  * renders it. The engine builds the items, their order, actions, quantities, and facts on every
- * path; the AI authors only the `weekly_summary` headline and each item's `reason` on the `"ai"`
+ * path; the AI authors only the `headline` and each item's `reason` on the `"ai"`
  * path (deterministic otherwise). Each row pairs the reason with the engine's own facts line so AI
  * prose sits next to verifiable numbers. A `"fallback"` source shows a small note (engine numbers
  * intact); `"empty"` shows the nothing-to-reorder message. Mirrors the existing island pattern
@@ -90,7 +90,7 @@ export function RestockingPlan() {
                   AI summary unavailable — showing a basic plan.
                 </p>
               )}
-              <p className="text-sm font-medium text-blue-100/90">{plan.weekly_summary}</p>
+              <p className="text-sm font-medium text-blue-100/90">{plan.headline}</p>
               <ol className="mt-3 space-y-2">
                 {plan.items.map((item) => (
                   <li key={item.product} className="rounded-lg border border-white/10 bg-white/5 px-3 py-2 text-sm">

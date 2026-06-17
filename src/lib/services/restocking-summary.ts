@@ -102,7 +102,7 @@ export function parsePlanResponse(body: unknown): AiPlanResponse | null {
 }
 
 /**
- * Overlay the AI's prose onto the engine-built plan. The AI headline replaces `weekly_summary`, and
+ * Overlay the AI's prose onto the engine-built plan. The AI headline replaces the engine `headline`, and
  * each engine item's `reason` is replaced **only** when the AI supplied a reason for that exact
  * `product` name. Engine items are the iteration source, so a product the AI invented is silently
  * dropped, and an engine item the AI omitted keeps its deterministic reason. Order, action, units,
@@ -111,7 +111,7 @@ export function parsePlanResponse(body: unknown): AiPlanResponse | null {
 export function mergeAiReasons(plan: RestockPlan, parsed: AiPlanResponse): RestockPlan {
   const reasonByProduct = new Map(parsed.items.map((it) => [it.product, it.reason]));
   return {
-    weekly_summary: parsed.headline,
+    headline: parsed.headline,
     items: plan.items.map((item) => {
       const aiReason = reasonByProduct.get(item.product);
       return aiReason ? { ...item, reason: aiReason } : item;
