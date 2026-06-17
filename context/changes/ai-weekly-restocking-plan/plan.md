@@ -379,28 +379,28 @@ No data migration. New secret `ANTHROPIC_API_KEY` must be provisioned per enviro
 
 #### Automated
 
-- [x] 3.1 Unit tests pass: `npm test`
-- [x] 3.2 Lint/type check passes: `npm run lint`
-- [x] 3.3 Build succeeds with `ANTHROPIC_API_KEY` unset (confirms `optional`): `npm run build`
+- [x] 3.1 Unit tests pass: `npm test` — 3fbb1fe
+- [x] 3.2 Lint/type check passes: `npm run lint` — 3fbb1fe
+- [x] 3.3 Build succeeds with `ANTHROPIC_API_KEY` unset (confirms `optional`): `npm run build` — 3fbb1fe
 
 #### Manual
 
-- [x] 3.4 Live key → `source: "ai"`; unset → `AiUnconfiguredError`; simulated non-200 → `source: "fallback"`
+- [x] 3.4 Live key → `source: "ai"`; unset → `AiUnconfiguredError`; simulated non-200 → `source: "fallback"` — 3fbb1fe
 
 ### Phase 4: `POST /api/restocking-plan` route
 
 #### Automated
 
-- [ ] 4.1 Lint/type check passes: `npm run lint`
-- [ ] 4.2 Build succeeds: `npm run build`
-- [ ] 4.3 Existing tests still pass: `npm test`
+- [x] 4.1 Lint/type check passes: `npm run lint`
+- [x] 4.2 Build succeeds: `npm run build`
+- [x] 4.3 Existing tests still pass: `npm test`
 
 #### Manual
 
-- [ ] 4.4 Authed POST with products → 200 `source: "ai"`
+- [x] 4.4 Authed POST with products → 200 `source: "ai"`
 - [ ] 4.5 Key unset → 503 `{ error: "AI summary is not configured" }`
 - [ ] 4.6 No Understocked/Watch → 200 `source: "empty"`, no Anthropic call made
-- [ ] 4.7 Unauthenticated → 401
+- [x] 4.7 Unauthenticated → 401
 
 ### Phase 5: Dashboard island (button + result panel)
 
