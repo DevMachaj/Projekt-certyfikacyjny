@@ -1,7 +1,7 @@
 ---
 change_id: ai-weekly-restocking-plan
 title: AI-generated weekly restocking summary from existing classifications
-status: implementing
+status: implemented
 created: 2026-06-07
 updated: 2026-06-17
 archived_at: null

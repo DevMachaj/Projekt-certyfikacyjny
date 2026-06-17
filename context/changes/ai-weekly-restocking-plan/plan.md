@@ -406,13 +406,13 @@ No data migration. New secret `ANTHROPIC_API_KEY` must be provisioned per enviro
 
 #### Automated
 
-- [x] 5.1 Lint/type check passes: `npm run lint`
-- [x] 5.2 Build succeeds: `npm run build`
-- [x] 5.3 Existing tests still pass: `npm test`
+- [x] 5.1 Lint/type check passes: `npm run lint` — 838e154
+- [x] 5.2 Build succeeds: `npm run build` — 838e154
+- [x] 5.3 Existing tests still pass: `npm test` — 838e154
 
 #### Manual
 
-- [x] 5.4 Button shows AI plan with per-product actions; Watch shows "Monitor", no quantity
-- [x] 5.5 Key unset → labeled fallback (engine numbers intact) or clear 503 message
-- [x] 5.6 Account with nothing to reorder → "Nothing to reorder this week"
-- [x] 5.7 Button disabled while pending; network/500 surfaces a readable message
+- [x] 5.4 Button shows AI plan with per-product actions; Watch shows "Monitor", no quantity — 838e154
+- [x] 5.5 Key unset → labeled fallback (engine numbers intact) or clear 503 message — 838e154
+- [x] 5.6 Account with nothing to reorder → "Nothing to reorder this week" — 838e154
+- [x] 5.7 Button disabled while pending; network/500 surfaces a readable message — 838e154
