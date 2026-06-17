@@ -13,50 +13,84 @@ export interface RestockCandidate {
   units: number | null; // Understocked only; always null for Watch
   action: string; // deterministic: "Order N units" | "Monitor"
   daysOfStock: number | null;
+  leadTime: number | null; // product.lead_time_days; drives the urgency ordering
   velocity: number | null;
 }
 
 export interface RestockPlanItem {
   product: string;
-  action: string;
+  action: string; // engine-built; never AI-authored
+  reason: string; // deterministic by default; AI-authored on the "ai" path
+  daysOfStock: number | null;
+  leadTime: number | null;
+  units: number | null;
+  state: "Understocked" | "Watch";
 }
 
 export interface RestockPlan {
+  /** One-sentence headline framing the week. Deterministic by default; AI-authored on the "ai" path. */
   weekly_summary: string;
   items: RestockPlanItem[];
 }
 
-/** The two restock-relevant states, in display precedence: Understocked before Watch (per STATE_ORDER). */
-const RESTOCK_STATES = ["Understocked", "Watch"] as const;
+/** The two restock-relevant states. */
+const RESTOCK_STATES: ReadonlySet<string> = new Set(["Understocked", "Watch"]);
 
 /**
- * Select the products that belong in the weekly restocking plan and fix each one's action
- * deterministically. Keeps only `Understocked` and `Watch`, with all Understocked (in input order)
- * before all Watch (in input order) — matching the dashboard's STATE_ORDER precedence.
+ * Urgency = days of slack before stock falls below the lead-time coverage point
+ * (`daysOfStock − leadTime`). Smaller (more negative) is more urgent. Understocked
+ * (`daysOfStock < leadTime`) is always negative and Watch (`leadTime ≤ daysOfStock < 2·leadTime`)
+ * is in `[0, leadTime)`, so Understocked sorts ahead of Watch for free. Missing facts sort last.
+ */
+function urgency(c: RestockCandidate): number {
+  if (c.daysOfStock == null || c.leadTime == null) return Number.POSITIVE_INFINITY;
+  return c.daysOfStock - c.leadTime;
+}
+
+/**
+ * Select the products that belong in the weekly restocking plan, fix each one's action
+ * deterministically, and order them **most urgent first**. Keeps only `Understocked` and `Watch`.
  *
  * The action wording is engine-derived, never LLM-derived: `Understocked` reuses the shared
  * `recommendationText` (→ "Order N units") so it cannot fork from the dashboard/detail views;
- * `Watch` is a literal "Monitor" and never carries a quantity.
+ * `Watch` is a literal "Monitor" and never carries a quantity. Ordering is deterministic (the AI
+ * never reorders); ties preserve input order (the caller passes products name-sorted).
  */
 export function selectRestockCandidates(items: ProductClassification[]): RestockCandidate[] {
-  const candidates: RestockCandidate[] = [];
-  for (const state of RESTOCK_STATES) {
-    for (const { product, classification } of items) {
-      if (classification.state !== state) continue;
+  const candidates: RestockCandidate[] = items
+    .filter(({ classification }) => RESTOCK_STATES.has(classification.state))
+    .map(({ product, classification }) => {
+      const state = classification.state as "Understocked" | "Watch";
       const units = classification.recommendation.kind === "order" ? classification.recommendation.units : null;
-      const action =
-        state === "Understocked" ? recommendationText(classification.recommendation, classification.state) : "Monitor";
-      candidates.push({
+      const action = state === "Understocked" ? recommendationText(classification.recommendation, state) : "Monitor";
+      return {
         product: product.name,
         state,
         units,
         action,
         daysOfStock: classification.daysOfStock,
+        leadTime: product.lead_time_days,
         velocity: classification.velocity,
-      });
-    }
+      };
+    });
+
+  // Stable sort (Array.prototype.sort is stable) → ties keep input (alphabetical) order.
+  return candidates.sort((a, b) => urgency(a) - urgency(b));
+}
+
+/**
+ * A factual, deterministic one-line reason built only from engine numbers — the default `reason`
+ * and the fallback when the LLM is unavailable. Never invents a quantity; for `Watch` it carries no
+ * order quantity (Watch never has `units`).
+ */
+export function deterministicReason(c: RestockCandidate): string {
+  const dos = c.daysOfStock == null ? null : Math.round(c.daysOfStock);
+  if (c.state === "Understocked") {
+    if (dos == null || c.leadTime == null) return "Stock is below the reorder point — order now.";
+    return `Only ${dos} day${dos === 1 ? "" : "s"} of stock left, below the ${c.leadTime}-day lead time — order now.`;
   }
-  return candidates;
+  if (dos == null || c.leadTime == null) return "Stock is getting low — keep an eye on it.";
+  return `${dos} days of stock against a ${c.leadTime}-day lead time — reorder soon.`;
 }
 
 /**
@@ -75,8 +109,16 @@ export function buildDeterministicPlan(candidates: RestockCandidate[]): RestockP
   const parts: string[] = [];
   if (toOrder > 0) parts.push(`${toOrder} product${toOrder === 1 ? "" : "s"} to reorder`);
   if (toMonitor > 0) parts.push(`${toMonitor} to monitor`);
-  const weekly_summary = `Weekly restocking plan: ${parts.join(" and ")}.`;
+  const weekly_summary = `Weekly restocking plan: ${parts.join(" and ")} — listed most urgent first.`;
 
-  const items = candidates.map((c) => ({ product: c.product, action: c.action }));
+  const items: RestockPlanItem[] = candidates.map((c) => ({
+    product: c.product,
+    action: c.action,
+    reason: deterministicReason(c),
+    daysOfStock: c.daysOfStock,
+    leadTime: c.leadTime,
+    units: c.units,
+    state: c.state,
+  }));
   return { weekly_summary, items };
 }

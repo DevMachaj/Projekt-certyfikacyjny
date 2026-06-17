@@ -1,47 +1,52 @@
 import { describe, expect, it } from "vitest";
 import type { ClassificationResult, Recommendation } from "@/lib/classification";
 import type { ProductClassification } from "@/lib/dashboard";
-import { buildDeterministicPlan, selectRestockCandidates } from "@/lib/restocking";
+import { buildDeterministicPlan, deterministicReason, selectRestockCandidates } from "@/lib/restocking";
 import type { ClassificationState, Product } from "@/types";
 
-function makeProduct(name: string): Product {
+interface ItemOpts {
+  recommendation?: Recommendation;
+  daysOfStock?: number;
+  leadTime?: number | null;
+  velocity?: number;
+}
+
+function makeProduct(name: string, leadTime: number | null): Product {
   return {
     id: name,
     user_id: "u1",
     name,
     stock_quantity: 10,
-    lead_time_days: 5,
+    lead_time_days: leadTime,
     buffer_days: 7,
     created_at: "2026-01-01T00:00:00Z",
     updated_at: "2026-01-01T00:00:00Z",
   };
 }
 
-function makeItem(
-  name: string,
-  state: ClassificationState,
-  recommendation: Recommendation = { kind: "none" },
-  extra: Partial<ClassificationResult> = {},
-): ProductClassification {
+function makeItem(name: string, state: ClassificationState, opts: ItemOpts = {}): ProductClassification {
+  const { recommendation = { kind: "none" }, daysOfStock = 10, leadTime = 5, velocity = 1 } = opts;
   const classification: ClassificationResult = {
     state,
-    velocity: 1,
-    daysOfStock: 10,
+    velocity,
+    daysOfStock,
     totalDays: 30,
     totalUnits: 30,
     thresholdLabel: "",
     recommendation,
-    ...extra,
   };
-  return { product: makeProduct(name), classification };
+  return { product: makeProduct(name, leadTime), classification };
 }
 
 describe("selectRestockCandidates", () => {
-  it("maps an Understocked product to numeric units and an 'Order N units' action", () => {
-    const [candidate] = selectRestockCandidates([makeItem("widget", "Understocked", { kind: "order", units: 12 })]);
+  it("maps an Understocked product to numeric units, an 'Order N units' action, and leadTime", () => {
+    const [candidate] = selectRestockCandidates([
+      makeItem("widget", "Understocked", { recommendation: { kind: "order", units: 12 }, daysOfStock: 2, leadTime: 7 }),
+    ]);
     expect(candidate.state).toBe("Understocked");
     expect(candidate.units).toBe(12);
     expect(candidate.action).toBe("Order 12 units");
+    expect(candidate.leadTime).toBe(7);
   });
 
   it("maps a Watch product to 'Monitor' with no quantity ever", () => {
@@ -56,24 +61,53 @@ describe("selectRestockCandidates", () => {
   it("excludes OK, Slow-mover, and Insufficient data", () => {
     const items = [
       makeItem("a", "OK"),
-      makeItem("b", "Slow-mover", { kind: "promote" }),
+      makeItem("b", "Slow-mover", { recommendation: { kind: "promote" } }),
       makeItem("c", "Insufficient data"),
     ];
     expect(selectRestockCandidates(items)).toEqual([]);
   });
 
-  it("orders all Understocked before all Watch, preserving input order within each", () => {
+  it("orders by urgency (daysOfStock − leadTime), most urgent first, across states", () => {
     const items = [
-      makeItem("w1", "Watch"),
-      makeItem("u1", "Understocked", { kind: "order", units: 3 }),
-      makeItem("w2", "Watch"),
-      makeItem("u2", "Understocked", { kind: "order", units: 4 }),
+      makeItem("w1", "Watch", { daysOfStock: 8, leadTime: 5 }), // urgency +3
+      makeItem("u1", "Understocked", { recommendation: { kind: "order", units: 3 }, daysOfStock: 1, leadTime: 5 }), // -4
+      makeItem("w2", "Watch", { daysOfStock: 9, leadTime: 5 }), // +4
+      makeItem("u2", "Understocked", { recommendation: { kind: "order", units: 4 }, daysOfStock: 4, leadTime: 5 }), // -1
     ];
     expect(selectRestockCandidates(items).map((c) => c.product)).toEqual(["u1", "u2", "w1", "w2"]);
   });
 
+  it("keeps input order for ties in urgency (stable sort)", () => {
+    const items = [
+      makeItem("b", "Understocked", { recommendation: { kind: "order", units: 1 }, daysOfStock: 2, leadTime: 5 }),
+      makeItem("a", "Understocked", { recommendation: { kind: "order", units: 1 }, daysOfStock: 2, leadTime: 5 }),
+    ];
+    expect(selectRestockCandidates(items).map((c) => c.product)).toEqual(["b", "a"]);
+  });
+
   it("returns [] for empty input", () => {
     expect(selectRestockCandidates([])).toEqual([]);
+  });
+});
+
+describe("deterministicReason", () => {
+  it("states the runway vs lead time for Understocked and says to order now", () => {
+    const [c] = selectRestockCandidates([
+      makeItem("widget", "Understocked", { recommendation: { kind: "order", units: 12 }, daysOfStock: 2, leadTime: 7 }),
+    ]);
+    const reason = deterministicReason(c);
+    expect(reason).toContain("2 days of stock");
+    expect(reason).toContain("7-day lead time");
+    expect(reason.toLowerCase()).toContain("order now");
+  });
+
+  it("explains a Watch product without ever stating an order quantity", () => {
+    const [c] = selectRestockCandidates([makeItem("gadget", "Watch", { daysOfStock: 9, leadTime: 5 })]);
+    const reason = deterministicReason(c);
+    expect(reason).toContain("9 days of stock");
+    expect(reason.toLowerCase()).toContain("reorder soon");
+    expect(reason).not.toMatch(/order \d/i);
+    expect(reason.toLowerCase()).not.toContain("units");
   });
 });
 
@@ -82,16 +116,24 @@ describe("buildDeterministicPlan", () => {
     expect(buildDeterministicPlan([])).toEqual({ weekly_summary: "Nothing to reorder this week.", items: [] });
   });
 
-  it("mirrors each candidate's product and action into items", () => {
+  it("enriches each candidate into an item with action, deterministic reason, and facts", () => {
     const candidates = selectRestockCandidates([
-      makeItem("widget", "Understocked", { kind: "order", units: 12 }),
-      makeItem("gadget", "Watch"),
+      makeItem("widget", "Understocked", { recommendation: { kind: "order", units: 12 }, daysOfStock: 2, leadTime: 7 }),
+      makeItem("gadget", "Watch", { daysOfStock: 9, leadTime: 5 }),
     ]);
     const plan = buildDeterministicPlan(candidates);
-    expect(plan.items).toEqual([
-      { product: "widget", action: "Order 12 units" },
-      { product: "gadget", action: "Monitor" },
-    ]);
+
+    expect(plan.items).toHaveLength(2);
+    expect(plan.items[0]).toMatchObject({
+      product: "widget",
+      action: "Order 12 units",
+      daysOfStock: 2,
+      leadTime: 7,
+      units: 12,
+      state: "Understocked",
+    });
+    expect(plan.items[0].reason).toContain("2 days of stock");
+    expect(plan.items[1]).toMatchObject({ product: "gadget", action: "Monitor", units: null, state: "Watch" });
     expect(plan.weekly_summary).toContain("1 product to reorder");
     expect(plan.weekly_summary).toContain("1 to monitor");
   });
