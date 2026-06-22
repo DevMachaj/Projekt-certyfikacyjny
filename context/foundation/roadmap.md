@@ -34,7 +34,7 @@ Small e-commerce store owners have sales history in their shop platforms (Shopif
 | S-02 | sales-entry-and-classification | log and delete sales entries and see the classification + recommendation | F-01, S-01    | US-01, US-03, FR-005, FR-006, FR-007, FR-008, FR-012 | impl_reviewed |
 | S-03 | classification-dashboard       | view all products grouped by classification state on the dashboard       | S-02          | FR-009                                               | impl_reviewed |
 | S-04 | ai-weekly-restocking-plan      | click a button to get one AI-generated weekly restocking summary         | S-03          | US-01, FR-006, FR-007                                | impl_reviewed |
-| S-05 | restocking-plan-decision-support | get a prioritized, explained weekly restocking decision (not just a restatement) | S-04    | US-01, FR-006, FR-007                                | implemented |
+| S-05 | restocking-plan-decision-support | get a prioritized, explained weekly restocking decision (not just a restatement) | S-04    | US-01, FR-006, FR-007                                | done        |
 | S-06 | ux-improvements                | bulk-action a candidate review, reset a review session, see clear loading states | F-01    | NFR-001                                              | planned     |
 | S-07 | account-deletion-and-data-retention | delete their account (hard delete; F-01 cascade wipes products + sales entries) | F-01 | NFR-003, FR-001, FR-002                              | ready       |
 
@@ -126,7 +126,7 @@ Foundations below assume these are present and do NOT re-scaffold them.
 - **Blockers:** —
 - **Unknowns:** —
 - **Risk:** The engine remains the sole author of which products to restock, the quantities, and the ordering; the AI only adds prose, so a bad or hallucinated LLM response can degrade the wording of the headline or "why" line but cannot corrupt the recommendation, selection, or order. The deterministic fallback keeps the panel strictly better than the dashboard tiles when the LLM is unavailable.
-- **Status:** implemented — framed in `context/changes/ai-weekly-restocking-plan/frame.md` (HIGH confidence); plan in `context/changes/restocking-plan-decision-support/plan.md`. (`/10x-archive` will flip this to `done`.)
+- **Status:** done
 
 ### S-06: UX improvements
 
@@ -181,4 +181,4 @@ None — all product questions were resolved during shaping (PRD v1 `## Open Que
 
 ## Done
 
-(Empty on first generation. `/10x-archive` appends an entry here — and flips that item's `Status` to `done` — when a change whose `Change ID` matches a roadmap item is archived.)
+- **S-05: get a prioritized, explained weekly restocking decision (not just a restatement)** — Archived 2026-06-22 → `context/archive/2026-06-17-restocking-plan-decision-support/`. Lesson: —.
