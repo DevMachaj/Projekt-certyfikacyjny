@@ -13,6 +13,12 @@ export const prerender = false;
  * branch. A non-null error or a network throw returns the `{ error }` JSON contract WITHOUT signing
  * out, leaving the session + data intact. A successful delete is the point of no return: signOut is
  * best-effort and never converts into a non-200.
+ *
+ * CSRF: this destructive DELETE is authenticated by the SSR session cookie alone. Cross-site
+ * forgery is blocked because `@supabase/ssr` issues the auth cookies with `SameSite=Lax` (its
+ * default), so they are not sent on cross-site DELETEs, and a cross-origin call additionally trips
+ * a CORS preflight this app does not answer. There is no explicit Origin check — that protection
+ * relies on the SameSite=Lax default staying in place; revisit if the cookie config changes.
  */
 export const DELETE: APIRoute = async (context) => {
   if (!context.locals.user) {
