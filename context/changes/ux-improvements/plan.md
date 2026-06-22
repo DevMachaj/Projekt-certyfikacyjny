@@ -235,34 +235,34 @@ None — no schema or data changes.
 
 #### Automated
 
-- [x] 1.1 Type checking passes: `npm run typecheck`
-- [x] 1.2 Build passes: `npm run build`
-- [x] 1.3 Linting passes: `npm run lint`
-- [x] 1.4 `src/components/ui/checkbox.tsx` exists
+- [x] 1.1 Type checking passes: `npm run typecheck` — 285a7e9
+- [x] 1.2 Build passes: `npm run build` — 285a7e9
+- [x] 1.3 Linting passes: `npm run lint` — 285a7e9
+- [x] 1.4 `src/components/ui/checkbox.tsx` exists — 285a7e9
 
 #### Manual
 
-- [x] 1.5 Per-row checkbox toggles selection
-- [x] 1.6 Select-all checkbox works incl. indeterminate state
-- [x] 1.7 Bulk-action bar appears only when ≥1 selected and shows correct count
-- [x] 1.8 "Clear selection" empties selection and hides the bar
-- [x] 1.9 Add/edit/single-delete unaffected; no stale selection state
+- [x] 1.5 Per-row checkbox toggles selection — 285a7e9
+- [x] 1.6 Select-all checkbox works incl. indeterminate state — 285a7e9
+- [x] 1.7 Bulk-action bar appears only when ≥1 selected and shows correct count — 285a7e9
+- [x] 1.8 "Clear selection" empties selection and hides the bar — 285a7e9
+- [x] 1.9 Add/edit/single-delete unaffected; no stale selection state — 285a7e9
 
 ### Phase 2: Bulk-delete (sequential loop, progress, partial-failure reporting)
 
 #### Automated
 
-- [ ] 2.1 Type checking passes: `npm run typecheck`
-- [ ] 2.2 Build passes: `npm run build`
-- [ ] 2.3 Linting passes: `npm run lint`
+- [x] 2.1 Type checking passes: `npm run typecheck`
+- [x] 2.2 Build passes: `npm run build`
+- [x] 2.3 Linting passes: `npm run lint`
 
 #### Manual
 
-- [ ] 2.4 Selecting N and confirming deletes all N; bar hides
-- [ ] 2.5 Bar disabled and shows "Deleting N of M…" during the loop
-- [ ] 2.6 Forced single failure: failed row stays selected and is named in the banner; succeeded rows removed
-- [ ] 2.7 Re-confirm retries only the still-selected (failed) products
-- [ ] 2.8 Single-delete, add, edit unaffected
+- [x] 2.4 Selecting N and confirming deletes all N; bar hides
+- [x] 2.5 Bar disabled and shows "Deleting N of M…" during the loop
+- [x] 2.6 Forced single failure: failed row stays selected and is named in the banner; succeeded rows removed
+- [x] 2.7 Re-confirm retries only the still-selected (failed) products
+- [x] 2.8 Single-delete, add, edit unaffected
 
 ### Phase 3: Restocking plan loading skeleton
 

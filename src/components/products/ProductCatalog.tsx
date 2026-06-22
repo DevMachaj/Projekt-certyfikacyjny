@@ -5,6 +5,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { ProductForm } from "@/components/products/ProductForm";
 import { DeleteProductDialog } from "@/components/products/DeleteProductDialog";
+import { BulkDeleteDialog } from "@/components/products/BulkDeleteDialog";
 import type { ProductInput } from "@/lib/validation/product";
 import type { Product } from "@/types";
 
@@ -41,6 +42,12 @@ export function ProductCatalog({ initialProducts }: Props) {
   const [pending, setPending] = useState(false);
   const [formError, setFormError] = useState<string | null>(null);
   const [listError, setListError] = useState<string | null>(null);
+
+  // Bulk-delete flow state — kept separate from `pending` so it never cross-disables
+  // the add/edit modal or the single-delete dialog.
+  const [bulkConfirmOpen, setBulkConfirmOpen] = useState(false);
+  const [bulkDeleting, setBulkDeleting] = useState(false);
+  const [bulkProgress, setBulkProgress] = useState<{ done: number; total: number }>({ done: 0, total: 0 });
 
   // Selection state is derived against the current product list so a dangling id
   // (e.g. a product removed by another flow) never inflates the counts.
@@ -138,6 +145,57 @@ export function ProductCatalog({ initialProducts }: Props) {
     }
   }
 
+  async function handleBulkDelete() {
+    // Snapshot {id, name} before the loop: `products` is mutated as deletes succeed, so the
+    // failure banner must resolve names from this snapshot, not the shrinking list.
+    const targets = products.filter((p) => selectedIds.has(p.id)).map((p) => ({ id: p.id, name: p.name }));
+    if (targets.length === 0) return;
+
+    setBulkConfirmOpen(false);
+    setBulkDeleting(true);
+    setBulkProgress({ done: 0, total: targets.length });
+    setListError(null);
+
+    const failed: string[] = [];
+
+    try {
+      for (const target of targets) {
+        let ok = false;
+        try {
+          const res = await fetch(`/api/products/${target.id}`, { method: "DELETE" });
+          ok = res.ok; // 204 No Content on success — never parse the body here.
+        } catch {
+          ok = false;
+        }
+
+        if (ok) {
+          setProducts((prev) => prev.filter((p) => p.id !== target.id));
+          setSelectedIds((prev) => {
+            const next = new Set(prev);
+            next.delete(target.id);
+            return next;
+          });
+        } else {
+          failed.push(target.name);
+        }
+
+        setBulkProgress((prev) => ({ ...prev, done: prev.done + 1 }));
+      }
+
+      if (failed.length > 0) {
+        const names = failed.map((n) => `"${n}"`).join(", ");
+        setListError(
+          `Could not delete ${failed.length} of ${targets.length} ${
+            targets.length === 1 ? "product" : "products"
+          }: ${names}. They remain selected — try again.`,
+        );
+      }
+    } finally {
+      setBulkDeleting(false);
+      setBulkProgress({ done: 0, total: 0 });
+    }
+  }
+
   return (
     <div className="mx-auto w-full max-w-3xl">
       <div className="mb-6 flex items-center justify-between">
@@ -193,16 +251,29 @@ export function ProductCatalog({ initialProducts }: Props) {
             </label>
             {selectedCount > 0 ? (
               <div className="flex items-center gap-2">
-                <span className="text-sm text-blue-100/70">{selectedCount} selected</span>
+                <span className="text-sm text-blue-100/70">
+                  {bulkDeleting
+                    ? `Deleting ${bulkProgress.done} of ${bulkProgress.total}…`
+                    : `${selectedCount} selected`}
+                </span>
                 <Button
                   variant="ghost"
                   size="sm"
                   onClick={clearSelection}
+                  disabled={bulkDeleting}
                   className="text-blue-100/70 hover:bg-white/10 hover:text-white"
                 >
                   Clear selection
                 </Button>
-                <Button variant="destructive" size="sm" disabled className="gap-1.5">
+                <Button
+                  variant="destructive"
+                  size="sm"
+                  disabled={bulkDeleting}
+                  onClick={() => {
+                    setBulkConfirmOpen(true);
+                  }}
+                  className="gap-1.5"
+                >
                   <Trash2 className="size-4" />
                   Delete selected
                 </Button>
@@ -295,6 +366,16 @@ export function ProductCatalog({ initialProducts }: Props) {
         onConfirm={() => void handleDelete()}
         onCancel={() => {
           setDeleteTarget(null);
+        }}
+      />
+
+      <BulkDeleteDialog
+        open={bulkConfirmOpen}
+        count={selectedCount}
+        pending={bulkDeleting}
+        onConfirm={() => void handleBulkDelete()}
+        onCancel={() => {
+          setBulkConfirmOpen(false);
         }}
       />
     </div>
