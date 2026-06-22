@@ -1,10 +1,10 @@
 ---
 change_id: ux-improvements
 title: "UX improvements: bulk review actions, session reset, loading states"
-status: impl_reviewed
+status: archived
 created: 2026-06-22
 updated: 2026-06-22
-archived_at: null
+archived_at: 2026-06-22T15:15:17Z
 ---
 
 ## Notes

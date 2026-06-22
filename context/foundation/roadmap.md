@@ -35,7 +35,7 @@ Small e-commerce store owners have sales history in their shop platforms (Shopif
 | S-03 | classification-dashboard       | view all products grouped by classification state on the dashboard       | S-02          | FR-009                                               | impl_reviewed |
 | S-04 | ai-weekly-restocking-plan      | click a button to get one AI-generated weekly restocking summary         | S-03          | US-01, FR-006, FR-007                                | impl_reviewed |
 | S-05 | restocking-plan-decision-support | get a prioritized, explained weekly restocking decision (not just a restatement) | S-04    | US-01, FR-006, FR-007                                | done        |
-| S-06 | ux-improvements                | bulk-action a candidate review, reset a review session, see clear loading states | F-01    | NFR-001                                              | planned     |
+| S-06 | ux-improvements                | bulk-action a candidate review, reset a review session, see clear loading states | F-01    | NFR-001                                              | done        |
 | S-07 | account-deletion-and-data-retention | delete their account (hard delete; F-01 cascade wipes products + sales entries) | F-01 | NFR-003, FR-001, FR-002                              | ready       |
 
 ## Baseline
@@ -139,7 +139,7 @@ Foundations below assume these are present and do NOT re-scaffold them.
 - **Unknowns:**
   - Which screens get bulk actions and what the action set is (e.g. bulk delete) — Owner: developer. Block: no (`/10x-plan` scopes the surface).
 - **Risk:** Low — surface-level UX work with no schema or classification-engine changes. The main risk is scope creep: "UX improvements" is broad, so the plan should fix the action set to the three observed gaps (bulk actions, session reset, loading states) and defer anything else to the backlog.
-- **Status:** planned
+- **Status:** done
 
 ### S-07: Account deletion and data retention
 
@@ -182,3 +182,4 @@ None — all product questions were resolved during shaping (PRD v1 `## Open Que
 ## Done
 
 - **S-05: get a prioritized, explained weekly restocking decision (not just a restatement)** — Archived 2026-06-22 → `context/archive/2026-06-17-restocking-plan-decision-support/`. Lesson: —.
+- **S-06: bulk-action a candidate review, reset a review session, see clear loading states** — Archived 2026-06-22 → `context/archive/2026-06-22-ux-improvements/`. Lesson: —.
