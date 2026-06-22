@@ -3,7 +3,7 @@ project: StockHelper
 version: 1
 status: draft
 created: 2026-05-30
-updated: 2026-06-17
+updated: 2026-06-22
 prd_version: 1
 main_goal: market-feedback
 top_blocker: capacity
@@ -36,7 +36,7 @@ Small e-commerce store owners have sales history in their shop platforms (Shopif
 | S-04 | ai-weekly-restocking-plan      | click a button to get one AI-generated weekly restocking summary         | S-03          | US-01, FR-006, FR-007                                | impl_reviewed |
 | S-05 | restocking-plan-decision-support | get a prioritized, explained weekly restocking decision (not just a restatement) | S-04    | US-01, FR-006, FR-007                                | implemented |
 | S-06 | ux-improvements                | bulk-action a candidate review, reset a review session, see clear loading states | F-01    | NFR-001                                              | planned     |
-| S-07 | account-deletion-and-data-retention | delete their account and have associated data removed per a retention policy | F-01    | NFR-003, FR-001, FR-002                              | planned     |
+| S-07 | account-deletion-and-data-retention | delete their account (hard delete; F-01 cascade wipes products + sales entries) | F-01 | NFR-003, FR-001, FR-002                              | ready       |
 
 ## Baseline
 
@@ -134,7 +134,7 @@ Foundations below assume these are present and do NOT re-scaffold them.
 - **Change ID:** ux-improvements
 - **PRD refs:** NFR-001 (perceived responsiveness — explicit loading states keep the UI legible while the sub-1-second update completes). The bulk-action and reset-session gaps are field-discovered UX needs, not in PRD v1.
 - **Prerequisites:** F-01
-- **Parallel with:** S-07 (both depend only on F-01 and are independent of the core classification/restocking sequence)
+- **Parallel with:** S-07 — **fully parallel** (both depend only on F-01 and are independent of the core classification/restocking sequence; S-07's hard-delete decision means no shared contract or migration between them)
 - **Blockers:** —
 - **Unknowns:**
   - Which screens get bulk actions and what the action set is (e.g. bulk delete) — Owner: developer. Block: no (`/10x-plan` scopes the surface).
@@ -143,16 +143,16 @@ Foundations below assume these are present and do NOT re-scaffold them.
 
 ### S-07: Account deletion and data retention
 
-- **Outcome:** owner can permanently delete their account, with all associated data (products, sales entries) removed according to a defined retention policy. A separate project area from the classification / restocking core — it concerns the account lifecycle and data-retention contract, not velocity logic.
+- **Outcome:** owner can permanently delete their account via a **hard delete** — deleting the `auth.users` row, relying on the existing F-01 `ON DELETE CASCADE` (`products.user_id` and `sales_entries.user_id` → `auth.users`) to wipe all associated data. No soft delete, no `deleted_at` columns, no retention window. A separate project area from the classification / restocking core — it concerns the account lifecycle, not velocity logic.
 - **Change ID:** account-deletion-and-data-retention
-- **PRD refs:** NFR-003 (data isolation — deletion is the end-of-lifecycle half of the same per-user data contract), FR-001 / FR-002 (account lifecycle the deletion path extends). The account-deletion flow and retention policy are not specified in PRD v1; this slice introduces them.
+- **PRD refs:** NFR-003 (data isolation — deletion is the end-of-lifecycle half of the same per-user data contract), FR-001 / FR-002 (account lifecycle the deletion path extends). The account-deletion flow is not specified in PRD v1; this slice introduces it.
 - **Prerequisites:** F-01
-- **Parallel with:** S-06 (separate project area; independent of the classification and restocking slices, and both depend only on F-01)
+- **Parallel with:** S-06 — **fully parallel.** With hard delete decided, S-07 adds no migration and no domain-table/`types.ts` change, so it shares no contract with S-06. The only potential overlap is an append to `src/lib/db.ts` (trivial), avoidable if S-06 does bulk-delete client-side over the existing `/api/products/[id]` DELETE.
 - **Blockers:** —
 - **Unknowns:**
-  - Retention policy: hard delete vs. soft delete with a retention window, and any legal/GDPR-style requirements. Owner: product. Block: **yes** — the policy must be decided before the deletion path can be planned, since it determines the data model and the irreversibility of the operation.
-- **Risk:** Account deletion is destructive and irreversible; it must cascade correctly (reusing the F-01 / S-01 cascade behavior so no `products` or `sales_entries` rows are orphaned) and honor whatever retention requirements apply. Mis-scoping retention (hard vs. soft delete) has compliance implications that are expensive to reverse after launch.
-- **Status:** planned
+  - ~~Retention policy: hard delete vs. soft delete~~ — **RESOLVED: hard delete.** Delete the `auth.users` row and let the existing F-01 cascade remove `products` + `sales_entries`. No new migration, no `deleted_at`, no retention window. This keeps the data model unchanged and removes the only cross-slice coupling with S-06.
+- **Risk:** Account deletion is destructive and irreversible. Two narrower risks remain now that the model is fixed: (1) the delete must run with a **service-role** Supabase client (the `auth.users` admin delete is not available to the anon/SSR client), which means a new `SUPABASE_SERVICE_ROLE_KEY` secret in `astro.config.mjs` + Cloudflare + `.dev.vars`; (2) the cascade must be verified end-to-end so no `products`/`sales_entries` rows are orphaned. Both are bounded and testable.
+- **Status:** ready
 
 ## Backlog Handoff
 
@@ -165,7 +165,7 @@ Foundations below assume these are present and do NOT re-scaffold them.
 | S-04       | ai-weekly-restocking-plan      | Feature: AI weekly restocking plan (LLM summary)                    | no                    | Requires S-03 to be done first            |
 | S-05       | restocking-plan-decision-support | Enhancement: restocking plan — prioritize + explain               | n/a                   | Implemented; see plan.md                  |
 | S-06       | ux-improvements                | UX: bulk review actions, session reset, loading states              | no                    | Requires F-01; parallel with S-04         |
-| S-07       | account-deletion-and-data-retention | Feature: account deletion + data retention policy              | no                    | Separate area; needs retention policy decided first |
+| S-07       | account-deletion-and-data-retention | Feature: account deletion (hard delete via auth.users cascade) | yes                   | Hard-delete model resolved; fully parallel with S-06; needs SUPABASE_SERVICE_ROLE_KEY |
 
 ## Open Roadmap Questions
 
