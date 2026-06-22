@@ -1,0 +1,27 @@
+---
+import Layout from "@/layouts/Layout.astro";
+import { AccountDangerZone } from "@/components/account/AccountDangerZone";
+
+const { user } = Astro.locals;
+
+// Middleware guards /account, so `user` is present. `user.email` is typed `string | undefined`
+// (Supabase) and lint is type-checked, so resolve a definite string before passing it down.
+const email = user?.email ?? "";
+---
+
+<Layout title="Account">
+  <div class="bg-cosmic min-h-screen px-4 py-10">
+    <div class="mx-auto w-full max-w-3xl">
+      <header class="mb-8">
+        <h1 class="bg-gradient-to-r from-blue-200 to-purple-200 bg-clip-text text-3xl font-bold text-transparent">
+          Account
+        </h1>
+        <p class="mt-1 text-sm text-blue-100/60">
+          Signed in as <span class="font-medium text-blue-100/80">{email}</span>
+        </p>
+      </header>
+
+      <AccountDangerZone client:load email={email} />
+    </div>
+  </div>
+</Layout>

@@ -255,29 +255,29 @@ No schema migration. The cascade FKs already exist from F-01. The only new opera
 
 #### Automated
 
-- [x] 2.1 Build passes: `npm run build`
-- [x] 2.2 Lint passes: `npm run lint`
-- [x] 2.3 `"/account"` present in `PROTECTED_ROUTES`
+- [x] 2.1 Build passes: `npm run build` — 1613438
+- [x] 2.2 Lint passes: `npm run lint` — 1613438
+- [x] 2.3 `"/account"` present in `PROTECTED_ROUTES` — 1613438
 
 #### Manual
 
-- [x] 2.4 `DELETE /api/account` signed out returns 401 `{ error }`
-- [x] 2.5 Service-role key unset → authenticated `DELETE /api/account` returns 503 and does not delete
-- [x] 2.6 Configured → authenticated `DELETE /api/account` returns 200; `auth.users` row gone; `products`/`sales_entries` cascade-deleted
-- [x] 2.7 `/account` signed out redirects to `/auth/signin`
+- [x] 2.4 `DELETE /api/account` signed out returns 401 `{ error }` — 1613438
+- [x] 2.5 Service-role key unset → authenticated `DELETE /api/account` returns 503 and does not delete — 1613438
+- [x] 2.6 Configured → authenticated `DELETE /api/account` returns 200; `auth.users` row gone; `products`/`sales_entries` cascade-deleted — 1613438
+- [x] 2.7 `/account` signed out redirects to `/auth/signin` — 1613438
 
 ### Phase 3: DeleteAccountDialog island + /account page
 
 #### Automated
 
-- [ ] 3.1 Build passes: `npm run build`
-- [ ] 3.2 Lint passes: `npm run lint`
-- [ ] 3.3 `account.astro`, `DeleteAccountDialog.tsx`, `AccountDangerZone.tsx` exist
+- [x] 3.1 Build passes: `npm run build`
+- [x] 3.2 Lint passes: `npm run lint`
+- [x] 3.3 `account.astro`, `DeleteAccountDialog.tsx`, `AccountDangerZone.tsx` exist
 
 #### Manual
 
-- [ ] 3.4 `/account` renders email + danger zone for a signed-in user
-- [ ] 3.5 Confirm button disabled until exact email typed
-- [ ] 3.6 Full flow deletes account, clears session, redirects to `/`; protected routes then redirect to sign-in
-- [ ] 3.7 Forced failure shows inline error, session + data survive
-- [ ] 3.8 Dashboard header links to `/account`
+- [x] 3.4 `/account` renders email + danger zone for a signed-in user
+- [x] 3.5 Confirm button disabled until exact email typed
+- [x] 3.6 Full flow deletes account, clears session, redirects to `/`; protected routes then redirect to sign-in
+- [x] 3.7 Forced failure shows inline error, session + data survive
+- [x] 3.8 Dashboard header links to `/account`
