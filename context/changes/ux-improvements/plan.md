@@ -252,27 +252,27 @@ None — no schema or data changes.
 
 #### Automated
 
-- [x] 2.1 Type checking passes: `npm run typecheck`
-- [x] 2.2 Build passes: `npm run build`
-- [x] 2.3 Linting passes: `npm run lint`
+- [x] 2.1 Type checking passes: `npm run typecheck` — 8dac8a1
+- [x] 2.2 Build passes: `npm run build` — 8dac8a1
+- [x] 2.3 Linting passes: `npm run lint` — 8dac8a1
 
 #### Manual
 
-- [x] 2.4 Selecting N and confirming deletes all N; bar hides
-- [x] 2.5 Bar disabled and shows "Deleting N of M…" during the loop
-- [x] 2.6 Forced single failure: failed row stays selected and is named in the banner; succeeded rows removed
-- [x] 2.7 Re-confirm retries only the still-selected (failed) products
-- [x] 2.8 Single-delete, add, edit unaffected
+- [x] 2.4 Selecting N and confirming deletes all N; bar hides — 8dac8a1
+- [x] 2.5 Bar disabled and shows "Deleting N of M…" during the loop — 8dac8a1
+- [x] 2.6 Forced single failure: failed row stays selected and is named in the banner; succeeded rows removed — 8dac8a1
+- [x] 2.7 Re-confirm retries only the still-selected (failed) products — 8dac8a1
+- [x] 2.8 Single-delete, add, edit unaffected — 8dac8a1
 
 ### Phase 3: Restocking plan loading skeleton
 
 #### Automated
 
-- [ ] 3.1 Type checking passes: `npm run typecheck`
-- [ ] 3.2 Build passes: `npm run build`
-- [ ] 3.3 Linting passes: `npm run lint`
+- [x] 3.1 Type checking passes: `npm run typecheck`
+- [x] 3.2 Build passes: `npm run build`
+- [x] 3.3 Linting passes: `npm run lint`
 
 #### Manual
 
-- [ ] 3.4 Generate shows a skeleton while in flight, replaced by plan/empty/fallback
-- [ ] 3.5 Error path shows the banner with no lingering skeleton
+- [x] 3.4 Generate shows a skeleton while in flight, replaced by plan/empty/fallback
+- [x] 3.5 Error path shows the banner with no lingering skeleton
