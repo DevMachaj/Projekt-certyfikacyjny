@@ -268,11 +268,11 @@ None — no schema or data changes.
 
 #### Automated
 
-- [x] 3.1 Type checking passes: `npm run typecheck`
-- [x] 3.2 Build passes: `npm run build`
-- [x] 3.3 Linting passes: `npm run lint`
+- [x] 3.1 Type checking passes: `npm run typecheck` — c01ca2a
+- [x] 3.2 Build passes: `npm run build` — c01ca2a
+- [x] 3.3 Linting passes: `npm run lint` — c01ca2a
 
 #### Manual
 
-- [x] 3.4 Generate shows a skeleton while in flight, replaced by plan/empty/fallback
-- [x] 3.5 Error path shows the banner with no lingering skeleton
+- [x] 3.4 Generate shows a skeleton while in flight, replaced by plan/empty/fallback — c01ca2a
+- [x] 3.5 Error path shows the banner with no lingering skeleton — c01ca2a
