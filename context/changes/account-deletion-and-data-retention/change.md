@@ -1,7 +1,7 @@
 ---
 change_id: account-deletion-and-data-retention
 title: Permanently delete an account and remove associated data per a retention policy
-status: implementing
+status: implemented
 created: 2026-06-22
 updated: 2026-06-22
 archived_at: null

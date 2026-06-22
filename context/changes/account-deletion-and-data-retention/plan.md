@@ -270,14 +270,14 @@ No schema migration. The cascade FKs already exist from F-01. The only new opera
 
 #### Automated
 
-- [x] 3.1 Build passes: `npm run build`
-- [x] 3.2 Lint passes: `npm run lint`
-- [x] 3.3 `account.astro`, `DeleteAccountDialog.tsx`, `AccountDangerZone.tsx` exist
+- [x] 3.1 Build passes: `npm run build` — c1acb0b
+- [x] 3.2 Lint passes: `npm run lint` — c1acb0b
+- [x] 3.3 `account.astro`, `DeleteAccountDialog.tsx`, `AccountDangerZone.tsx` exist — c1acb0b
 
 #### Manual
 
-- [x] 3.4 `/account` renders email + danger zone for a signed-in user
-- [x] 3.5 Confirm button disabled until exact email typed
-- [x] 3.6 Full flow deletes account, clears session, redirects to `/`; protected routes then redirect to sign-in
-- [x] 3.7 Forced failure shows inline error, session + data survive
-- [x] 3.8 Dashboard header links to `/account`
+- [x] 3.4 `/account` renders email + danger zone for a signed-in user — c1acb0b
+- [x] 3.5 Confirm button disabled until exact email typed — c1acb0b
+- [x] 3.6 Full flow deletes account, clears session, redirects to `/`; protected routes then redirect to sign-in — c1acb0b
+- [x] 3.7 Forced failure shows inline error, session + data survive — c1acb0b
+- [x] 3.8 Dashboard header links to `/account` — c1acb0b
