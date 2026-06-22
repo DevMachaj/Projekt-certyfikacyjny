@@ -245,13 +245,14 @@ export function ProductCatalog({ initialProducts }: Props) {
               <Checkbox
                 checked={allSelected ? true : someSelected ? "indeterminate" : false}
                 onCheckedChange={toggleAll}
+                disabled={bulkDeleting}
                 aria-label="Select all products"
               />
               Select all
             </label>
             {selectedCount > 0 ? (
               <div className="flex items-center gap-2">
-                <span className="text-sm text-blue-100/70">
+                <span className="text-sm text-blue-100/70" aria-live="polite">
                   {bulkDeleting
                     ? `Deleting ${bulkProgress.done} of ${bulkProgress.total}…`
                     : `${selectedCount} selected`}
@@ -292,6 +293,7 @@ export function ProductCatalog({ initialProducts }: Props) {
                     onCheckedChange={() => {
                       toggleOne(product.id);
                     }}
+                    disabled={bulkDeleting}
                     aria-label={`Select ${product.name}`}
                   />
                   <div className="min-w-0">
@@ -326,6 +328,7 @@ export function ProductCatalog({ initialProducts }: Props) {
                     onClick={() => {
                       setDeleteTarget(product);
                     }}
+                    disabled={bulkDeleting}
                     className="text-red-300/70 hover:bg-red-500/10 hover:text-red-300"
                     aria-label={`Delete ${product.name}`}
                   >
