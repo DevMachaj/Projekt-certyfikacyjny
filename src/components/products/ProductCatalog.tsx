@@ -1,9 +1,11 @@
 import { useState } from "react";
 import { Plus, Pencil, Trash2, Package, CircleAlert, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Checkbox } from "@/components/ui/checkbox";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { ProductForm } from "@/components/products/ProductForm";
 import { DeleteProductDialog } from "@/components/products/DeleteProductDialog";
+import { BulkDeleteDialog } from "@/components/products/BulkDeleteDialog";
 import type { ProductInput } from "@/lib/validation/product";
 import type { Product } from "@/types";
 
@@ -36,9 +38,39 @@ export function ProductCatalog({ initialProducts }: Props) {
   const [products, setProducts] = useState<Product[]>(() => sortByName(initialProducts));
   const [formTarget, setFormTarget] = useState<FormTarget>(null);
   const [deleteTarget, setDeleteTarget] = useState<Product | null>(null);
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(() => new Set());
   const [pending, setPending] = useState(false);
   const [formError, setFormError] = useState<string | null>(null);
   const [listError, setListError] = useState<string | null>(null);
+
+  // Bulk-delete flow state — kept separate from `pending` so it never cross-disables
+  // the add/edit modal or the single-delete dialog.
+  const [bulkConfirmOpen, setBulkConfirmOpen] = useState(false);
+  const [bulkDeleting, setBulkDeleting] = useState(false);
+  const [bulkProgress, setBulkProgress] = useState<{ done: number; total: number }>({ done: 0, total: 0 });
+
+  // Selection state is derived against the current product list so a dangling id
+  // (e.g. a product removed by another flow) never inflates the counts.
+  const selectedCount = products.reduce((n, p) => (selectedIds.has(p.id) ? n + 1 : n), 0);
+  const allSelected = products.length > 0 && selectedCount === products.length;
+  const someSelected = selectedCount > 0 && !allSelected;
+
+  function toggleOne(id: string) {
+    setSelectedIds((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
+    });
+  }
+
+  function toggleAll() {
+    setSelectedIds(allSelected ? new Set() : new Set(products.map((p) => p.id)));
+  }
+
+  function clearSelection() {
+    setSelectedIds(new Set());
+  }
 
   function openAdd() {
     setFormError(null);
@@ -99,11 +131,68 @@ export function ProductCatalog({ initialProducts }: Props) {
         return;
       }
       setProducts((prev) => prev.filter((p) => p.id !== target.id));
+      setSelectedIds((prev) => {
+        if (!prev.has(target.id)) return prev;
+        const next = new Set(prev);
+        next.delete(target.id);
+        return next;
+      });
       setDeleteTarget(null);
     } catch {
       setListError("Network error — please check your connection and try again.");
     } finally {
       setPending(false);
+    }
+  }
+
+  async function handleBulkDelete() {
+    // Snapshot {id, name} before the loop: `products` is mutated as deletes succeed, so the
+    // failure banner must resolve names from this snapshot, not the shrinking list.
+    const targets = products.filter((p) => selectedIds.has(p.id)).map((p) => ({ id: p.id, name: p.name }));
+    if (targets.length === 0) return;
+
+    setBulkConfirmOpen(false);
+    setBulkDeleting(true);
+    setBulkProgress({ done: 0, total: targets.length });
+    setListError(null);
+
+    const failed: string[] = [];
+
+    try {
+      for (const target of targets) {
+        let ok = false;
+        try {
+          const res = await fetch(`/api/products/${target.id}`, { method: "DELETE" });
+          ok = res.ok; // 204 No Content on success — never parse the body here.
+        } catch {
+          ok = false;
+        }
+
+        if (ok) {
+          setProducts((prev) => prev.filter((p) => p.id !== target.id));
+          setSelectedIds((prev) => {
+            const next = new Set(prev);
+            next.delete(target.id);
+            return next;
+          });
+        } else {
+          failed.push(target.name);
+        }
+
+        setBulkProgress((prev) => ({ ...prev, done: prev.done + 1 }));
+      }
+
+      if (failed.length > 0) {
+        const names = failed.map((n) => `"${n}"`).join(", ");
+        setListError(
+          `Could not delete ${failed.length} of ${targets.length} ${
+            targets.length === 1 ? "product" : "products"
+          }: ${names}. They remain selected — try again.`,
+        );
+      }
+    } finally {
+      setBulkDeleting(false);
+      setBulkProgress({ done: 0, total: 0 });
     }
   }
 
@@ -150,52 +239,106 @@ export function ProductCatalog({ initialProducts }: Props) {
           </Button>
         </div>
       ) : (
-        <ul className="space-y-3">
-          {products.map((product) => (
-            <li
-              key={product.id}
-              className="flex items-center justify-between rounded-xl border border-white/10 bg-white/5 px-4 py-3"
-            >
-              <div className="min-w-0">
-                <a
-                  href={`/products/${product.id}`}
-                  className="block truncate font-medium text-white hover:text-purple-200 hover:underline"
-                >
-                  {product.name}
-                </a>
-                <p className="mt-0.5 text-sm text-blue-100/60">
-                  Stock: {product.stock_quantity} · Lead time:{" "}
-                  {product.lead_time_days != null ? `${product.lead_time_days}d` : "not set"} · Buffer:{" "}
-                  {product.buffer_days}d
-                </p>
-              </div>
-              <div className="ml-4 flex shrink-0 gap-1">
+        <>
+          <div className="mb-3 flex items-center justify-between gap-3 rounded-xl border border-white/10 bg-white/5 px-4 py-2">
+            <label className="flex items-center gap-2 text-sm text-blue-100/70">
+              <Checkbox
+                checked={allSelected ? true : someSelected ? "indeterminate" : false}
+                onCheckedChange={toggleAll}
+                disabled={bulkDeleting}
+                aria-label="Select all products"
+              />
+              Select all
+            </label>
+            {selectedCount > 0 ? (
+              <div className="flex items-center gap-2">
+                <span className="text-sm text-blue-100/70" aria-live="polite">
+                  {bulkDeleting
+                    ? `Deleting ${bulkProgress.done} of ${bulkProgress.total}…`
+                    : `${selectedCount} selected`}
+                </span>
                 <Button
                   variant="ghost"
-                  size="icon"
-                  onClick={() => {
-                    openEdit(product);
-                  }}
+                  size="sm"
+                  onClick={clearSelection}
+                  disabled={bulkDeleting}
                   className="text-blue-100/70 hover:bg-white/10 hover:text-white"
-                  aria-label={`Edit ${product.name}`}
                 >
-                  <Pencil className="size-4" />
+                  Clear selection
                 </Button>
                 <Button
-                  variant="ghost"
-                  size="icon"
+                  variant="destructive"
+                  size="sm"
+                  disabled={bulkDeleting}
                   onClick={() => {
-                    setDeleteTarget(product);
+                    setBulkConfirmOpen(true);
                   }}
-                  className="text-red-300/70 hover:bg-red-500/10 hover:text-red-300"
-                  aria-label={`Delete ${product.name}`}
+                  className="gap-1.5"
                 >
                   <Trash2 className="size-4" />
+                  Delete selected
                 </Button>
               </div>
-            </li>
-          ))}
-        </ul>
+            ) : null}
+          </div>
+          <ul className="space-y-3">
+            {products.map((product) => (
+              <li
+                key={product.id}
+                className="flex items-center justify-between rounded-xl border border-white/10 bg-white/5 px-4 py-3"
+              >
+                <div className="flex min-w-0 items-center gap-3">
+                  <Checkbox
+                    checked={selectedIds.has(product.id)}
+                    onCheckedChange={() => {
+                      toggleOne(product.id);
+                    }}
+                    disabled={bulkDeleting}
+                    aria-label={`Select ${product.name}`}
+                  />
+                  <div className="min-w-0">
+                    <a
+                      href={`/products/${product.id}`}
+                      className="block truncate font-medium text-white hover:text-purple-200 hover:underline"
+                    >
+                      {product.name}
+                    </a>
+                    <p className="mt-0.5 text-sm text-blue-100/60">
+                      Stock: {product.stock_quantity} · Lead time:{" "}
+                      {product.lead_time_days != null ? `${product.lead_time_days}d` : "not set"} · Buffer:{" "}
+                      {product.buffer_days}d
+                    </p>
+                  </div>
+                </div>
+                <div className="ml-4 flex shrink-0 gap-1">
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    onClick={() => {
+                      openEdit(product);
+                    }}
+                    className="text-blue-100/70 hover:bg-white/10 hover:text-white"
+                    aria-label={`Edit ${product.name}`}
+                  >
+                    <Pencil className="size-4" />
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    onClick={() => {
+                      setDeleteTarget(product);
+                    }}
+                    disabled={bulkDeleting}
+                    className="text-red-300/70 hover:bg-red-500/10 hover:text-red-300"
+                    aria-label={`Delete ${product.name}`}
+                  >
+                    <Trash2 className="size-4" />
+                  </Button>
+                </div>
+              </li>
+            ))}
+          </ul>
+        </>
       )}
 
       <Dialog
@@ -226,6 +369,16 @@ export function ProductCatalog({ initialProducts }: Props) {
         onConfirm={() => void handleDelete()}
         onCancel={() => {
           setDeleteTarget(null);
+        }}
+      />
+
+      <BulkDeleteDialog
+        open={bulkConfirmOpen}
+        count={selectedCount}
+        pending={bulkDeleting}
+        onConfirm={() => void handleBulkDelete()}
+        onCancel={() => {
+          setBulkConfirmOpen(false);
         }}
       />
     </div>

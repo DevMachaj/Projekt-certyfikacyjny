@@ -33,6 +33,7 @@ export function RestockingPlan() {
   async function generate() {
     setPending(true);
     setError(null);
+    setPlan(null); // drop any prior plan so the skeleton shows alone, never beside stale results
     try {
       const res = await fetch("/api/restocking-plan", { method: "POST" });
       if (!res.ok) {
@@ -76,6 +77,21 @@ export function RestockingPlan() {
           <CircleAlert className="h-4 w-4 shrink-0" aria-hidden="true" />
           {error}
         </p>
+      )}
+
+      {pending && (
+        <div className="mt-4 space-y-2" aria-hidden="true">
+          <div className="h-4 w-2/3 animate-pulse rounded bg-white/10" />
+          {[0, 1, 2].map((i) => (
+            <div key={i} className="rounded-lg border border-white/10 bg-white/5 px-3 py-2">
+              <div className="flex items-center justify-between gap-2">
+                <div className="h-3 w-32 animate-pulse rounded bg-white/10" />
+                <div className="h-3 w-20 animate-pulse rounded bg-white/10" />
+              </div>
+              <div className="mt-2 h-3 w-3/4 animate-pulse rounded bg-white/5" />
+            </div>
+          ))}
+        </div>
       )}
 
       {plan && (
