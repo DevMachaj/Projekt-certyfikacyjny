@@ -36,7 +36,7 @@ Small e-commerce store owners have sales history in their shop platforms (Shopif
 | S-04 | ai-weekly-restocking-plan      | click a button to get one AI-generated weekly restocking summary         | S-03          | US-01, FR-006, FR-007                                | impl_reviewed |
 | S-05 | restocking-plan-decision-support | get a prioritized, explained weekly restocking decision (not just a restatement) | S-04    | US-01, FR-006, FR-007                                | done        |
 | S-06 | ux-improvements                | bulk-action a candidate review, reset a review session, see clear loading states | F-01    | NFR-001                                              | done        |
-| S-07 | account-deletion-and-data-retention | delete their account (hard delete; F-01 cascade wipes products + sales entries) | F-01 | NFR-003, FR-001, FR-002                              | ready       |
+| S-07 | account-deletion-and-data-retention | delete their account (hard delete; F-01 cascade wipes products + sales entries) | F-01 | NFR-003, FR-001, FR-002                              | done        |
 
 ## Baseline
 
@@ -152,7 +152,7 @@ Foundations below assume these are present and do NOT re-scaffold them.
 - **Unknowns:**
   - ~~Retention policy: hard delete vs. soft delete~~ — **RESOLVED: hard delete.** Delete the `auth.users` row and let the existing F-01 cascade remove `products` + `sales_entries`. No new migration, no `deleted_at`, no retention window. This keeps the data model unchanged and removes the only cross-slice coupling with S-06.
 - **Risk:** Account deletion is destructive and irreversible. Two narrower risks remain now that the model is fixed: (1) the delete must run with a **service-role** Supabase client (the `auth.users` admin delete is not available to the anon/SSR client), which means a new `SUPABASE_SERVICE_ROLE_KEY` secret in `astro.config.mjs` + Cloudflare + `.dev.vars`; (2) the cascade must be verified end-to-end so no `products`/`sales_entries` rows are orphaned. Both are bounded and testable.
-- **Status:** ready
+- **Status:** done
 
 ## Backlog Handoff
 
@@ -183,3 +183,4 @@ None — all product questions were resolved during shaping (PRD v1 `## Open Que
 
 - **S-05: get a prioritized, explained weekly restocking decision (not just a restatement)** — Archived 2026-06-22 → `context/archive/2026-06-17-restocking-plan-decision-support/`. Lesson: —.
 - **S-06: bulk-action a candidate review, reset a review session, see clear loading states** — Archived 2026-06-22 → `context/archive/2026-06-22-ux-improvements/`. Lesson: —.
+- **S-07: delete their account (hard delete; F-01 cascade wipes products + sales entries)** — Archived 2026-06-22 → `context/archive/2026-06-22-account-deletion-and-data-retention/`. Lesson: —.
