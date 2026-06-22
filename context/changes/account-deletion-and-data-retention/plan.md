@@ -241,30 +241,30 @@ No schema migration. The cascade FKs already exist from F-01. The only new opera
 
 #### Automated
 
-- [x] 1.1 Build passes: `npm run build`
-- [x] 1.2 Lint/typecheck passes: `npm run lint`
-- [x] 1.3 `SUPABASE_SERVICE_ROLE_KEY` in `astro.config.mjs` env schema and `.env.example`
-- [x] 1.4 `createAdminClient` exported from `src/lib/supabase.ts`
+- [x] 1.1 Build passes: `npm run build` — 845eeaa
+- [x] 1.2 Lint/typecheck passes: `npm run lint` — 845eeaa
+- [x] 1.3 `SUPABASE_SERVICE_ROLE_KEY` in `astro.config.mjs` env schema and `.env.example` — 845eeaa
+- [x] 1.4 `createAdminClient` exported from `src/lib/supabase.ts` — 845eeaa
 
 #### Manual
 
-- [x] 1.5 `createAdminClient()` returns `null` when the key is unset (no throw)
-- [x] 1.6 No service-role key value present in committed files
+- [x] 1.5 `createAdminClient()` returns `null` when the key is unset (no throw) — 845eeaa
+- [x] 1.6 No service-role key value present in committed files — 845eeaa
 
 ### Phase 2: Delete-account API route + route guard
 
 #### Automated
 
-- [ ] 2.1 Build passes: `npm run build`
-- [ ] 2.2 Lint passes: `npm run lint`
-- [ ] 2.3 `"/account"` present in `PROTECTED_ROUTES`
+- [x] 2.1 Build passes: `npm run build`
+- [x] 2.2 Lint passes: `npm run lint`
+- [x] 2.3 `"/account"` present in `PROTECTED_ROUTES`
 
 #### Manual
 
-- [ ] 2.4 `DELETE /api/account` signed out returns 401 `{ error }`
-- [ ] 2.5 Service-role key unset → authenticated `DELETE /api/account` returns 503 and does not delete
-- [ ] 2.6 Configured → authenticated `DELETE /api/account` returns 200; `auth.users` row gone; `products`/`sales_entries` cascade-deleted
-- [ ] 2.7 `/account` signed out redirects to `/auth/signin`
+- [x] 2.4 `DELETE /api/account` signed out returns 401 `{ error }`
+- [x] 2.5 Service-role key unset → authenticated `DELETE /api/account` returns 503 and does not delete
+- [x] 2.6 Configured → authenticated `DELETE /api/account` returns 200; `auth.users` row gone; `products`/`sales_entries` cascade-deleted
+- [x] 2.7 `/account` signed out redirects to `/auth/signin`
 
 ### Phase 3: DeleteAccountDialog island + /account page
 
