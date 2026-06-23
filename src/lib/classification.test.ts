@@ -1,6 +1,13 @@
 import { describe, expect, it } from "vitest";
-import { classify, entryDays, THRESHOLD_DEFINITIONS, totalHistoryDays, velocityOf } from "@/lib/classification";
-import type { Product, SalesEntry } from "@/types";
+import {
+  classify,
+  entryDays,
+  recommendationText,
+  THRESHOLD_DEFINITIONS,
+  totalHistoryDays,
+  velocityOf,
+} from "@/lib/classification";
+import type { ClassificationState, Product, SalesEntry } from "@/types";
 
 function makeProduct(overrides: Partial<Product> = {}): Product {
   return {
@@ -146,6 +153,9 @@ describe("Slow-mover gate (precedence over day-bands)", () => {
       makeEntry(7, "2026-01-01", "2026-01-07"),
     ]);
     expect(result.state).toBe("Slow-mover");
+    expect(result.velocity).toBe(1);
+    expect(result.daysOfStock).toBe(90);
+    expect(result.recommendation).toEqual({ kind: "promote" }); // high-stock Slow-mover still nudges promotion
   });
 
   it("velocity == 0.1 exactly is NOT a Slow-mover (rule is strict < 0.1)", () => {
@@ -232,12 +242,14 @@ describe("lead-time bands", () => {
     expect(result.recommendation).toEqual({ kind: "none" });
   });
 
-  it("Watch within [lead, 2×lead)", () => {
+  it("Watch within [lead, 2×lead) reports its velocity and days-of-stock", () => {
     // velocity 1; lead 10; stock 15 → days_of_stock 15 ∈ [10, 20)
     const result = classify(makeProduct({ stock_quantity: 15, lead_time_days: 10 }), [
       makeEntry(7, "2026-01-01", "2026-01-07"),
     ]);
     expect(result.state).toBe("Watch");
+    expect(result.velocity).toBe(1); // transparency fields must survive on the Watch result (FR-006)
+    expect(result.daysOfStock).toBe(15);
   });
 
   it("OK at the boundary days_of_stock == 2×lead_time", () => {
@@ -293,5 +305,38 @@ describe("threshold labels", () => {
     expect(Object.keys(THRESHOLD_DEFINITIONS).sort()).toEqual(
       ["Insufficient data", "OK", "Slow-mover", "Understocked", "Watch"].sort(),
     );
+  });
+  // FR-006 transparency legend: each state's definition is shown verbatim in the UI. Pin every
+  // string as a literal so a blanked/garbled definition (one assertion per state) fails.
+  it.each<[ClassificationState, string]>([
+    ["Insufficient data", "Fewer than 7 days of non-overlapping sales history."],
+    ["Understocked", "Fewer than lead-time days of stock remaining at current velocity."],
+    ["Watch", "Between lead-time and twice lead-time days of stock remaining."],
+    ["OK", "Between twice lead-time and 90 days of stock remaining."],
+    ["Slow-mover", "90 or more days of stock remaining, or selling fewer than 0.1 units/day."],
+  ])("defines the %s threshold with its FR-006 transparency string", (state, definition) => {
+    expect(THRESHOLD_DEFINITIONS[state]).toBe(definition);
+  });
+});
+
+describe("recommendationText (user-facing action wording)", () => {
+  it("words an order with its exact unit count", () => {
+    expect(recommendationText({ kind: "order", units: 12 }, "Understocked")).toBe("Order 12 units");
+  });
+
+  it("words a promote nudge", () => {
+    expect(recommendationText({ kind: "promote" }, "Slow-mover")).toBe("Consider promotion");
+  });
+
+  it("words a set-lead-time nudge", () => {
+    expect(recommendationText({ kind: "set-lead-time" }, "OK")).toBe("Set lead time to get reorder suggestion");
+  });
+
+  it("words 'none' differently for Insufficient data vs a settled state", () => {
+    // The state-dependent fork: Insufficient nudges logging more history; everything else is reassuring.
+    expect(recommendationText({ kind: "none" }, "Insufficient data")).toBe(
+      "Log at least 7 days of non-overlapping sales to get a classification.",
+    );
+    expect(recommendationText({ kind: "none" }, "OK")).toBe("No action needed right now.");
   });
 });

@@ -460,26 +460,26 @@ No data migration needed.
 
 #### Automated
 
-- [x] 2.1 New boundary tests pass (`npm test`)
-- [x] 2.2 Full suite green (`npm test`)
-- [x] 2.3 Lint + build pass (`npm run lint && npm run build`)
+- [x] 2.1 New boundary tests pass (`npm test`) — 0ac99e7
+- [x] 2.2 Full suite green (`npm test`) — 0ac99e7
+- [x] 2.3 Lint + build pass (`npm run lint && npm run build`) — 0ac99e7
 
 #### Manual
 
-- [x] 2.4 No redundant near-duplicate cases added (diff reviewed vs "redundant copies")
-- [x] 2.5 Every new expected value traces to the PRD/oracle, not engine output
+- [x] 2.4 No redundant near-duplicate cases added (diff reviewed vs "redundant copies") — 0ac99e7
+- [x] 2.5 Every new expected value traces to the PRD/oracle, not engine output — 0ac99e7
 
 ### Phase 3: Mutation gate (Stryker, ad-hoc)
 
 #### Automated
 
-- [ ] 3.1 Stryker runs to completion on `src/lib/classification.ts`
-- [ ] 3.2 Full suite green after any added assertions (`npm test`)
+- [x] 3.1 Stryker runs to completion on `src/lib/classification.ts`
+- [x] 3.2 Full suite green after any added assertions (`npm test`)
 
 #### Manual
 
-- [ ] 3.3 Remaining survivors are conscious equivalents, each with a recorded reason
-- [ ] 3.4 No assertion added purely to pin a cosmetic/implementation detail
+- [x] 3.3 Remaining survivors are conscious equivalents, each with a recorded reason
+- [x] 3.4 No assertion added purely to pin a cosmetic/implementation detail
 
 ### Phase 4: CI gate + cookbook + sync
 

@@ -1,0 +1,8 @@
+{
+  "$schema": "./node_modules/@stryker-mutator/core/schema/stryker-schema.json",
+  "_comment": "Ad-hoc selective mutation gate (CLAUDE.md §Mutation testing). Run scoped to a module, e.g. `npx stryker run --mutate \"src/lib/classification.ts\"`. NOT wired into CI.",
+  "testRunner": "vitest",
+  "reporters": ["html", "clear-text", "progress"],
+  "coverageAnalysis": "perTest",
+  "mutate": ["src/lib/classification.ts"]
+}

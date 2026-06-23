@@ -1,6 +1,10 @@
 # build output
 dist/
 
+# stryker mutation testing (generated report + temp dir)
+reports/
+.stryker-tmp/
+
 # generated types
 .astro/
 
