@@ -487,9 +487,9 @@ No data migration needed.
 
 - [ ] 4.1 PR run shows the `npm test` step executing
 - [ ] 4.2 A deliberately-broken test fails CI (verified then reverted)
-- [x] 4.3 `npm test`, `npm run lint`, `npm run build` green locally
+- [x] 4.3 `npm test`, `npm run lint`, `npm run build` green locally — 430d661
 
 #### Manual
 
-- [x] 4.4 test-plan §6.1 reads as a usable recipe
-- [x] 4.5 test-plan §3 Phase 1 = `complete`, §5 unit gate = required/wired
+- [x] 4.4 test-plan §6.1 reads as a usable recipe — 430d661
+- [x] 4.5 test-plan §3 Phase 1 = `complete`, §5 unit gate = required/wired — 430d661
