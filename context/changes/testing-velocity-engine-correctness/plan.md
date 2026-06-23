@@ -446,28 +446,28 @@ No data migration needed.
 
 #### Automated
 
-- [x] 1.1 All new OG-1/OG-2 tests pass (`npm test`)
-- [x] 1.2 Full unit suite green, no regressions in the other 3 files (`npm test`)
-- [x] 1.3 Type checking passes (`npm run lint`)
-- [x] 1.4 Build passes (`npm run build`)
+- [x] 1.1 All new OG-1/OG-2 tests pass (`npm test`) — 7873126
+- [x] 1.2 Full unit suite green, no regressions in the other 3 files (`npm test`) — 7873126
+- [x] 1.3 Type checking passes (`npm run lint`) — 7873126
+- [x] 1.4 Build passes (`npm run build`) — 7873126
 
 #### Manual
 
-- [x] 1.5 Updated `:46-49` test asserts a literal envelope value (35), not `5 + 4`
-- [x] 1.6 Hand-checked one collision case against the PRD (low-velocity + below-lead → Order)
+- [x] 1.5 Updated `:46-49` test asserts a literal envelope value (35), not `5 + 4` — 7873126
+- [x] 1.6 Hand-checked one collision case against the PRD (low-velocity + below-lead → Order) — 7873126
 
 ### Phase 2: Boundary coverage gaps (no engine change)
 
 #### Automated
 
-- [ ] 2.1 New boundary tests pass (`npm test`)
-- [ ] 2.2 Full suite green (`npm test`)
-- [ ] 2.3 Lint + build pass (`npm run lint && npm run build`)
+- [x] 2.1 New boundary tests pass (`npm test`)
+- [x] 2.2 Full suite green (`npm test`)
+- [x] 2.3 Lint + build pass (`npm run lint && npm run build`)
 
 #### Manual
 
-- [ ] 2.4 No redundant near-duplicate cases added (diff reviewed vs "redundant copies")
-- [ ] 2.5 Every new expected value traces to the PRD/oracle, not engine output
+- [x] 2.4 No redundant near-duplicate cases added (diff reviewed vs "redundant copies")
+- [x] 2.5 Every new expected value traces to the PRD/oracle, not engine output
 
 ### Phase 3: Mutation gate (Stryker, ad-hoc)
 

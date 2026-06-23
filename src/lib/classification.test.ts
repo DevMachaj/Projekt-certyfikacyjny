@@ -107,11 +107,17 @@ describe("Insufficient data (FR-008)", () => {
     expect(result.daysOfStock).toBeNull();
   });
 
-  it("clears once history reaches 7 days", () => {
+  it("clears once history reaches 7 days and routes to the correct state", () => {
+    // Exactly 7 days (the boundary): 7u/7d = velocity 1; stock 25, lead 10 → days_of_stock 25,
+    // which is the OK band [2×lead=20, 90). Pin the resulting state, not merely not-Insufficient,
+    // so a regression that clears the gate but routes 7-day history into the wrong band fails.
     const result = classify(makeProduct({ stock_quantity: 25, lead_time_days: 10 }), [
-      makeEntry(7, "2026-01-01", "2026-01-07"), // exactly 7 days, velocity 1
+      makeEntry(7, "2026-01-01", "2026-01-07"),
     ]);
     expect(result.state).not.toBe("Insufficient data");
+    expect(result.state).toBe("OK");
+    expect(result.velocity).toBe(1);
+    expect(result.recommendation).toEqual({ kind: "none" });
   });
 
   it("handles zero entries without dividing by zero", () => {
@@ -140,6 +146,17 @@ describe("Slow-mover gate (precedence over day-bands)", () => {
       makeEntry(7, "2026-01-01", "2026-01-07"),
     ]);
     expect(result.state).toBe("Slow-mover");
+  });
+
+  it("velocity == 0.1 exactly is NOT a Slow-mover (rule is strict < 0.1)", () => {
+    // 1 unit / 10 days = exactly 0.1/day. The gate is `velocity < 0.1`, so 0.1 must NOT be Slow.
+    // stock 5 / 0.1 = 50 days of stock; lead 10 → OK band [2×lead=20, 90). Kills a `<`→`<=` mutant.
+    const result = classify(makeProduct({ stock_quantity: 5, lead_time_days: 10 }), [
+      makeEntry(1, "2026-01-01", "2026-01-10"),
+    ]);
+    expect(result.velocity).toBe(0.1);
+    expect(result.state).not.toBe("Slow-mover");
+    expect(result.state).toBe("OK");
   });
 
   it("velocity < 0.1 wins over an OK day-band (precedence case)", () => {
@@ -184,6 +201,16 @@ describe("lead-time bands", () => {
     expect(result.state).toBe("Understocked");
     // reorder = ceil(velocity × (lead + buffer)) = ceil(1 × 17) = 17
     expect(result.recommendation).toEqual({ kind: "order", units: 17 });
+  });
+
+  it("rounds a .5 reorder quantity up: ceil(8.5) = 9, never down (OG-3)", () => {
+    // velocity 0.5 (10u/20d); lead 10 + buffer 7 = 17 → 0.5 × 17 = 8.5 exactly; stock 2 →
+    // days_of_stock 4 < lead 10 → Understocked. ceil(8.5) = 9 (floor=8, round=8/9 — kills both).
+    const result = classify(makeProduct({ stock_quantity: 2, lead_time_days: 10, buffer_days: 7 }), [
+      makeEntry(10, "2026-01-01", "2026-01-20"), // 20-day envelope → velocity 0.5
+    ]);
+    expect(result.state).toBe("Understocked");
+    expect(result.recommendation).toEqual({ kind: "order", units: 9 });
   });
 
   it("rounds the reorder quantity up (Math.ceil) for fractional velocity", () => {
@@ -252,12 +279,14 @@ describe("null lead time (FR-007)", () => {
 });
 
 describe("threshold labels", () => {
-  it("sets thresholdLabel to the assigned state's definition", () => {
+  it("sets thresholdLabel to the literal definition string of the assigned state", () => {
+    // 7u/7d = velocity 1; stock 5 < lead 10 days of cover → Understocked. Assert the FR-006
+    // transparency string as a literal (not a re-lookup of THRESHOLD_DEFINITIONS — that mirrors impl).
     const result = classify(makeProduct({ stock_quantity: 5, lead_time_days: 10 }), [
       makeEntry(7, "2026-01-01", "2026-01-07"),
     ]);
-    expect(result.thresholdLabel).toBe(THRESHOLD_DEFINITIONS[result.state]);
-    expect(result.thresholdLabel).toBe(THRESHOLD_DEFINITIONS.Understocked);
+    expect(result.state).toBe("Understocked");
+    expect(result.thresholdLabel).toBe("Fewer than lead-time days of stock remaining at current velocity.");
   });
 
   it("exposes a definition for every one of the five states", () => {
