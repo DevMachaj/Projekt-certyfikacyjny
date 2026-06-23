@@ -6,7 +6,7 @@
 >
 > Refresh: re-run `/10x-test-plan --refresh` when stale (see §8).
 >
-> Last updated: 2026-06-23 (Phase 1 change opened)
+> Last updated: 2026-06-23 (Phase 1 complete — unit gate wired into CI)
 
 ## 1. Strategy
 
@@ -75,7 +75,7 @@ orchestrator updates Status as artifacts appear on disk.
 
 | # | Phase name | Goal (one line) | Risks covered | Test types | Status | Change folder |
 |---|---|---|---|---|---|---|
-| 1 | Velocity engine correctness | Edge-case classification and reorder quantity match the PRD threshold table; wire the unit gate into CI | #2 | unit | researched | context/changes/testing-velocity-engine-correctness/ |
+| 1 | Velocity engine correctness | Edge-case classification and reorder quantity match the PRD threshold table; wire the unit gate into CI | #2 | unit | complete | context/changes/testing-velocity-engine-correctness/ |
 | 2 | API contract: isolation, validation, error envelope | Cross-account requests rejected; bad data rejected; DB errors degrade cleanly; bootstrap the integration harness | #1, #3, #5 | integration | not started | — |
 | 3 | Auth boundary | Stale / expired / forged session rejected on protected routes and API | #4 | integration | not started | — |
 | 4 | AI recommendation integrity | Engine facts survive unchanged into AI prose; deterministic fallback fires when the LLM is unavailable | #6 | unit + integration | not started | — |
@@ -120,15 +120,15 @@ phase lands; before that, the gate is `planned`.
 |---|---|---|---|
 | lint + typecheck | local + CI | required (wired) | syntactic / type drift |
 | build (SSR) | CI | required (wired) | broken production build |
-| unit | local + CI | required after §3 Phase 1 | velocity/classification logic regressions |
+| unit | local + CI | required (wired) | velocity/classification logic regressions |
 | integration (API) | local + CI | required after §3 Phase 2 | isolation, validation, and error-contract regressions |
 | post-edit hook | local (agent loop) | recommended (Module 3 Lesson 3) | regressions at edit time |
 | pre-prod smoke | between merge + prod | optional | environment-specific failures (e.g. the migration-drift 500 noted in `lessons.md`) |
 
-CI currently runs `lint` + `build` only (`.github/workflows/ci.yml`); no
-test step is wired. Phase 1 adds the `unit` gate (`npm test`), Phase 2 adds
-the `integration` gate. Hook and MCP configuration are out of scope for
-this lesson (Module 3 Lessons 3–4).
+CI runs `lint` → `test` → `build` (`.github/workflows/ci.yml`); the `unit`
+gate (`npm test`) was wired in §3 Phase 1, so a red unit test now blocks the
+PR. Phase 2 adds the `integration` gate. Hook and MCP configuration are out of
+scope for this lesson (Module 3 Lessons 3–4).
 
 ## 6. Cookbook Patterns
 
@@ -138,10 +138,37 @@ relevant rollout phase ships; before that, the sub-section reads
 
 ### 6.1 Adding a unit test
 
-- TBD — see §3 Phase 1 (velocity-engine edge-case pattern: assert PRD
-  threshold-table outputs without lifting expected values from the
-  implementation). Today's reference: `src/lib/classification.test.ts`,
-  run with `npm test`.
+Canonical example: `src/lib/classification.test.ts` (run with `npm test` = `vitest run`).
+Pattern established in §3 Phase 1 (`testing-velocity-engine-correctness`):
+
+1. **Oracle from sources, never from the code.** Every expected value comes from
+   the PRD threshold table / §Business Logic formulas (or a PRD-owner ruling
+   recorded in research) — never recomputed with the function under test. The
+   mirror anti-pattern looks like `expect(x).toBe(THRESHOLD_DEFINITIONS[result.state])`
+   or `expect(totalHistoryDays(e)).toBe(5 + 4)`: it re-derives the answer the same
+   way the impl does, so it passes against a bug. Assert the literal instead
+   (`toBe(35)`, `toBe("Fewer than lead-time days of stock remaining…")`). When the
+   sources don't resolve a value unambiguously, **stop and ask** — that ruling is
+   the oracle (e.g. OG-1 calendar-envelope, OG-2 Understocked-wins).
+2. **Pin every boundary as a literal.** For each threshold use the exact-boundary
+   inputs: `velocity == 0.1` (strict `<` ⇒ not Slow-mover), `days_of_stock == lead`,
+   `== 2×lead`, `== 90`, the `== 7`-day insufficient-data gate. Assert the *resulting
+   state and recommendation*, not merely "not the wrong one" — a test that only
+   asserts `!= "Insufficient data"` lets a wrong-band regression through.
+3. **One edge case per risk minimum:** zero / near-zero velocity, the gap-day
+   denominator (envelope counts dead days), empty input, dependency error.
+4. **Parameterize duplicates.** Six near-identical cases → one `it.each` with one
+   row per property; each row catches a distinct regression (see the five
+   `THRESHOLD_DEFINITIONS` rows). Do not copy-paste a case to bump coverage.
+5. **Selective mutation gate (ad-hoc, not CI):** after a risk phase is green, run
+   `npx stryker run --mutate "src/lib/<module>.ts"` (config: `stryker.conf.json`,
+   vitest runner). For each survivor ask *"would this change hurt a user or the
+   business?"* — yes ⇒ add a literal-derived assertion that kills it (this is how
+   `recommendationText` coverage and the FR-006 legend strings got pinned); no
+   (equivalent / cosmetic) ⇒ ignore consciously and record why. Do not chase 100%:
+   the three surviving `!= null` guards at `classification.ts:152/162/173` are
+   provably equivalent (unreachable-false after the velocity gate, and `x < null`
+   is already false), so they stay. Pinning them would be a vibe test.
 
 ### 6.2 Adding an integration test
 

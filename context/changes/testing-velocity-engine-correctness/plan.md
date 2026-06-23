@@ -473,13 +473,13 @@ No data migration needed.
 
 #### Automated
 
-- [x] 3.1 Stryker runs to completion on `src/lib/classification.ts`
-- [x] 3.2 Full suite green after any added assertions (`npm test`)
+- [x] 3.1 Stryker runs to completion on `src/lib/classification.ts` — 1800638
+- [x] 3.2 Full suite green after any added assertions (`npm test`) — 1800638
 
 #### Manual
 
-- [x] 3.3 Remaining survivors are conscious equivalents, each with a recorded reason
-- [x] 3.4 No assertion added purely to pin a cosmetic/implementation detail
+- [x] 3.3 Remaining survivors are conscious equivalents, each with a recorded reason — 1800638
+- [x] 3.4 No assertion added purely to pin a cosmetic/implementation detail — 1800638
 
 ### Phase 4: CI gate + cookbook + sync
 
@@ -487,9 +487,9 @@ No data migration needed.
 
 - [ ] 4.1 PR run shows the `npm test` step executing
 - [ ] 4.2 A deliberately-broken test fails CI (verified then reverted)
-- [ ] 4.3 `npm test`, `npm run lint`, `npm run build` green locally
+- [x] 4.3 `npm test`, `npm run lint`, `npm run build` green locally
 
 #### Manual
 
-- [ ] 4.4 test-plan §6.1 reads as a usable recipe
-- [ ] 4.5 test-plan §3 Phase 1 = `complete`, §5 unit gate = required/wired
+- [x] 4.4 test-plan §6.1 reads as a usable recipe
+- [x] 4.5 test-plan §3 Phase 1 = `complete`, §5 unit gate = required/wired
