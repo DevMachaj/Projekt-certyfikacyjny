@@ -7,11 +7,12 @@ import type { ClassificationState, Product, SalesEntry } from "@/types";
  * into a classification state, the threshold definition text, and a recommended action.
  * Computed server-side only; the API returns the result and the detail page renders it.
  *
- * Rules mirror the PRD Business Logic (formulas + threshold table). See the plan's
- * "Critical Implementation Details" for the locked decisions encoded here:
- *   - Inclusive day-count: an entry covers (end − start) + 1 calendar days; total = sum.
- *   - Evaluation order: Insufficient → Slow-mover → Understocked → Watch → OK.
- *   - velocity < 0.1 wins over a coincidental OK day-band (checked before the bands).
+ * Rules mirror the PRD Business Logic (formulas + threshold table) and the resolved oracle:
+ *   - Inclusive day-count: an entry covers (end − start) + 1 calendar days; total history is the
+ *     calendar envelope max(end) − min(start) + 1, so gap days between entries count as zero-sales.
+ *   - Evaluation order: Insufficient → Understocked → Slow-mover → Watch → OK.
+ *   - Understocked (imminent stockout) wins over the velocity < 0.1 Slow-mover gate; zero-velocity
+ *     has no finite runway, so it can never be Understocked and stays Slow-mover.
  *   - When lead_time_days is null: lead-independent states only (Slow-mover or OK + set-lead-time).
  *   - Reorder quantity = ceil(velocity × (lead_time + buffer)), Understocked + lead set only.
  */
@@ -37,7 +38,7 @@ export interface ClassificationResult {
   velocity: number | null;
   /** stock_quantity ÷ velocity; null when velocity is unavailable. */
   daysOfStock: number | null;
-  /** Inclusive calendar days summed across all (non-overlapping) entries. */
+  /** Calendar envelope in days across all entries: max(end) − min(start) + 1 (gap days included). */
   totalDays: number;
   totalUnits: number;
   /** Human-readable definition of the assigned state (= THRESHOLD_DEFINITIONS[state]). */
@@ -94,9 +95,20 @@ export function entryDays(entry: SalesEntry): number {
   return (parseUTC(entry.end_date) - parseUTC(entry.start_date)) / MS_PER_DAY + 1;
 }
 
-/** Total non-overlapping history in days — the sum of each entry's inclusive span. */
+/**
+ * Total history in days — the calendar envelope `max(end) − min(start) + 1` across all entries.
+ * Gap days between non-adjacent entries count as zero-sales history (PRD: "total calendar days
+ * covered by all non-overlapping entries"). Empty → 0; a single entry → its inclusive span.
+ */
 export function totalHistoryDays(entries: SalesEntry[]): number {
-  return entries.reduce((sum, entry) => sum + entryDays(entry), 0);
+  if (entries.length === 0) return 0;
+  let minStart = Infinity;
+  let maxEnd = -Infinity;
+  for (const entry of entries) {
+    minStart = Math.min(minStart, parseUTC(entry.start_date));
+    maxEnd = Math.max(maxEnd, parseUTC(entry.end_date));
+  }
+  return (maxEnd - minStart) / MS_PER_DAY + 1;
 }
 
 /** Velocity in units/day over all history; null when there is no history (avoids ÷0). */
@@ -130,34 +142,35 @@ export function classify(product: Product, entries: SalesEntry[]): Classificatio
   // velocity ≥ 0 here (totalDays ≥ 7 implies ≥ 1 entry); units_sold ≥ 0 means a product
   // logged over a period with no sales has velocity 0 — and therefore no finite stock runway.
   const velocity = totalUnits / totalDays;
-
-  // (2) Slow-mover gate — checked before the lead-time bands so a barely-selling item
-  //     surfaces as Slow-mover even when its day-band would read OK. A barely-selling item
-  //     still reports its (finite) days-of-stock; only a true zero-velocity product has none.
-  if (velocity < SLOW_VELOCITY) {
-    const daysOfStock = velocity > 0 ? product.stock_quantity / velocity : null;
-    return base("Slow-mover", { velocity, daysOfStock, recommendation: { kind: "promote" } });
-  }
-
-  // velocity ≥ 0.1 here, so days-of-stock is finite (no ÷0).
-  const daysOfStock = product.stock_quantity / velocity;
-  if (daysOfStock >= SLOW_DAYS_OF_STOCK) {
-    return base("Slow-mover", { velocity, daysOfStock, recommendation: { kind: "promote" } });
-  }
-
+  // Finite days-of-stock only when the product is actually selling; zero-velocity → no runway (null).
+  const daysOfStock = velocity > 0 ? product.stock_quantity / velocity : null;
   const leadTime = product.lead_time_days;
+
+  // (2) Imminent stockout wins over every velocity/day-band signal (OG-2): a barely-selling item
+  //     that will still run out before its lead time must be reordered, not promoted. Requires a
+  //     lead time and a finite runway — zero-velocity (daysOfStock null) can never reach here.
+  if (leadTime != null && daysOfStock != null && daysOfStock < leadTime) {
+    const units = Math.ceil(velocity * (leadTime + product.buffer_days));
+    return base("Understocked", { velocity, daysOfStock, recommendation: { kind: "order", units } });
+  }
+
+  // (3) Slow-mover: barely selling (incl. zero-velocity), or sitting on 90+ days of cover. Checked
+  //     after Understocked so a low-velocity-but-stocking-out item is not mislabelled.
+  if (velocity < SLOW_VELOCITY) {
+    return base("Slow-mover", { velocity, daysOfStock, recommendation: { kind: "promote" } });
+  }
+  if (daysOfStock != null && daysOfStock >= SLOW_DAYS_OF_STOCK) {
+    return base("Slow-mover", { velocity, daysOfStock, recommendation: { kind: "promote" } });
+  }
 
   // (4) No lead time → lead-independent states only: nudge the owner to set it (FR-007).
   if (leadTime == null) {
     return base("OK", { velocity, daysOfStock, recommendation: { kind: "set-lead-time" } });
   }
 
-  // (3) Lead-time bands.
-  if (daysOfStock < leadTime) {
-    const units = Math.ceil(velocity * (leadTime + product.buffer_days));
-    return base("Understocked", { velocity, daysOfStock, recommendation: { kind: "order", units } });
-  }
-  if (daysOfStock < 2 * leadTime) {
+  // (5) Lead-time bands. velocity ≥ 0.1 here, so daysOfStock is finite; daysOfStock ≥ leadTime
+  //     (else it would be Understocked above), so Watch is the [lead, 2×lead) band.
+  if (daysOfStock != null && daysOfStock < 2 * leadTime) {
     return base("Watch", { velocity, daysOfStock });
   }
   return base("OK", { velocity, daysOfStock });

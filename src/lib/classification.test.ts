@@ -43,14 +43,58 @@ describe("day-count helpers", () => {
     expect(entryDays(makeEntry(5, "2026-01-01", "2026-04-10"))).toBe(100);
   });
 
-  it("sums totalHistoryDays across multiple non-overlapping entries", () => {
+  it("totalHistoryDays is the calendar envelope incl. gap days, not the sum of spans", () => {
+    // Jan 1–5 + Feb 1–4: the dead Jan 6 → Jan 31 gap counts as zero-sales history.
+    // Envelope = max(end) − min(start) + 1 = Jan 1 → Feb 4 inclusive = 35 days (NOT 5 + 4).
     const entries = [makeEntry(3, "2026-01-01", "2026-01-05"), makeEntry(4, "2026-02-01", "2026-02-04")];
-    expect(totalHistoryDays(entries)).toBe(5 + 4);
+    expect(totalHistoryDays(entries)).toBe(35);
   });
 
   it("velocityOf is total units ÷ total days, and null with no history", () => {
     expect(velocityOf([makeEntry(10, "2026-01-01", "2026-01-05")])).toBe(2); // 10 / 5
     expect(velocityOf([])).toBeNull();
+  });
+});
+
+describe("gap-day denominator (calendar envelope, OG-1)", () => {
+  it("divides velocity by the full calendar envelope, counting dead gap days as zero-sales", () => {
+    // PRD: velocity = total units ÷ total calendar days covered by all non-overlapping entries.
+    // Jan 1–5 (10u) + Jan 20–24 (10u): envelope Jan 1 → Jan 24 inclusive = 24 days (NOT 5 + 5 = 10).
+    const entries = [makeEntry(10, "2026-01-01", "2026-01-05"), makeEntry(10, "2026-01-20", "2026-01-24")];
+    expect(totalHistoryDays(entries)).toBe(24);
+    expect(velocityOf(entries)).toBeCloseTo(20 / 24); // ≈ 0.833/day, not 20 / 10 = 2/day
+  });
+
+  it("the 7-day Insufficient-data gate uses the envelope, so two short entries spanning ≥7 days classify", () => {
+    // Jan 1–3 (3u) + Jan 8–10 (3u): envelope = Jan 1 → Jan 10 = 10 days (≥ 7), even though the
+    // summed spans are only 3 + 3 = 6 days. Under the buggy sum this would be Insufficient data.
+    const entries = [makeEntry(3, "2026-01-01", "2026-01-03"), makeEntry(3, "2026-01-08", "2026-01-10")];
+    const result = classify(makeProduct({ stock_quantity: 25, lead_time_days: 10 }), entries);
+    expect(result.totalDays).toBe(10);
+    expect(result.state).not.toBe("Insufficient data");
+  });
+});
+
+describe("Understocked beats Slow-mover (imminent stockout wins, OG-2)", () => {
+  it("a low-velocity item that will stock out before lead time gets an Order, not promotion", () => {
+    // 5 units / 100 days = 0.05/day (< 0.1, would otherwise be a Slow-mover); stock 1 →
+    // days_of_stock = 1 / 0.05 = 20 < lead 30 → Understocked wins. PRD: reorder = ceil(v × (lead + buffer)).
+    const result = classify(makeProduct({ stock_quantity: 1, lead_time_days: 30, buffer_days: 7 }), [
+      makeEntry(5, "2026-01-01", "2026-04-10"), // 100-day envelope
+    ]);
+    expect(result.state).toBe("Understocked");
+    // ceil(0.05 × (30 + 7)) = ceil(0.05 × 37) = ceil(1.85) = 2
+    expect(result.recommendation).toEqual({ kind: "order", units: 2 });
+  });
+
+  it("zero-velocity with low stock stays Slow-mover (no finite runway → never Understocked)", () => {
+    // 0 units / 10 days = 0/day → days_of_stock is null (∞), so the imminent-stockout test cannot fire.
+    const result = classify(makeProduct({ stock_quantity: 1, lead_time_days: 30 }), [
+      makeEntry(0, "2026-01-01", "2026-01-10"),
+    ]);
+    expect(result.state).toBe("Slow-mover");
+    expect(result.daysOfStock).toBeNull();
+    expect(result.recommendation).toEqual({ kind: "promote" });
   });
 });
 
