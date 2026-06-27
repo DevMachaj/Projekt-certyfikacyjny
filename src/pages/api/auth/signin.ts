@@ -13,7 +13,13 @@ export const POST: APIRoute = async (context) => {
   const { error } = await supabase.auth.signInWithPassword({ email, password });
 
   if (error) {
-    return context.redirect(`/auth/signin?error=${encodeURIComponent(error.message)}`);
+    // error.message can be an unhelpful "{}" when the Auth server is unreachable or returns an
+    // empty body (e.g. a misconfigured SUPABASE_URL). Surface the status/code so failures aren't opaque.
+    const detail =
+      error.message && error.message !== "{}"
+        ? error.message
+        : `auth unreachable (status ${error.status ?? "?"}, code ${error.code ?? "?"})`;
+    return context.redirect(`/auth/signin?error=${encodeURIComponent(detail)}`);
   }
 
   return context.redirect("/");
