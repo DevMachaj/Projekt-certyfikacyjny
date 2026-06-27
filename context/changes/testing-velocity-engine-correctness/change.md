@@ -1,9 +1,9 @@
 ---
 change_id: testing-velocity-engine-correctness
 title: Velocity engine correctness — unit tests for Risk #2 (test-plan Phase 1)
-status: implementing
+status: implemented
 created: 2026-06-23
-updated: 2026-06-23
+updated: 2026-06-27
 archived_at: null
 ---
 

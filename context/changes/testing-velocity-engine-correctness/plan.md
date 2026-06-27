@@ -485,8 +485,8 @@ No data migration needed.
 
 #### Automated
 
-- [ ] 4.1 PR run shows the `npm test` step executing
-- [ ] 4.2 A deliberately-broken test fails CI (verified then reverted)
+- [x] 4.1 PR run shows the `npm test` step executing — PR #7, CI run 28286328349 (success)
+- [x] 4.2 A deliberately-broken test fails CI (verified then reverted) — CI run 28286376554 (failure), reverted via force-push to 512a391
 - [x] 4.3 `npm test`, `npm run lint`, `npm run build` green locally — 430d661
 
 #### Manual
