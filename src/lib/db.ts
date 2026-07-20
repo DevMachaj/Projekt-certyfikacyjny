@@ -1,5 +1,6 @@
 import type { PostgrestError, SupabaseClient } from "@supabase/supabase-js";
 import type { Product, SalesEntry } from "@/types";
+import { productRowSchema, salesEntryRowSchema } from "@/lib/validation/rows";
 import type { ProductInput, ProductUpdateInput } from "@/lib/validation/product";
 import type { SalesEntryInput } from "@/lib/validation/sales-entry";
 
@@ -11,7 +12,9 @@ export async function getProductsByUser(supabase: SupabaseClient, userId: string
     .order("name", { ascending: true });
 
   if (error) throw error;
-  return data as Product[];
+  // Validate the DB rows instead of an unchecked cast: a drifted/corrupt row throws (fail-closed)
+  // and propagates to the caller's existing catch (API → 500, dashboard → groups=[]).
+  return productRowSchema.array().parse(data);
 }
 
 export async function createProduct(supabase: SupabaseClient, userId: string, input: ProductInput): Promise<Product> {
@@ -83,7 +86,8 @@ export async function getSalesEntriesByUser(supabase: SupabaseClient, userId: st
     .order("start_date", { ascending: true });
 
   if (error) throw error;
-  return data as SalesEntry[];
+  // Validate the DB rows instead of an unchecked cast (see getProductsByUser).
+  return salesEntryRowSchema.array().parse(data);
 }
 
 export async function createSalesEntry(

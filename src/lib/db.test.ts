@@ -55,6 +55,12 @@ describe("getProductsByUser", () => {
     const supabase = mockSupabase({ data: null, error: { message: "boom" } });
     await expect(getProductsByUser(supabase, "u1")).rejects.toEqual({ message: "boom" });
   });
+
+  it("throws when a returned row fails the row schema (silent drift becomes loud)", async () => {
+    const driftedRow = { ...productRow, stock_quantity: "ten" }; // wrong type vs schema
+    const supabase = mockSupabase({ data: [driftedRow], error: null });
+    await expect(getProductsByUser(supabase, "u1")).rejects.toThrow();
+  });
 });
 
 describe("getSalesEntriesByUser", () => {
@@ -66,5 +72,12 @@ describe("getSalesEntriesByUser", () => {
   it("throws when Postgrest returns an error", async () => {
     const supabase = mockSupabase({ data: null, error: { message: "boom" } });
     await expect(getSalesEntriesByUser(supabase, "u1")).rejects.toEqual({ message: "boom" });
+  });
+
+  it("throws when a returned row fails the row schema (missing field)", async () => {
+    const missingField: Record<string, unknown> = { ...salesRow };
+    delete missingField.units_sold; // drop a required column
+    const supabase = mockSupabase({ data: [missingField], error: null });
+    await expect(getSalesEntriesByUser(supabase, "u1")).rejects.toThrow();
   });
 });

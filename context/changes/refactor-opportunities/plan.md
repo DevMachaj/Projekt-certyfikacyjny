@@ -250,21 +250,21 @@ Brak migracji danych ani zmiany schematu DB. Wszystkie fazy odwracalne pojedyncz
 
 #### Automated
 
-- [x] 3.1 Testy zgodności przechodzą: `npm test`
-- [x] 3.2 Typecheck czysty: `npm run typecheck`
-- [x] 3.3 Lint czysty: `npm run lint`
+- [x] 3.1 Testy zgodności przechodzą: `npm test` — fcd13b8
+- [x] 3.2 Typecheck czysty: `npm run typecheck` — fcd13b8
+- [x] 3.3 Lint czysty: `npm run lint` — fcd13b8
 
 ### Phase 4: Walidacja na odczycie (C2)
 
 #### Automated
 
-- [ ] 4.1 Wszystkie testy (w tym „zły wiersz → throw") przechodzą: `npm test`
-- [ ] 4.2 Typecheck czysty: `npm run typecheck`
-- [ ] 4.3 Build SSR przechodzi: `npm run build`
-- [ ] 4.4 Lint czysty: `npm run lint`
+- [x] 4.1 Wszystkie testy (w tym „zły wiersz → throw") przechodzą: `npm test`
+- [x] 4.2 Typecheck czysty: `npm run typecheck`
+- [x] 4.3 Build SSR przechodzi: `npm run build`
+- [x] 4.4 Lint czysty: `npm run lint`
 
 #### Manual
 
-- [ ] 4.5 Dashboard renderuje siatkę na poprawnych danych bez regresji
-- [ ] 4.6 „Generate plan" zwraca plan na poprawnych danych
-- [ ] 4.7 (Opcjonalnie) zły wiersz → API 500 `{error}` / dashboard pusta siatka, nie hard-500
+- [x] 4.5 Dashboard renderuje siatkę na poprawnych danych bez regresji
+- [x] 4.6 „Generate plan" zwraca plan na poprawnych danych
+- [x] 4.7 (Opcjonalnie) zły wiersz → API 500 `{error}` / dashboard pusta siatka, nie hard-500
