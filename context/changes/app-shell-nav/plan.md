@@ -288,10 +288,10 @@ The shell adds one guarded products+entries query per authenticated page (for th
 
 #### Manual
 
-- [ ] 1.6 Sidebar renders on the 4 app pages (wordmark, Dashboard + Produkty, account card); no sidebar on auth/`/`
-- [ ] 1.7 Active nav item matches the current route (Produkty active on product detail)
-- [ ] 1.8 Account card links to `/account`; Sign out lands on `/`
-- [ ] 1.9 Visual match to `ui_kits/app` (translated): indigo wordmark, `--accent-subtle` active, gray hover
+- [x] 1.6 Sidebar renders on the 4 app pages (wordmark, Dashboard + Produkty, account card); no sidebar on auth/`/`
+- [x] 1.7 Active nav item matches the current route (Produkty active on product detail)
+- [x] 1.8 Account card links to `/account`; Sign out lands on `/`
+- [x] 1.9 Visual match to `ui_kits/app` (translated): indigo wordmark, `--accent-subtle` active, gray hover
 
 ### Phase 2: /plan route + move the plan + Plan nav item + live badge + middleware
 
@@ -305,22 +305,22 @@ The shell adds one guarded products+entries query per authenticated page (for th
 
 #### Manual
 
-- [ ] 2.6 `/plan` renders the plan in the shell (Polish); generate returns the prioritized list; AI/fallback/empty states work
-- [ ] 2.7 Dashboard no longer shows the plan generator
-- [ ] 2.8 Plan nav item shows the Understocked badge (matches dashboard Understocked group); hidden when count is 0
-- [ ] 2.9 Unauthenticated `/plan` redirects to `/auth/signin`
+- [x] 2.6 `/plan` renders the plan in the shell (Polish); generate returns the prioritized list; AI/fallback/empty states work
+- [x] 2.7 Dashboard no longer shows the plan generator
+- [x] 2.8 Plan nav item shows the Understocked badge (matches dashboard Understocked group); hidden when count is 0
+- [x] 2.9 Unauthenticated `/plan` redirects to `/auth/signin`
 
 ### Phase 3: E2E coverage + full verification (gate)
 
 #### Automated
 
-- [x] 3.1 Build passes: `npm run build`
-- [x] 3.2 Lint passes: `npm run lint`
-- [x] 3.3 Type/astro check passes: `npm run astro check`
-- [x] 3.4 Unit tests pass: `npm test`
-- [x] 3.5 Full E2E suite green: `npx playwright test`
+- [x] 3.1 Build passes: `npm run build` — 43af7e3
+- [x] 3.2 Lint passes: `npm run lint` — 43af7e3
+- [x] 3.3 Type/astro check passes: `npm run astro check` — 43af7e3
+- [x] 3.4 Unit tests pass: `npm test` — 43af7e3
+- [x] 3.5 Full E2E suite green: `npx playwright test` — 43af7e3
 
 #### Manual
 
-- [ ] 3.6 `e2e/app-shell.spec.ts` passes in isolation (nav + relocation)
-- [ ] 3.7 No regression in `landing.spec.ts`, `protected-routes-auth.spec.ts`, or `seed.spec.ts`
+- [x] 3.6 `e2e/app-shell.spec.ts` passes in isolation (nav + relocation)
+- [x] 3.7 No regression in `landing.spec.ts`, `protected-routes-auth.spec.ts`, or `seed.spec.ts`

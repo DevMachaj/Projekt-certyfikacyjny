@@ -1,7 +1,7 @@
 ---
 change_id: app-shell-nav
 title: App shell — persistent sidebar navigation (S-11)
-status: implementing
+status: implemented
 created: 2026-07-20
 updated: 2026-07-20
 archived_at: null
