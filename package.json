@@ -13,6 +13,11 @@
     "format": "prettier --write .",
     "test": "vitest run",
     "test:watch": "vitest",
+    "depcruise": "depcruise src",
+    "depcruise:graph": "depcruise src --output-type dot | dot -T svg > dependency-graph.svg",
+    "depcruise:archi": "depcruise src --output-type archi | dot -T svg > dependency-archi.svg",
+    "depcruise:mermaid": "depcruise src --output-type mermaid",
+    "depcruise:html": "depcruise src --output-type err-html --output-to dependency-report.html",
     "prepare": "husky"
   },
   "dependencies": {
@@ -45,6 +50,7 @@
     "@playwright/test": "^1.61.1",
     "@stryker-mutator/core": "^9.6.1",
     "@stryker-mutator/vitest-runner": "^9.6.1",
+    "dependency-cruiser": "^18.0.0",
     "eslint": "^9.29.0",
     "eslint-config-prettier": "^10.1.8",
     "eslint-plugin-astro": "^1.7.0",
