@@ -12,7 +12,7 @@ To NIE jest pełny refaktor kontraktu danych (C1). Ranking (`research.md` §4) p
 - Zapisy SĄ walidowane zodem (`productSchema` / `salesEntrySchema`) w warstwie API; odczyty NIE. Kontrast systematyczny — granica leży na styku `db.ts` ↔ Supabase.
 - **Brak `db.test.ts`** — te funkcje mają ZERO testów. `db.ts` przyjmuje `supabase: SupabaseClient` jako parametr (DI), więc mock jest trywialny.
 - **Brak generacji typów Supabase** (`createServerClient` bez generyka) — `types.ts` pisany ręcznie w 1 commicie (`bec03c4`), fan-in 16.
-- Input-schematy pomijają kolumny serwerowe: `productSchema` = `{name, stock_quantity, lead_time_days, buffer_days}` (brak `id, user_id, created_at, updated_at`); `salesEntrySchema` = `{units_sold, start_date, end_date}` (brak `id, product_id, user_id, created_at`) i jest `ZodEffects` z regułą wejścia „end_date nie w przyszłości" — reguła walidacji _wejścia_, nie inwariant zapisanego wiersza.
+- Input-schematy pomijają kolumny serwerowe: `productSchema` = `{name, stock_quantity, lead_time_days, buffer_days}` (brak `id, user_id, created_at, updated_at`); `salesEntrySchema` = `{units_sold, start_date, end_date}` (brak `id, product_id, user_id, created_at`) i jest `ZodEffects` z regułą wejścia „end*date nie w przyszłości" — reguła walidacji \_wejścia*, nie inwariant zapisanego wiersza.
 - `urgency()` (`restocking.ts:45-48`, funkcja prywatna) ma guard `+Infinity` dla null-facts; branch **nietrafiony** żadnym testem, choć jest **świadomym ograniczeniem** (`context/archive/2026-06-17-restocking-plan-decision-support/plan.md:16,48`). Werdykt ④: guard, nie przebudowa.
 - Reguła zespołu (`context/foundation/lessons.md`): wywołania throw-on-error db-helperów na granicy SSR/API są opakowane w try/catch — API zwraca `Response.json({error},500)`, SSR degraduje do `groups=[]`. Walidacja na odczycie musi rzucać na **tej samej** granicy.
 - Jedyna bramkująca warstwa testowa to **vitest** (`npm test` w CI); Stryker (tylko `classification.ts`) i Playwright są poza CI. Każdy nowy `src/**/*.test.ts` staje się bramką za darmo.
@@ -235,16 +235,16 @@ Brak migracji danych ani zmiany schematu DB. Wszystkie fazy odwracalne pojedyncz
 
 #### Automated
 
-- [x] 1.1 Nowy test przechodzi: `npm test`
-- [x] 1.2 Lint czysty: `npm run lint`
+- [x] 1.1 Nowy test przechodzi: `npm test` — 128d088
+- [x] 1.2 Lint czysty: `npm run lint` — 128d088
 
 ### Phase 2: Testy charakteryzujące db.ts (przed dotknięciem)
 
 #### Automated
 
-- [ ] 2.1 `db.test.ts` przechodzi: `npm test`
-- [ ] 2.2 Typecheck czysty: `npm run typecheck`
-- [ ] 2.3 Lint czysty: `npm run lint`
+- [x] 2.1 `db.test.ts` przechodzi: `npm test`
+- [x] 2.2 Typecheck czysty: `npm run typecheck`
+- [x] 2.3 Lint czysty: `npm run lint`
 
 ### Phase 3: Row-schema jako jedno źródło (mechanizm, na zielono)
 
