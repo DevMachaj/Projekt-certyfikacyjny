@@ -1,5 +1,7 @@
 import * as React from "react";
 
+import type { ClassificationState } from "@/types";
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardHeader, CardTitle, CardDescription, CardAction, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -28,9 +30,24 @@ function Row({ title, children }: { title: string; children: React.ReactNode }) 
   );
 }
 
+const STATES: ClassificationState[] = ["Understocked", "Watch", "OK", "Slow-mover", "Insufficient data"];
+
 export function DesignSystemPreview() {
   return (
     <>
+      <Row title="Badges — classification states">
+        <div className="border-border bg-card flex flex-wrap items-center gap-2 rounded-lg border p-6">
+          {STATES.map((s) => (
+            <Badge key={s} state={s} />
+          ))}
+          <span className="bg-border mx-2 h-4 w-px" />
+          <Badge tone="accent">AI</Badge>
+          <Badge tone="neutral" dot={false}>
+            Buffer 7d
+          </Badge>
+        </div>
+      </Row>
+
       <Row title="Buttons">
         <div className="border-border bg-card space-y-4 rounded-lg border p-6">
           <div className="flex flex-wrap items-center gap-3">
