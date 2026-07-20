@@ -1,5 +1,6 @@
 ---
 import Layout from "@/layouts/Layout.astro";
+import { DesignSystemPreview } from "@/components/DesignSystemPreview";
 
 // Dev-only visual reference for the S-08 design system (light reskin).
 // Renders the token foundation — palette, type scale, spacing, radius, elevation —
@@ -224,8 +225,14 @@ const radii = [
       </div>
     </section>
 
+    <!-- ============ Components (live island) ============ -->
+    <!-- Rendered client-only: radix primitives (Checkbox/Dialog) don't survive
+         Astro's static per-component SSR. See DesignSystemPreview.tsx. -->
+    <h2 class="text-foreground mb-2 text-2xl font-bold tracking-tight">Components</h2>
+    <DesignSystemPreview client:only="react" />
+
     <p class="border-border text-muted-foreground mt-16 border-t pt-6 text-xs">
-      Components (button, dialog, checkbox, card, input, badge) are added to this page in Phases 2–3.
+      Status badge (5 states) is added in Phase 3.
     </p>
   </main>
 </Layout>

@@ -293,31 +293,31 @@ No data or schema migration. The token change is backward-compatible because scr
 
 #### Automated
 
-- [x] 1.1 Build passes: `npm run build`
-- [x] 1.2 Lint passes: `npm run lint`
-- [x] 1.3 Typecheck passes: `npm run astro check`
-- [x] 1.4 Geist packages resolve (install + font import)
+- [x] 1.1 Build passes: `npm run build` — c347af4
+- [x] 1.2 Lint passes: `npm run lint` — c347af4
+- [x] 1.3 Typecheck passes: `npm run astro check` — c347af4
+- [x] 1.4 Geist packages resolve (install + font import) — c347af4
 
 #### Manual
 
-- [x] 1.5 `/design-preview` renders palette, 5 status families, Geist type scale
-- [x] 1.6 Text renders in Geist locally (no CDN fetch)
-- [x] 1.7 No token-change regression on existing screens
+- [x] 1.5 `/design-preview` renders palette, 5 status families, Geist type scale — c347af4
+- [x] 1.6 Text renders in Geist locally (no CDN fetch) — c347af4
+- [x] 1.7 No token-change regression on existing screens — c347af4
 
 ### Phase 2: Base components (button, dialog, checkbox, card, input)
 
 #### Automated
 
-- [ ] 2.1 Build passes: `npm run build`
-- [ ] 2.2 Lint passes: `npm run lint`
-- [ ] 2.3 Typecheck passes: `npm run astro check`
-- [ ] 2.4 Unit tests pass: `npm test`
+- [x] 2.1 Build passes: `npm run build`
+- [x] 2.2 Lint passes: `npm run lint`
+- [x] 2.3 Typecheck passes: `npm run astro check`
+- [x] 2.4 Unit tests pass: `npm test`
 
 #### Manual
 
-- [ ] 2.5 All button/dialog/checkbox/card/input variants render on `/design-preview`
-- [ ] 2.6 Hover/press/focus states match the design (indigo focus ring)
-- [ ] 2.7 No component API/role changed
+- [x] 2.5 All button/dialog/checkbox/card/input variants render on `/design-preview`
+- [x] 2.6 Hover/press/focus states match the design (indigo focus ring)
+- [x] 2.7 No component API/role changed
 
 ### Phase 3: Status system + regression gate
 
