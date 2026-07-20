@@ -17,6 +17,7 @@ const PROTECTED_ROUTES = [
   { path: "/dashboard", protectedHeading: "Dashboard" },
   { path: "/products", protectedHeading: "Products" },
   { path: "/account", protectedHeading: "Account" },
+  { path: "/plan", protectedHeading: "Plan zatowarowania" },
 ];
 
 test.describe("R4: protected routes reject unauthenticated access", () => {
