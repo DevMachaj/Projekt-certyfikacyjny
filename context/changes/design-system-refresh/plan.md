@@ -323,14 +323,14 @@ No data or schema migration. The token change is backward-compatible because scr
 
 #### Automated
 
-- [x] 3.1 Build passes: `npm run build`
-- [x] 3.2 Lint passes: `npm run lint`
-- [x] 3.3 Typecheck passes: `npm run astro check`
-- [x] 3.4 Unit tests pass: `npm test`
-- [x] 3.5 E2E suite passes: `npx playwright test` — 4/5 pass; accepted. The 1 failure (seed.spec) is an expired auth fixture (Jun 27 session → 302), not a regression. Needs a refreshed `playwright/.auth/user.json`.
+- [x] 3.1 Build passes: `npm run build` — 6877b2c
+- [x] 3.2 Lint passes: `npm run lint` — 6877b2c
+- [x] 3.3 Typecheck passes: `npm run astro check` — 6877b2c
+- [x] 3.4 Unit tests pass: `npm test` — 6877b2c
+- [x] 3.5 E2E suite passes: `npx playwright test` — 4/5 pass; accepted. The 1 failure (seed.spec) is an expired auth fixture (Jun 27 session → 302), not a regression. Needs a refreshed `playwright/.auth/user.json`. — 6877b2c
 
 #### Manual
 
-- [x] 3.6 5 status badges + tones render muted/legible on `/design-preview`
-- [x] 3.7 Existing status render sites show new muted colors, text unchanged
-- [x] 3.8 Full visual sign-off of `/design-preview` against the design system
+- [x] 3.6 5 status badges + tones render muted/legible on `/design-preview` — 6877b2c
+- [x] 3.7 Existing status render sites show new muted colors, text unchanged — 6877b2c
+- [x] 3.8 Full visual sign-off of `/design-preview` against the design system — 6877b2c

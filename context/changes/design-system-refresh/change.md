@@ -1,7 +1,7 @@
 ---
 change_id: design-system-refresh
 title: Design system refresh
-status: implementing
+status: implemented
 created: 2026-07-20
 updated: 2026-07-20
 archived_at: null
