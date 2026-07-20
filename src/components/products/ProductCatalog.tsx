@@ -199,17 +199,15 @@ export function ProductCatalog({ initialProducts }: Props) {
   return (
     <div className="mx-auto w-full max-w-3xl">
       <div className="mb-6 flex items-center justify-between">
-        <h1 className="bg-gradient-to-r from-blue-200 to-purple-200 bg-clip-text text-3xl font-bold text-transparent">
-          Products
-        </h1>
-        <Button onClick={openAdd} className="gap-2 rounded-lg bg-purple-600 font-medium text-white hover:bg-purple-500">
+        <h1 className="text-foreground text-3xl font-bold tracking-tight">Products</h1>
+        <Button onClick={openAdd} className="gap-2">
           <Plus className="size-4" />
           Add product
         </Button>
       </div>
 
       {listError ? (
-        <div className="mb-4 flex items-start gap-2 rounded-lg border border-red-500/30 bg-red-900/30 px-3 py-2 text-sm text-red-300">
+        <div className="border-destructive/30 bg-destructive/10 text-destructive mb-4 flex items-start gap-2 rounded-lg border px-3 py-2 text-sm">
           <CircleAlert className="mt-0.5 size-4 shrink-0" />
           <span className="flex-1">{listError}</span>
           <button
@@ -217,7 +215,7 @@ export function ProductCatalog({ initialProducts }: Props) {
             onClick={() => {
               setListError(null);
             }}
-            className="text-red-300/70 hover:text-red-200"
+            className="text-destructive/70 hover:text-destructive"
             aria-label="Dismiss error"
           >
             <X className="size-4" />
@@ -226,22 +224,19 @@ export function ProductCatalog({ initialProducts }: Props) {
       ) : null}
 
       {products.length === 0 ? (
-        <div className="rounded-2xl border border-white/10 bg-white/5 p-12 text-center">
-          <Package className="mx-auto mb-4 size-10 text-blue-100/40" />
-          <p className="mb-1 text-lg font-medium text-white">No products yet</p>
-          <p className="mb-6 text-sm text-blue-100/60">Add your first product to start tracking it.</p>
-          <Button
-            onClick={openAdd}
-            className="gap-2 rounded-lg bg-purple-600 font-medium text-white hover:bg-purple-500"
-          >
+        <div className="border-border bg-card text-card-foreground rounded-lg border p-12 text-center shadow-[var(--ds-shadow-sm)]">
+          <Package className="text-muted-foreground mx-auto mb-4 size-10" />
+          <p className="text-foreground mb-1 text-lg font-medium">No products yet</p>
+          <p className="text-muted-foreground mb-6 text-sm">Add your first product to start tracking it.</p>
+          <Button onClick={openAdd} className="gap-2">
             <Plus className="size-4" />
             Add your first product
           </Button>
         </div>
       ) : (
         <>
-          <div className="mb-3 flex items-center justify-between gap-3 rounded-xl border border-white/10 bg-white/5 px-4 py-2">
-            <label className="flex items-center gap-2 text-sm text-blue-100/70">
+          <div className="border-border bg-card mb-3 flex items-center justify-between gap-3 rounded-lg border px-4 py-2">
+            <label className="text-muted-foreground flex items-center gap-2 text-sm">
               <Checkbox
                 checked={allSelected ? true : someSelected ? "indeterminate" : false}
                 onCheckedChange={toggleAll}
@@ -252,18 +247,12 @@ export function ProductCatalog({ initialProducts }: Props) {
             </label>
             {selectedCount > 0 ? (
               <div className="flex items-center gap-2">
-                <span className="text-sm text-blue-100/70" aria-live="polite">
+                <span className="text-muted-foreground text-sm" aria-live="polite">
                   {bulkDeleting
                     ? `Deleting ${bulkProgress.done} of ${bulkProgress.total}…`
                     : `${selectedCount} selected`}
                 </span>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={clearSelection}
-                  disabled={bulkDeleting}
-                  className="text-blue-100/70 hover:bg-white/10 hover:text-white"
-                >
+                <Button variant="ghost" size="sm" onClick={clearSelection} disabled={bulkDeleting}>
                   Clear selection
                 </Button>
                 <Button
@@ -285,7 +274,7 @@ export function ProductCatalog({ initialProducts }: Props) {
             {products.map((product) => (
               <li
                 key={product.id}
-                className="flex items-center justify-between rounded-xl border border-white/10 bg-white/5 px-4 py-3"
+                className="border-border bg-card flex items-center justify-between rounded-lg border px-4 py-3"
               >
                 <div className="flex min-w-0 items-center gap-3">
                   <Checkbox
@@ -299,11 +288,11 @@ export function ProductCatalog({ initialProducts }: Props) {
                   <div className="min-w-0">
                     <a
                       href={`/products/${product.id}`}
-                      className="block truncate font-medium text-white hover:text-purple-200 hover:underline"
+                      className="text-foreground hover:text-primary block truncate font-medium hover:underline"
                     >
                       {product.name}
                     </a>
-                    <p className="mt-0.5 text-sm text-blue-100/60">
+                    <p className="text-muted-foreground mt-0.5 text-sm">
                       Stock: {product.stock_quantity} · Lead time:{" "}
                       {product.lead_time_days != null ? `${product.lead_time_days}d` : "not set"} · Buffer:{" "}
                       {product.buffer_days}d
@@ -317,7 +306,6 @@ export function ProductCatalog({ initialProducts }: Props) {
                     onClick={() => {
                       openEdit(product);
                     }}
-                    className="text-blue-100/70 hover:bg-white/10 hover:text-white"
                     aria-label={`Edit ${product.name}`}
                   >
                     <Pencil className="size-4" />
@@ -329,7 +317,7 @@ export function ProductCatalog({ initialProducts }: Props) {
                       setDeleteTarget(product);
                     }}
                     disabled={bulkDeleting}
-                    className="text-red-300/70 hover:bg-red-500/10 hover:text-red-300"
+                    className="text-destructive hover:bg-destructive/10 hover:text-destructive"
                     aria-label={`Delete ${product.name}`}
                   >
                     <Trash2 className="size-4" />
@@ -347,7 +335,7 @@ export function ProductCatalog({ initialProducts }: Props) {
           if (!open) closeForm();
         }}
       >
-        <DialogContent className="border-white/10 bg-slate-900 text-white">
+        <DialogContent>
           <DialogHeader>
             <DialogTitle>{formTarget?.mode === "edit" ? "Edit product" : "Add product"}</DialogTitle>
           </DialogHeader>

@@ -348,34 +348,34 @@ No data or schema migration. Transient cross-phase state is expected and benign:
 
 #### Automated
 
-- [x] 1.1 Build passes: `npm run build`
-- [x] 1.2 Lint passes: `npm run lint`
-- [x] 1.3 Typecheck passes: `npm run astro check`
-- [x] 1.4 Unit tests pass: `npm test`
-- [x] 1.5 E2E suite passes fully: `npx playwright test` (refreshed fixture)
+- [x] 1.1 Build passes: `npm run build` — a0d5a81
+- [x] 1.2 Lint passes: `npm run lint` — a0d5a81
+- [x] 1.3 Typecheck passes: `npm run astro check` — a0d5a81
+- [x] 1.4 Unit tests pass: `npm test` — a0d5a81
+- [x] 1.5 E2E suite passes fully: `npx playwright test` (refreshed fixture) — a0d5a81
 
 #### Manual
 
-- [x] 1.6 Dashboard renders in the light system, matches design reference
-- [x] 1.7 Product-card status `<Badge>` renders with unchanged state text
-- [x] 1.8 Topbar renders light; `Sign out` posts to `/api/auth/signout`
-- [x] 1.9 No regression in loading/skeleton states (NFR-001)
+- [x] 1.6 Dashboard renders in the light system, matches design reference — a0d5a81
+- [x] 1.7 Product-card status `<Badge>` renders with unchanged state text — a0d5a81
+- [x] 1.8 Topbar renders light; `Sign out` posts to `/api/auth/signout` — a0d5a81
+- [x] 1.9 No regression in loading/skeleton states (NFR-001) — a0d5a81
 
 ### Phase 2: Products list + product form + delete dialogs
 
 #### Automated
 
-- [ ] 2.1 Build passes: `npm run build`
-- [ ] 2.2 Lint passes: `npm run lint`
-- [ ] 2.3 Typecheck passes: `npm run astro check`
-- [ ] 2.4 Unit tests pass: `npm test`
-- [ ] 2.5 E2E suite passes fully incl. `seed.spec`: `npx playwright test`
+- [x] 2.1 Build passes: `npm run build`
+- [x] 2.2 Lint passes: `npm run lint`
+- [x] 2.3 Typecheck passes: `npm run astro check`
+- [x] 2.4 Unit tests pass: `npm test`
+- [x] 2.5 E2E suite passes fully incl. `seed.spec`: `npx playwright test`
 
 #### Manual
 
-- [ ] 2.6 Products list + add/edit/delete/bulk flows render in the light system, no purple buttons
-- [ ] 2.7 Add/Edit dialog on S-08 surface; `Name` textbox + `Stock quantity` spinbutton tokenized, labels intact
-- [ ] 2.8 Auth/account inputs now tokenized (expected transient state)
+- [x] 2.6 Products list + add/edit/delete/bulk flows render in the light system, no purple buttons
+- [x] 2.7 Add/Edit dialog on S-08 surface; `Name` textbox + `Stock quantity` spinbutton tokenized, labels intact
+- [x] 2.8 Auth/account inputs now tokenized (expected transient state)
 
 ### Phase 3: Product detail + sales entry + classification
 

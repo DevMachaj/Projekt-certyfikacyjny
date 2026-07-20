@@ -117,11 +117,7 @@ export function ProductForm({ initial, onSubmit, pending, serverError }: Props) 
 
       <ServerError message={serverError} />
 
-      <Button
-        type="submit"
-        disabled={pending}
-        className="w-full rounded-lg bg-purple-600 px-4 py-2 font-medium text-white transition-colors hover:bg-purple-500"
-      >
+      <Button type="submit" disabled={pending} className="w-full">
         {pending ? "Saving..." : initial ? "Save changes" : "Add product"}
       </Button>
     </form>

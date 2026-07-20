@@ -33,23 +33,18 @@ export function BulkDeleteDialog({ open, count, pending, onConfirm, onCancel }: 
         if (!next) onCancel();
       }}
     >
-      <DialogContent className="border-white/10 bg-slate-900 text-white">
+      <DialogContent>
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
-            <TriangleAlert className="size-5 text-red-400" />
+            <TriangleAlert className="text-destructive size-5" />
             Delete {count} {count === 1 ? "product" : "products"}?
           </DialogTitle>
-          <DialogDescription className="text-blue-100/70">
+          <DialogDescription>
             This permanently removes the selected products and all of their sales entries. This cannot be undone.
           </DialogDescription>
         </DialogHeader>
         <DialogFooter>
-          <Button
-            variant="outline"
-            onClick={onCancel}
-            disabled={pending}
-            className="border-white/20 bg-white/10 text-white hover:bg-white/20"
-          >
+          <Button variant="outline" onClick={onCancel} disabled={pending}>
             Cancel
           </Button>
           <Button variant="destructive" onClick={onConfirm} disabled={pending}>
