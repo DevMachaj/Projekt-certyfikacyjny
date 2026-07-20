@@ -288,10 +288,10 @@ Static SSR page, zero client JS (no islands). The redirect short-circuits before
 
 #### Manual
 
-- [ ] 1.6 Anonymous `/` renders landing (Nav + Hero + Final CTA), light system, Polish, no redirect
-- [ ] 1.7 Authenticated `/` lands on `/dashboard`
-- [ ] 1.8 Nav/Hero CTAs navigate to `/auth/signup` and `/auth/signin`
-- [ ] 1.9 Visual match to `ui_kits/landing` + `/design-preview`; wordmark tile is indigo (`--primary`)
+- [x] 1.6 Anonymous `/` renders landing (Nav + Hero + Final CTA), light system, Polish, no redirect
+- [x] 1.7 Authenticated `/` lands on `/dashboard`
+- [x] 1.8 Nav/Hero CTAs navigate to `/auth/signup` and `/auth/signin`
+- [x] 1.9 Visual match to `ui_kits/landing` + `/design-preview`; wordmark tile is indigo (`--primary`)
 
 ### Phase 2: Content sections (steps + product preview)
 
@@ -304,21 +304,21 @@ Static SSR page, zero client JS (no islands). The redirect short-circuits before
 
 #### Manual
 
-- [ ] 2.5 3-step section renders in order with icons, mono numbers, arrow connectors
-- [ ] 2.6 Mini-dashboard shows all five states with correct badge hue; restock rows show `Zamów …` in under-stock color
-- [ ] 2.7 Full page matches `ui_kits/landing` (translated); no horizontal scroll at desktop widths
+- [x] 2.5 3-step section renders in order with icons, mono numbers, arrow connectors
+- [x] 2.6 Mini-dashboard shows all five states with correct badge hue; restock rows show `Zamów …` in under-stock color
+- [x] 2.7 Full page matches `ui_kits/landing` (translated); no horizontal scroll at desktop widths
 
 ### Phase 3: E2E coverage + full verification
 
 #### Automated
 
-- [x] 3.1 Build passes: `npm run build`
-- [x] 3.2 Lint passes: `npm run lint`
-- [x] 3.3 Type/astro check passes: `npm run astro check`
-- [x] 3.4 Unit tests pass: `npm test`
-- [x] 3.5 Full E2E suite green: `npx playwright test`
+- [x] 3.1 Build passes: `npm run build` — 0ad2b5e
+- [x] 3.2 Lint passes: `npm run lint` — 0ad2b5e
+- [x] 3.3 Type/astro check passes: `npm run astro check` — 0ad2b5e
+- [x] 3.4 Unit tests pass: `npm test` — 0ad2b5e
+- [x] 3.5 Full E2E suite green: `npx playwright test` — 0ad2b5e
 
 #### Manual
 
-- [ ] 3.6 `e2e/landing.spec.ts` passes both anonymous and authenticated in isolation
-- [ ] 3.7 No regression in `protected-routes-auth.spec.ts` or `seed.spec.ts`
+- [x] 3.6 `e2e/landing.spec.ts` passes both anonymous and authenticated in isolation
+- [x] 3.7 No regression in `protected-routes-auth.spec.ts` or `seed.spec.ts`
