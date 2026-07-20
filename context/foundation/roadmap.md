@@ -3,7 +3,7 @@ project: StockHelper
 version: 1
 status: draft
 created: 2026-05-30
-updated: 2026-06-22
+updated: 2026-07-20
 prd_version: 1
 main_goal: market-feedback
 top_blocker: capacity
@@ -27,16 +27,19 @@ Small e-commerce store owners have sales history in their shop platforms (Shopif
 
 ## At a glance
 
-| ID   | Change ID                      | Outcome (user can …)                                                     | Prerequisites | PRD refs                                             | Status   |
-| ---- | ------------------------------ | ------------------------------------------------------------------------ | ------------- | ---------------------------------------------------- | -------- |
-| F-01 | supabase-schema-and-types      | (foundation) schema + RLS policies + domain types in place               | —             | NFR-003, FR-001, FR-002, FR-003, FR-005              | impl_reviewed |
-| S-01 | product-catalog-crud           | add, edit, and delete products in their catalog                          | F-01          | US-02, FR-003, FR-004, FR-011                        | impl_reviewed |
-| S-02 | sales-entry-and-classification | log and delete sales entries and see the classification + recommendation | F-01, S-01    | US-01, US-03, FR-005, FR-006, FR-007, FR-008, FR-012 | impl_reviewed |
-| S-03 | classification-dashboard       | view all products grouped by classification state on the dashboard       | S-02          | FR-009                                               | impl_reviewed |
-| S-04 | ai-weekly-restocking-plan      | click a button to get one AI-generated weekly restocking summary         | S-03          | US-01, FR-006, FR-007                                | impl_reviewed |
-| S-05 | restocking-plan-decision-support | get a prioritized, explained weekly restocking decision (not just a restatement) | S-04    | US-01, FR-006, FR-007                                | done        |
-| S-06 | ux-improvements                | bulk-action a candidate review, reset a review session, see clear loading states | F-01    | NFR-001                                              | done        |
-| S-07 | account-deletion-and-data-retention | delete their account (hard delete; F-01 cascade wipes products + sales entries) | F-01 | NFR-003, FR-001, FR-002                              | done        |
+| ID   | Change ID                           | Outcome (user can …)                                                                                                       | Prerequisites | PRD refs                                             | Status        |
+| ---- | ----------------------------------- | -------------------------------------------------------------------------------------------------------------------------- | ------------- | ---------------------------------------------------- | ------------- |
+| F-01 | supabase-schema-and-types           | (foundation) schema + RLS policies + domain types in place                                                                 | —             | NFR-003, FR-001, FR-002, FR-003, FR-005              | impl_reviewed |
+| S-01 | product-catalog-crud                | add, edit, and delete products in their catalog                                                                            | F-01          | US-02, FR-003, FR-004, FR-011                        | impl_reviewed |
+| S-02 | sales-entry-and-classification      | log and delete sales entries and see the classification + recommendation                                                   | F-01, S-01    | US-01, US-03, FR-005, FR-006, FR-007, FR-008, FR-012 | impl_reviewed |
+| S-03 | classification-dashboard            | view all products grouped by classification state on the dashboard                                                         | S-02          | FR-009                                               | impl_reviewed |
+| S-04 | ai-weekly-restocking-plan           | click a button to get one AI-generated weekly restocking summary                                                           | S-03          | US-01, FR-006, FR-007                                | impl_reviewed |
+| S-05 | restocking-plan-decision-support    | get a prioritized, explained weekly restocking decision (not just a restatement)                                           | S-04          | US-01, FR-006, FR-007                                | done          |
+| S-06 | ux-improvements                     | bulk-action a candidate review, reset a review session, see clear loading states                                           | F-01          | NFR-001                                              | done          |
+| S-07 | account-deletion-and-data-retention | delete their account (hard delete; F-01 cascade wipes products + sales entries)                                            | F-01          | NFR-003, FR-001, FR-002                              | done          |
+| S-08 | design-system-refresh               | see a refreshed visual design system (color / typography / spacing tokens) applied to the shared shadcn/ui base components | —             | NFR-002                                              | ready         |
+| S-09 | screens-restyle                     | see the refreshed design applied across existing screens (dashboard, products, forms)                                      | S-08          | NFR-001, NFR-002                                     | proposed      |
+| S-10 | landing-page                        | land on a real public landing page (hero, how-it-works, CTA) at `/`, with logged-in users redirected to `/dashboard`       | S-08          | NFR-002                                              | proposed      |
 
 ## Baseline
 
@@ -154,18 +157,61 @@ Foundations below assume these are present and do NOT re-scaffold them.
 - **Risk:** Account deletion is destructive and irreversible. Two narrower risks remain now that the model is fixed: (1) the delete must run with a **service-role** Supabase client (the `auth.users` admin delete is not available to the anon/SSR client), which means a new `SUPABASE_SERVICE_ROLE_KEY` secret in `astro.config.mjs` + Cloudflare + `.dev.vars`; (2) the cascade must be verified end-to-end so no `products`/`sales_entries` rows are orphaned. Both are bounded and testable.
 - **Status:** done
 
+### S-08: Design system refresh
+
+- **Outcome:** owner sees a refreshed, coherent visual identity — a new set of design tokens (color, typography, spacing) applied to the shared shadcn/ui base components (`src/components/ui/`) so every downstream screen inherits the new look automatically. **Visual layer only** — no logic, API, data, or classification-engine changes.
+- **Change ID:** design-system-refresh
+- **PRD refs:** NFR-002 (browser support — refreshed tokens/components must render correctly on the latest two versions of Chrome, Firefox, Safari, Edge; desktop only). Note: a design-system refresh is presentation-layer work **not specified in PRD v1** — like S-06 and S-07, this is a field-discovered UX need, not a new product requirement.
+- **Prerequisites:** —
+- **Parallel with:** — (it is the head of the UI-refresh chain; S-09 and S-10 both consume it)
+- **Blockers:** —
+- **Unknowns:**
+  - Token surface + naming: which token categories to define and how to wire them into Tailwind 4 / shadcn theming — Owner: developer. Block: no (`/10x-plan` scopes the token set and the theming mechanism).
+- **Risk:** Because the tokens flow into the shared base components, a token or component-variant change propagates to every screen at once. That is the point (single source of truth) but also the risk: an unreviewed contrast or spacing change can regress legibility everywhere. Kept strictly visual (no markup/role changes) so it cannot alter behavior; screen-level application is deferred to S-09.
+- **Status:** ready
+
+### S-09: Screens restyle
+
+- **Outcome:** owner sees the S-08 design applied across the existing screens — dashboard, product catalog, and the sales-entry / product forms — so the refreshed identity reaches the actual product surfaces, not just the component library. **Accessible names and roles stay stable** (headings, labels, button/link roles unchanged) so the E2E suite's `getByRole` / `getByLabel` locators keep passing.
+- **Change ID:** screens-restyle
+- **PRD refs:** NFR-001 (perceived responsiveness — the restyle must not regress the sub-1-second update or hide loading states), NFR-002 (browser support). Note: applies S-08's visual layer to existing screens; **not a new PRD requirement** (field-discovered, same class as S-06).
+- **Prerequisites:** S-08
+- **Parallel with:** S-10 (both depend only on S-08 and neither blocks the other; separate agent runs can take them in parallel)
+- **Blockers:** —
+- **Unknowns:**
+  - Screen inventory: exact list of screens/components in scope beyond dashboard + products + forms (e.g. auth pages, restocking panel) — Owner: developer. Block: no (`/10x-plan` fixes the surface).
+- **Risk:** The dominant risk is regressing E2E stability — restyling that renames or removes accessible names/roles silently breaks `getByRole`/`getByLabel` locators (see CLAUDE.md E2E rules). The slice's guardrail — keep accessible names/roles stable, change only visuals — is what contains it; the restyle should be verifiable as "pixels moved, accessibility tree unchanged."
+- **Status:** proposed
+
+### S-10: Landing page
+
+- **Outcome:** the default `/` home route is replaced with a real public landing page (hero, how-it-works, call-to-action) instead of the current default/placeholder. `/` **stays public** (not added to `PROTECTED_ROUTES` in `src/middleware.ts`): unauthenticated visitors see the landing page, and authenticated visitors are redirected to `/dashboard`.
+- **Change ID:** landing-page
+- **PRD refs:** NFR-002 (browser support — desktop-only landing, consistent with the parked "Mobile layout" non-goal). Note: a marketing/landing surface is **not in PRD v1**; it touches the Access Control routing contract (public vs. redirect) but adds no new auth or domain logic.
+- **Prerequisites:** S-08
+- **Parallel with:** S-09 (both depend only on S-08 and are independent of each other)
+- **Blockers:** —
+- **Unknowns:**
+  - Redirect mechanism: where the logged-in → `/dashboard` redirect lives (middleware vs. page-level guard) given `/` must remain outside `PROTECTED_ROUTES` — Owner: developer. Block: no (`/10x-plan` resolves the routing approach).
+  - Landing copy/content source: whether hero/how-it-works copy is authored now or stubbed — Owner: developer. Block: no.
+- **Risk:** The routing contract is the trap: `/` must be reachable by anonymous users (so it cannot go in `PROTECTED_ROUTES`), yet logged-in users must not see the marketing page. A naive guard that protects `/` locks anonymous visitors out of the landing entirely; a missing redirect shows logged-in owners the marketing page instead of their dashboard. The redirect must be conditional on session, not on route protection.
+- **Status:** proposed
+
 ## Backlog Handoff
 
-| Roadmap ID | Change ID                      | Suggested issue title                                               | Ready for `/10x-plan` | Notes                                     |
-| ---------- | ------------------------------ | ------------------------------------------------------------------- | --------------------- | ----------------------------------------- |
-| F-01       | supabase-schema-and-types      | Schema: products + sales_entries tables with RLS                    | yes                   | Run `/10x-plan supabase-schema-and-types` |
-| S-01       | product-catalog-crud           | Feature: product catalog — add / edit / delete                      | no                    | Requires F-01 to be done first            |
-| S-02       | sales-entry-and-classification | Feature: sales entry logging + velocity classification (north star) | no                    | Requires F-01 + S-01 to be done first     |
-| S-03       | classification-dashboard       | Feature: dashboard grouped by classification state                  | no                    | Requires S-02 to be done first            |
-| S-04       | ai-weekly-restocking-plan      | Feature: AI weekly restocking plan (LLM summary)                    | no                    | Requires S-03 to be done first            |
-| S-05       | restocking-plan-decision-support | Enhancement: restocking plan — prioritize + explain               | n/a                   | Implemented; see plan.md                  |
-| S-06       | ux-improvements                | UX: bulk review actions, session reset, loading states              | no                    | Requires F-01; parallel with S-04         |
-| S-07       | account-deletion-and-data-retention | Feature: account deletion (hard delete via auth.users cascade) | yes                   | Hard-delete model resolved; fully parallel with S-06; needs SUPABASE_SERVICE_ROLE_KEY |
+| Roadmap ID | Change ID                           | Suggested issue title                                                                | Ready for `/10x-plan` | Notes                                                                                    |
+| ---------- | ----------------------------------- | ------------------------------------------------------------------------------------ | --------------------- | ---------------------------------------------------------------------------------------- |
+| F-01       | supabase-schema-and-types           | Schema: products + sales_entries tables with RLS                                     | yes                   | Run `/10x-plan supabase-schema-and-types`                                                |
+| S-01       | product-catalog-crud                | Feature: product catalog — add / edit / delete                                       | no                    | Requires F-01 to be done first                                                           |
+| S-02       | sales-entry-and-classification      | Feature: sales entry logging + velocity classification (north star)                  | no                    | Requires F-01 + S-01 to be done first                                                    |
+| S-03       | classification-dashboard            | Feature: dashboard grouped by classification state                                   | no                    | Requires S-02 to be done first                                                           |
+| S-04       | ai-weekly-restocking-plan           | Feature: AI weekly restocking plan (LLM summary)                                     | no                    | Requires S-03 to be done first                                                           |
+| S-05       | restocking-plan-decision-support    | Enhancement: restocking plan — prioritize + explain                                  | n/a                   | Implemented; see plan.md                                                                 |
+| S-06       | ux-improvements                     | UX: bulk review actions, session reset, loading states                               | no                    | Requires F-01; parallel with S-04                                                        |
+| S-07       | account-deletion-and-data-retention | Feature: account deletion (hard delete via auth.users cascade)                       | yes                   | Hard-delete model resolved; fully parallel with S-06; needs SUPABASE_SERVICE_ROLE_KEY    |
+| S-08       | design-system-refresh               | UI: design system refresh — color / typography / spacing tokens on shared components | yes                   | Run `/10x-plan design-system-refresh`; visual layer only, no prereqs                     |
+| S-09       | screens-restyle                     | UI: apply refreshed design to existing screens (dashboard, products, forms)          | no                    | Requires S-08; keep accessible names/roles stable for E2E; parallel with S-10            |
+| S-10       | landing-page                        | UI: real public landing page at `/` (hero, how-it-works, CTA)                        | no                    | Requires S-08; `/` stays public + logged-in redirect to `/dashboard`; parallel with S-09 |
 
 ## Open Roadmap Questions
 
