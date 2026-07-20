@@ -1,5 +1,5 @@
 ---
-import Layout from "@/layouts/Layout.astro";
+import AppLayout from "@/layouts/AppLayout.astro";
 import { AccountDangerZone } from "@/components/account/AccountDangerZone";
 
 const { user } = Astro.locals;
@@ -9,17 +9,6 @@ const { user } = Astro.locals;
 const email = user?.email ?? "";
 ---
 
-<Layout title="Account">
-  <div class="bg-background min-h-screen px-4 py-10">
-    <div class="mx-auto w-full max-w-3xl">
-      <header class="mb-8">
-        <h1 class="text-foreground text-3xl font-bold tracking-tight">Account</h1>
-        <p class="text-muted-foreground mt-1 text-sm">
-          Signed in as <span class="text-foreground font-medium">{email}</span>
-        </p>
-      </header>
-
-      <AccountDangerZone client:load email={email} />
-    </div>
-  </div>
-</Layout>
+<AppLayout title="Account">
+  <AccountDangerZone client:load email={email} />
+</AppLayout>

@@ -1,0 +1,62 @@
+---
+import Layout from "@/layouts/Layout.astro";
+import Sidebar from "@/components/app/Sidebar.astro";
+import { createClient } from "@/lib/supabase";
+import { getProductsByUser, getSalesEntriesByUser } from "@/lib/db";
+import { classifyUserCatalog } from "@/lib/dashboard";
+
+interface Props {
+  title: string;
+  subtitle?: string;
+}
+
+const { title, subtitle } = Astro.props;
+const { user } = Astro.locals;
+const email = user?.email ?? "";
+
+// Which nav item is active for the current route. /account (and anything else) → none highlighted.
+const path = Astro.url.pathname;
+const active =
+  path === "/dashboard"
+    ? "dashboard"
+    : path === "/products" || path.startsWith("/products/")
+      ? "products"
+      : path === "/plan"
+        ? "plan"
+        : null;
+
+// Live Understocked count for the sidebar badge. Guarded (context/foundation/lessons.md): degrade
+// to 0 on any DB error or a null client so the shell never 500s a page over the badge.
+let understockedCount = 0;
+const supabase = createClient(Astro.request.headers, Astro.cookies);
+if (supabase && user) {
+  try {
+    const products = await getProductsByUser(supabase, user.id);
+    const entries = await getSalesEntriesByUser(supabase, user.id);
+    understockedCount = classifyUserCatalog(products, entries).filter(
+      (c) => c.classification.state === "Understocked",
+    ).length;
+  } catch {
+    understockedCount = 0;
+  }
+}
+---
+
+<Layout title={title}>
+  <div class="bg-background flex min-h-screen">
+    <Sidebar active={active} email={email} understockedCount={understockedCount} />
+    <main class="flex min-w-0 flex-1 flex-col">
+      <header class="border-border border-b bg-[var(--surface)] px-8 py-5">
+        <h1 class="text-[length:var(--fs-h1)] font-semibold tracking-[var(--track-snug)] text-[var(--text-heading)]">
+          {title}
+        </h1>
+        {subtitle && <p class="text-muted-foreground mt-0.5 text-sm">{subtitle}</p>}
+      </header>
+      <div class="flex-1 px-8 py-7">
+        <div class="mx-auto max-w-[960px]">
+          <slot />
+        </div>
+      </div>
+    </main>
+  </div>
+</Layout>

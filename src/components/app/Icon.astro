@@ -1,0 +1,65 @@
+---
+// Inline SVG icon set for the app shell (sidebar). Lucide path data lifted verbatim from the
+// Claude Design `ui_kits/app/icons.jsx` recipe (project a1fc2530). Decorative only — aria-hidden,
+// currentColor, sized by prop. Named `icon` (not `name`) to avoid the ambient Window.name global.
+type IconName = "boxes" | "dashboard" | "package" | "clipboard";
+
+interface Props {
+  icon: IconName;
+  size?: number;
+  class?: string;
+}
+
+const { icon, size = 18, class: className } = Astro.props;
+
+const PATHS: Record<string, string[]> = {
+  boxes: [
+    "M2.97 12.92A2 2 0 0 0 2 14.63v3.24a2 2 0 0 0 .97 1.71l3 1.8a2 2 0 0 0 2.06 0L12 19v-5.5l-5-3-4.03 2.42Z",
+    "m7 16.5-4.74-2.85",
+    "m7 16.5 5-3",
+    "M7 16.5v5.17",
+    "M12 13.5V19l3.97 2.38a2 2 0 0 0 2.06 0l3-1.8a2 2 0 0 0 .97-1.71v-3.24a2 2 0 0 0-.97-1.71L17 10.5l-5 3Z",
+    "m17 16.5-5-3",
+    "m17 16.5 4.74-2.85",
+    "M17 16.5v5.17",
+    "M7.97 4.42A2 2 0 0 0 7 6.13v4.37l5 3 5-3V6.13a2 2 0 0 0-.97-1.71l-3-1.8a2 2 0 0 0-2.06 0l-3 1.8Z",
+    "M12 8 7.26 5.15",
+    "m12 8 4.74-2.85",
+    "M12 13.5V8",
+  ],
+  dashboard: ["M3 3h7v9H3z", "M14 3h7v5h-7z", "M14 12h7v9h-7z", "M3 16h7v5H3z"],
+  package: [
+    "m7.5 4.27 9 5.15",
+    "M21 8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16Z",
+    "m3.3 7 8.7 5 8.7-5",
+    "M12 22V12",
+  ],
+  clipboard: [
+    "M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2",
+    "M15 2H9a1 1 0 0 0-1 1v2a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1V3a1 1 0 0 0-1-1Z",
+    "M12 11h4",
+    "M12 16h4",
+    "M8 11h.01",
+    "M8 16h.01",
+  ],
+};
+
+// Look up AFTER PATHS is declared (const isn't hoisted — a lookup above the declaration throws a
+// temporal-dead-zone ReferenceError at render, which SSR surfaces as an empty 200; see landing Icon).
+const paths: string[] = PATHS[icon as string];
+---
+
+<svg
+  width={size}
+  height={size}
+  viewBox="0 0 24 24"
+  fill="none"
+  stroke="currentColor"
+  stroke-width="2"
+  stroke-linecap="round"
+  stroke-linejoin="round"
+  aria-hidden="true"
+  class:list={className}
+>
+  {paths.map((d) => <path d={d} />)}
+</svg>
