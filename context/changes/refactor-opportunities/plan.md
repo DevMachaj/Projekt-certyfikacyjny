@@ -258,13 +258,13 @@ Brak migracji danych ani zmiany schematu DB. Wszystkie fazy odwracalne pojedyncz
 
 #### Automated
 
-- [x] 4.1 Wszystkie testy (w tym „zły wiersz → throw") przechodzą: `npm test`
-- [x] 4.2 Typecheck czysty: `npm run typecheck`
-- [x] 4.3 Build SSR przechodzi: `npm run build`
-- [x] 4.4 Lint czysty: `npm run lint`
+- [x] 4.1 Wszystkie testy (w tym „zły wiersz → throw") przechodzą: `npm test` — 3163765
+- [x] 4.2 Typecheck czysty: `npm run typecheck` — 3163765
+- [x] 4.3 Build SSR przechodzi: `npm run build` — 3163765
+- [x] 4.4 Lint czysty: `npm run lint` — 3163765
 
 #### Manual
 
-- [x] 4.5 Dashboard renderuje siatkę na poprawnych danych bez regresji
-- [x] 4.6 „Generate plan" zwraca plan na poprawnych danych
-- [x] 4.7 (Opcjonalnie) zły wiersz → API 500 `{error}` / dashboard pusta siatka, nie hard-500
+- [x] 4.5 Dashboard renderuje siatkę na poprawnych danych bez regresji — 3163765
+- [x] 4.6 „Generate plan" zwraca plan na poprawnych danych — 3163765
+- [x] 4.7 (Opcjonalnie) zły wiersz → API 500 `{error}` / dashboard pusta siatka, nie hard-500 — 3163765
