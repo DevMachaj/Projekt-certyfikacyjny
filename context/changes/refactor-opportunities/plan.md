@@ -242,17 +242,17 @@ Brak migracji danych ani zmiany schematu DB. Wszystkie fazy odwracalne pojedyncz
 
 #### Automated
 
-- [x] 2.1 `db.test.ts` przechodzi: `npm test`
-- [x] 2.2 Typecheck czysty: `npm run typecheck`
-- [x] 2.3 Lint czysty: `npm run lint`
+- [x] 2.1 `db.test.ts` przechodzi: `npm test` — 0e88b02
+- [x] 2.2 Typecheck czysty: `npm run typecheck` — 0e88b02
+- [x] 2.3 Lint czysty: `npm run lint` — 0e88b02
 
 ### Phase 3: Row-schema jako jedno źródło (mechanizm, na zielono)
 
 #### Automated
 
-- [ ] 3.1 Testy zgodności przechodzą: `npm test`
-- [ ] 3.2 Typecheck czysty: `npm run typecheck`
-- [ ] 3.3 Lint czysty: `npm run lint`
+- [x] 3.1 Testy zgodności przechodzą: `npm test`
+- [x] 3.2 Typecheck czysty: `npm run typecheck`
+- [x] 3.3 Lint czysty: `npm run lint`
 
 ### Phase 4: Walidacja na odczycie (C2)
 
