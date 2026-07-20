@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Sparkles, CircleAlert, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Card } from "@/components/ui/card";
 import type { RestockPlan } from "@/lib/restocking";
 
 /** The route's response: the engine-built plan plus where the summary came from. */
@@ -49,14 +50,14 @@ export function RestockingPlan() {
   }
 
   return (
-    <section className="mb-8 rounded-2xl border border-white/10 bg-white/5 p-6">
+    <Card className="mb-8 gap-0 p-6">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
-          <h2 className="flex items-center gap-2 text-lg font-semibold text-white">
-            <Sparkles className="h-5 w-5 text-purple-300" aria-hidden="true" />
+          <h2 className="text-card-foreground flex items-center gap-2 text-lg font-semibold">
+            <Sparkles className="text-primary h-5 w-5" aria-hidden="true" />
             Weekly restocking plan
           </h2>
-          <p className="mt-1 text-sm text-blue-100/60">
+          <p className="text-muted-foreground mt-1 text-sm">
             A prioritized weekly plan — what to reorder first and why, built from your engine classifications.
           </p>
         </div>
@@ -73,7 +74,7 @@ export function RestockingPlan() {
       </div>
 
       {error && (
-        <p className="mt-4 flex items-center gap-2 rounded-lg border border-red-400/40 bg-red-500/20 px-3 py-2 text-sm text-red-200">
+        <p className="border-destructive/30 bg-destructive/10 text-destructive mt-4 flex items-center gap-2 rounded-lg border px-3 py-2 text-sm">
           <CircleAlert className="h-4 w-4 shrink-0" aria-hidden="true" />
           {error}
         </p>
@@ -81,14 +82,14 @@ export function RestockingPlan() {
 
       {pending && (
         <div className="mt-4 space-y-2" aria-hidden="true">
-          <div className="h-4 w-2/3 animate-pulse rounded bg-white/10" />
+          <div className="bg-muted h-4 w-2/3 animate-pulse rounded" />
           {[0, 1, 2].map((i) => (
-            <div key={i} className="rounded-lg border border-white/10 bg-white/5 px-3 py-2">
+            <div key={i} className="border-border bg-muted/40 rounded-lg border px-3 py-2">
               <div className="flex items-center justify-between gap-2">
-                <div className="h-3 w-32 animate-pulse rounded bg-white/10" />
-                <div className="h-3 w-20 animate-pulse rounded bg-white/10" />
+                <div className="bg-muted h-3 w-32 animate-pulse rounded" />
+                <div className="bg-muted h-3 w-20 animate-pulse rounded" />
               </div>
-              <div className="mt-2 h-3 w-3/4 animate-pulse rounded bg-white/5" />
+              <div className="bg-muted/60 mt-2 h-3 w-3/4 animate-pulse rounded" />
             </div>
           ))}
         </div>
@@ -97,26 +98,26 @@ export function RestockingPlan() {
       {plan && (
         <div className="mt-4">
           {plan.source === "empty" ? (
-            <p className="text-sm text-blue-100/80">Nothing to reorder this week.</p>
+            <p className="text-muted-foreground text-sm">Nothing to reorder this week.</p>
           ) : (
             <>
               {plan.source === "fallback" && (
-                <p className="mb-3 flex items-center gap-2 rounded-lg border border-amber-400/40 bg-amber-500/20 px-3 py-2 text-xs text-amber-200">
+                <p className="border-status-watch-border bg-status-watch-bg text-status-watch-fg mb-3 flex items-center gap-2 rounded-lg border px-3 py-2 text-xs">
                   <CircleAlert className="h-4 w-4 shrink-0" aria-hidden="true" />
                   AI summary unavailable — showing a basic plan.
                 </p>
               )}
-              <p className="text-sm font-medium text-blue-100/90">{plan.headline}</p>
+              <p className="text-card-foreground text-sm font-medium">{plan.headline}</p>
               <ol className="mt-3 space-y-2">
                 {plan.items.map((item) => (
-                  <li key={item.product} className="rounded-lg border border-white/10 bg-white/5 px-3 py-2 text-sm">
+                  <li key={item.product} className="border-border bg-muted/40 rounded-lg border px-3 py-2 text-sm">
                     <div className="flex flex-wrap items-center justify-between gap-2">
-                      <span className="font-medium text-white">{item.product}</span>
-                      <span className="text-blue-100/70">{item.action}</span>
+                      <span className="text-card-foreground font-medium">{item.product}</span>
+                      <span className="text-muted-foreground">{item.action}</span>
                     </div>
-                    <p className="mt-1 text-blue-100/80">{item.reason}</p>
+                    <p className="text-muted-foreground mt-1">{item.reason}</p>
                     {item.daysOfStock != null && item.leadTime != null && (
-                      <p className="mt-1 text-xs text-blue-100/50">
+                      <p className="mt-1 text-xs text-[var(--text-subtle)]">
                         {Math.round(item.daysOfStock)}d stock · {item.leadTime}d lead time
                       </p>
                     )}
@@ -127,6 +128,6 @@ export function RestockingPlan() {
           )}
         </div>
       )}
-    </section>
+    </Card>
   );
 }

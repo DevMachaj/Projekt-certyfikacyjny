@@ -2,6 +2,7 @@
 import Layout from "@/layouts/Layout.astro";
 import ProductCard from "@/components/dashboard/ProductCard.astro";
 import { RestockingPlan } from "@/components/dashboard/RestockingPlan";
+import { buttonVariants } from "@/components/ui/button";
 import { createClient } from "@/lib/supabase";
 import { getProductsByUser, getSalesEntriesByUser } from "@/lib/db";
 import { classifyUserCatalog, groupProductsByState } from "@/lib/dashboard";
@@ -33,37 +34,20 @@ const hasProducts = groups.length > 0;
 ---
 
 <Layout title="Dashboard">
-  <div class="bg-cosmic min-h-screen px-4 py-10">
+  <div class="bg-background min-h-screen px-4 py-10">
     <div class="mx-auto w-full max-w-4xl">
       <header class="mb-8 flex flex-wrap items-center justify-between gap-4">
         <div>
-          <h1 class="bg-gradient-to-r from-blue-200 to-purple-200 bg-clip-text text-3xl font-bold text-transparent">
-            Dashboard
-          </h1>
-          <p class="mt-1 text-sm text-blue-100/60">
-            Signed in as <span class="font-medium text-blue-100/80">{user?.email}</span>
+          <h1 class="text-foreground text-3xl font-bold tracking-tight">Dashboard</h1>
+          <p class="text-muted-foreground mt-1 text-sm">
+            Signed in as <span class="text-foreground font-medium">{user?.email}</span>
           </p>
         </div>
         <div class="flex items-center gap-3">
-          <a
-            href="/products"
-            class="rounded-lg bg-purple-600 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-purple-500"
-          >
-            Manage products
-          </a>
-          <a
-            href="/account"
-            class="rounded-lg border border-white/20 bg-white/10 px-4 py-2 text-sm text-white transition-colors hover:bg-white/20"
-          >
-            Account
-          </a>
+          <a href="/products" class:list={buttonVariants({ variant: "default" })}>Manage products</a>
+          <a href="/account" class:list={buttonVariants({ variant: "outline" })}>Account</a>
           <form method="POST" action="/api/auth/signout">
-            <button
-              type="submit"
-              class="rounded-lg border border-white/20 bg-white/10 px-4 py-2 text-sm text-white transition-colors hover:bg-white/20"
-            >
-              Sign out
-            </button>
+            <button type="submit" class:list={buttonVariants({ variant: "outline" })}>Sign out</button>
           </form>
         </div>
       </header>
@@ -75,7 +59,7 @@ const hasProducts = groups.length > 0;
           <div class="space-y-8">
             {groups.map((group) => (
               <section>
-                <h2 class="mb-3 text-sm font-semibold tracking-wide text-blue-100/70 uppercase">{group.state}</h2>
+                <h2 class="text-muted-foreground mb-3 text-sm font-semibold tracking-wide uppercase">{group.state}</h2>
                 <div class="grid gap-3 sm:grid-cols-2">
                   {group.items.map((item) => (
                     <ProductCard product={item.product} classification={item.classification} />
@@ -85,15 +69,12 @@ const hasProducts = groups.length > 0;
             ))}
           </div>
         ) : (
-          <div class="rounded-2xl border border-white/10 bg-white/5 p-12 text-center">
-            <p class="mb-1 text-lg font-medium text-white">No products yet</p>
-            <p class="mb-6 text-sm text-blue-100/60">
+          <div class="border-border bg-card text-card-foreground rounded-lg border p-12 text-center shadow-[var(--ds-shadow-sm)]">
+            <p class="text-foreground mb-1 text-lg font-medium">No products yet</p>
+            <p class="text-muted-foreground mb-6 text-sm">
               Add your first product to start tracking its stock health and reorder timing.
             </p>
-            <a
-              href="/products"
-              class="inline-block rounded-lg bg-purple-600 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-purple-500"
-            >
+            <a href="/products" class:list={buttonVariants({ variant: "default" })}>
               Add your first product
             </a>
           </div>
