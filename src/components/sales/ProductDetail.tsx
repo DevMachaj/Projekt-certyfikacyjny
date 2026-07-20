@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { CircleAlert, Trash2, TriangleAlert, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Card } from "@/components/ui/card";
 import {
   Dialog,
   DialogContent,
@@ -102,16 +103,16 @@ export function ProductDetail({ product, initialEntries, initialClassification }
     <div className="space-y-6">
       <ClassificationPanel classification={classification} product={product} />
 
-      <section className="rounded-2xl border border-white/10 bg-white/5 p-6">
-        <h3 className="mb-4 text-base font-semibold text-white">Log a sales entry</h3>
+      <Card className="gap-0 p-6">
+        <h3 className="text-card-foreground mb-4 text-base font-semibold">Log a sales entry</h3>
         <SalesEntryForm onSubmit={handleAdd} pending={pending} serverError={formError} />
-      </section>
+      </Card>
 
-      <section className="rounded-2xl border border-white/10 bg-white/5 p-6">
-        <h3 className="mb-4 text-base font-semibold text-white">Sales entries</h3>
+      <Card className="gap-0 p-6">
+        <h3 className="text-card-foreground mb-4 text-base font-semibold">Sales entries</h3>
 
         {listError ? (
-          <div className="mb-4 flex items-start gap-2 rounded-lg border border-red-500/30 bg-red-900/30 px-3 py-2 text-sm text-red-300">
+          <div className="border-destructive/30 bg-destructive/10 text-destructive mb-4 flex items-start gap-2 rounded-lg border px-3 py-2 text-sm">
             <CircleAlert className="mt-0.5 size-4 shrink-0" />
             <span className="flex-1">{listError}</span>
             <button
@@ -119,7 +120,7 @@ export function ProductDetail({ product, initialEntries, initialClassification }
               onClick={() => {
                 setListError(null);
               }}
-              className="text-red-300/70 hover:text-red-200"
+              className="text-destructive/70 hover:text-destructive"
               aria-label="Dismiss error"
             >
               <X className="size-4" />
@@ -128,7 +129,7 @@ export function ProductDetail({ product, initialEntries, initialClassification }
         ) : null}
 
         {entries.length === 0 ? (
-          <p className="py-6 text-center text-sm text-blue-100/60">
+          <p className="text-muted-foreground py-6 text-center text-sm">
             No sales entries yet. Log your first entry above to start tracking this product.
           </p>
         ) : (
@@ -136,11 +137,11 @@ export function ProductDetail({ product, initialEntries, initialClassification }
             {entries.map((entry) => (
               <li
                 key={entry.id}
-                className="flex items-center justify-between rounded-xl border border-white/10 bg-white/5 px-4 py-3"
+                className="border-border bg-muted/40 flex items-center justify-between rounded-lg border px-4 py-3"
               >
                 <div className="min-w-0">
-                  <p className="font-medium text-white">{entry.units_sold} units</p>
-                  <p className="mt-0.5 text-sm text-blue-100/60">
+                  <p className="text-card-foreground font-medium">{entry.units_sold} units</p>
+                  <p className="text-muted-foreground mt-0.5 text-sm">
                     {entry.start_date} → {entry.end_date} · {entryDays(entry)}d
                   </p>
                 </div>
@@ -150,7 +151,7 @@ export function ProductDetail({ product, initialEntries, initialClassification }
                   onClick={() => {
                     setDeleteTarget(entry);
                   }}
-                  className="ml-4 shrink-0 text-red-300/70 hover:bg-red-500/10 hover:text-red-300"
+                  className="text-destructive hover:bg-destructive/10 hover:text-destructive ml-4 shrink-0"
                   aria-label={`Delete entry ${entry.start_date} to ${entry.end_date}`}
                 >
                   <Trash2 className="size-4" />
@@ -159,7 +160,7 @@ export function ProductDetail({ product, initialEntries, initialClassification }
             ))}
           </ul>
         )}
-      </section>
+      </Card>
 
       <Dialog
         open={deleteTarget !== null}
@@ -167,13 +168,13 @@ export function ProductDetail({ product, initialEntries, initialClassification }
           if (!open) setDeleteTarget(null);
         }}
       >
-        <DialogContent className="border-white/10 bg-slate-900 text-white">
+        <DialogContent>
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
-              <TriangleAlert className="size-5 text-red-400" />
+              <TriangleAlert className="text-destructive size-5" />
               Delete this sales entry?
             </DialogTitle>
-            <DialogDescription className="text-blue-100/70">
+            <DialogDescription>
               {deleteTarget
                 ? `${deleteTarget.units_sold} units (${deleteTarget.start_date} → ${deleteTarget.end_date}) will be permanently removed and the classification will recalculate. This cannot be undone.`
                 : null}
@@ -186,7 +187,6 @@ export function ProductDetail({ product, initialEntries, initialClassification }
                 setDeleteTarget(null);
               }}
               disabled={pending}
-              className="border-white/20 bg-white/10 text-white hover:bg-white/20"
             >
               Cancel
             </Button>

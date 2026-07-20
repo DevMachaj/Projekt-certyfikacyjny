@@ -365,33 +365,33 @@ No data or schema migration. Transient cross-phase state is expected and benign:
 
 #### Automated
 
-- [x] 2.1 Build passes: `npm run build`
-- [x] 2.2 Lint passes: `npm run lint`
-- [x] 2.3 Typecheck passes: `npm run astro check`
-- [x] 2.4 Unit tests pass: `npm test`
-- [x] 2.5 E2E suite passes fully incl. `seed.spec`: `npx playwright test`
+- [x] 2.1 Build passes: `npm run build` — 69d67cc
+- [x] 2.2 Lint passes: `npm run lint` — 69d67cc
+- [x] 2.3 Typecheck passes: `npm run astro check` — 69d67cc
+- [x] 2.4 Unit tests pass: `npm test` — 69d67cc
+- [x] 2.5 E2E suite passes fully incl. `seed.spec`: `npx playwright test` — 69d67cc
 
 #### Manual
 
-- [x] 2.6 Products list + add/edit/delete/bulk flows render in the light system, no purple buttons
-- [x] 2.7 Add/Edit dialog on S-08 surface; `Name` textbox + `Stock quantity` spinbutton tokenized, labels intact
-- [x] 2.8 Auth/account inputs now tokenized (expected transient state)
+- [x] 2.6 Products list + add/edit/delete/bulk flows render in the light system, no purple buttons — 69d67cc
+- [x] 2.7 Add/Edit dialog on S-08 surface; `Name` textbox + `Stock quantity` spinbutton tokenized, labels intact — 69d67cc
+- [x] 2.8 Auth/account inputs now tokenized (expected transient state) — 69d67cc
 
 ### Phase 3: Product detail + sales entry + classification
 
 #### Automated
 
-- [ ] 3.1 Build passes: `npm run build`
-- [ ] 3.2 Lint passes: `npm run lint`
-- [ ] 3.3 Typecheck passes: `npm run astro check`
-- [ ] 3.4 Unit tests pass: `npm test`
-- [ ] 3.5 E2E suite passes fully: `npx playwright test`
+- [x] 3.1 Build passes: `npm run build`
+- [x] 3.2 Lint passes: `npm run lint`
+- [x] 3.3 Typecheck passes: `npm run astro check`
+- [x] 3.4 Unit tests pass: `npm test`
+- [x] 3.5 E2E suite passes fully: `npx playwright test`
 
 #### Manual
 
-- [ ] 3.6 Detail screen (panel, entries, forms, dialogs) renders in the light system, matches design
-- [ ] 3.7 Classification `<Badge>` muted with unchanged state text; threshold ladder legible
-- [ ] 3.8 Sales-entry add/delete visual flow works; loading/disabled states visible
+- [x] 3.6 Detail screen (panel, entries, forms, dialogs) renders in the light system, matches design
+- [x] 3.7 Classification `<Badge>` muted with unchanged state text; threshold ladder legible
+- [x] 3.8 Sales-entry add/delete visual flow works; loading/disabled states visible
 
 ### Phase 4: Account + auth pages
 
