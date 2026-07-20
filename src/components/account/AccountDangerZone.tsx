@@ -48,9 +48,9 @@ export function AccountDangerZone({ email }: Props) {
   }
 
   return (
-    <div className="rounded-2xl border border-red-500/30 bg-red-900/10 p-6">
-      <h2 className="text-lg font-semibold text-red-300">Danger zone</h2>
-      <p className="mt-1 mb-4 text-sm text-blue-100/70">
+    <div className="border-destructive/30 bg-destructive/5 rounded-lg border p-6">
+      <h2 className="text-destructive text-lg font-semibold">Danger zone</h2>
+      <p className="text-muted-foreground mt-1 mb-4 text-sm">
         Permanently delete your account and all associated data. This cannot be undone.
       </p>
       <Button

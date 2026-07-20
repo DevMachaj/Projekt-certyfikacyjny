@@ -381,30 +381,30 @@ No data or schema migration. Transient cross-phase state is expected and benign:
 
 #### Automated
 
-- [x] 3.1 Build passes: `npm run build`
-- [x] 3.2 Lint passes: `npm run lint`
-- [x] 3.3 Typecheck passes: `npm run astro check`
-- [x] 3.4 Unit tests pass: `npm test`
-- [x] 3.5 E2E suite passes fully: `npx playwright test`
+- [x] 3.1 Build passes: `npm run build` — 91a764e
+- [x] 3.2 Lint passes: `npm run lint` — 91a764e
+- [x] 3.3 Typecheck passes: `npm run astro check` — 91a764e
+- [x] 3.4 Unit tests pass: `npm test` — 91a764e
+- [x] 3.5 E2E suite passes fully: `npx playwright test` — 91a764e
 
 #### Manual
 
-- [x] 3.6 Detail screen (panel, entries, forms, dialogs) renders in the light system, matches design
-- [x] 3.7 Classification `<Badge>` muted with unchanged state text; threshold ladder legible
-- [x] 3.8 Sales-entry add/delete visual flow works; loading/disabled states visible
+- [x] 3.6 Detail screen (panel, entries, forms, dialogs) renders in the light system, matches design — 91a764e
+- [x] 3.7 Classification `<Badge>` muted with unchanged state text; threshold ladder legible — 91a764e
+- [x] 3.8 Sales-entry add/delete visual flow works; loading/disabled states visible — 91a764e
 
 ### Phase 4: Account + auth pages
 
 #### Automated
 
-- [ ] 4.1 Build passes: `npm run build`
-- [ ] 4.2 Lint passes: `npm run lint`
-- [ ] 4.3 Typecheck passes: `npm run astro check`
-- [ ] 4.4 Unit tests pass: `npm test`
-- [ ] 4.5 E2E suite passes fully: `npx playwright test`
+- [x] 4.1 Build passes: `npm run build`
+- [x] 4.2 Lint passes: `npm run lint`
+- [x] 4.3 Typecheck passes: `npm run astro check`
+- [x] 4.4 Unit tests pass: `npm test`
+- [x] 4.5 E2E suite passes fully: `npx playwright test`
 
 #### Manual
 
-- [ ] 4.6 Account + danger zone + delete-account dialog render light; danger card still reads destructive
-- [ ] 4.7 Sign in / sign up / confirm-email pages render fully light and consistent
-- [ ] 4.8 Whole-app pass: no residual `bg-cosmic`/`bg-white/5`/`bg-purple-600` in-scope
+- [x] 4.6 Account + danger zone + delete-account dialog render light; danger card still reads destructive
+- [x] 4.7 Sign in / sign up / confirm-email pages render fully light and consistent
+- [x] 4.8 Whole-app pass: no residual `bg-cosmic`/`bg-white/5`/`bg-purple-600` in-scope

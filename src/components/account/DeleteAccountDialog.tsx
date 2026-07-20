@@ -47,13 +47,13 @@ export function DeleteAccountDialog({ open, email, pending, error, onConfirm, on
         if (!next) handleCancel();
       }}
     >
-      <DialogContent className="border-white/10 bg-slate-900 text-white">
+      <DialogContent>
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
-            <TriangleAlert className="size-5 text-red-400" />
+            <TriangleAlert className="text-destructive size-5" />
             Delete your account?
           </DialogTitle>
-          <DialogDescription className="text-blue-100/70">
+          <DialogDescription>
             This permanently removes your account and all of your products and sales entries. This cannot be undone.
           </DialogDescription>
         </DialogHeader>
@@ -72,12 +72,7 @@ export function DeleteAccountDialog({ open, email, pending, error, onConfirm, on
         </div>
 
         <DialogFooter>
-          <Button
-            variant="outline"
-            onClick={handleCancel}
-            disabled={pending}
-            className="border-white/20 bg-white/10 text-white hover:bg-white/20"
-          >
+          <Button variant="outline" onClick={handleCancel} disabled={pending}>
             Cancel
           </Button>
           <Button variant="destructive" onClick={onConfirm} disabled={pending || !confirmed}>

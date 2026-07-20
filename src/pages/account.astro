@@ -10,14 +10,12 @@ const email = user?.email ?? "";
 ---
 
 <Layout title="Account">
-  <div class="bg-cosmic min-h-screen px-4 py-10">
+  <div class="bg-background min-h-screen px-4 py-10">
     <div class="mx-auto w-full max-w-3xl">
       <header class="mb-8">
-        <h1 class="bg-gradient-to-r from-blue-200 to-purple-200 bg-clip-text text-3xl font-bold text-transparent">
-          Account
-        </h1>
-        <p class="mt-1 text-sm text-blue-100/60">
-          Signed in as <span class="font-medium text-blue-100/80">{email}</span>
+        <h1 class="text-foreground text-3xl font-bold tracking-tight">Account</h1>
+        <p class="text-muted-foreground mt-1 text-sm">
+          Signed in as <span class="text-foreground font-medium">{email}</span>
         </p>
       </header>
 
