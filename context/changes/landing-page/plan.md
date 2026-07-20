@@ -297,10 +297,10 @@ Static SSR page, zero client JS (no islands). The redirect short-circuits before
 
 #### Automated
 
-- [x] 2.1 Build passes: `npm run build`
-- [x] 2.2 Lint passes: `npm run lint`
-- [x] 2.3 Type/astro check passes: `npm run astro check`
-- [x] 2.4 Unit tests pass: `npm test`
+- [x] 2.1 Build passes: `npm run build` — d985c2d
+- [x] 2.2 Lint passes: `npm run lint` — d985c2d
+- [x] 2.3 Type/astro check passes: `npm run astro check` — d985c2d
+- [x] 2.4 Unit tests pass: `npm test` — d985c2d
 
 #### Manual
 
@@ -312,11 +312,11 @@ Static SSR page, zero client JS (no islands). The redirect short-circuits before
 
 #### Automated
 
-- [ ] 3.1 Build passes: `npm run build`
-- [ ] 3.2 Lint passes: `npm run lint`
-- [ ] 3.3 Type/astro check passes: `npm run astro check`
-- [ ] 3.4 Unit tests pass: `npm test`
-- [ ] 3.5 Full E2E suite green: `npx playwright test`
+- [x] 3.1 Build passes: `npm run build`
+- [x] 3.2 Lint passes: `npm run lint`
+- [x] 3.3 Type/astro check passes: `npm run astro check`
+- [x] 3.4 Unit tests pass: `npm test`
+- [x] 3.5 Full E2E suite green: `npx playwright test`
 
 #### Manual
 
