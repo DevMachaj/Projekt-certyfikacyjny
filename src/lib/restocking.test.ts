@@ -88,6 +88,20 @@ describe("selectRestockCandidates", () => {
   it("returns [] for empty input", () => {
     expect(selectRestockCandidates([])).toEqual([]);
   });
+
+  // Characterization guard for the null-facts branch of urgency() (`+Infinity` → "sort last").
+  // The engine never emits Understocked/Watch with a null leadTime today, so this branch is
+  // currently unreachable in production — but the guard is a deliberate constraint (see
+  // context/archive/2026-06-17-restocking-plan-decision-support/plan.md:16,48). This pins
+  // "missing facts sort last" so a future change to classify() cannot silently break ordering.
+  // Input order puts the null-facts candidate FIRST on purpose: a broken guard would leave it there.
+  it("sorts a candidate with missing facts (null leadTime → +Infinity) last, regardless of state", () => {
+    const items = [
+      makeItem("nullfacts", "Watch", { leadTime: null }), // urgency +Infinity → must sort last
+      makeItem("hasfacts", "Watch", { daysOfStock: 8, leadTime: 5 }), // urgency +3
+    ];
+    expect(selectRestockCandidates(items).map((c) => c.product)).toEqual(["hasfacts", "nullfacts"]);
+  });
 });
 
 describe("deterministicReason", () => {
