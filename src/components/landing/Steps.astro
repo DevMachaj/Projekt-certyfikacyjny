@@ -1,0 +1,67 @@
+---
+import Icon from "@/components/landing/Icon.astro";
+
+// "Jak to działa" — three steps from raw data to a decision. Icon names map to Icon.astro.
+const steps = [
+  {
+    n: "01",
+    icon: "upload",
+    title: "Wprowadź dane sprzedaży",
+    body: "Podaj sprzedane sztuki w zakresie dat i podstawowe dane produktu — stan, czas dostawy, buffer.",
+  },
+  {
+    n: "02",
+    icon: "layers",
+    title: "Silnik klasyfikuje rotację",
+    body: "Deterministyczny silnik liczy rotację i dni zapasu, i przydziela jeden z pięciu stanów — od „Understocked” po „Slow-mover”.",
+  },
+  {
+    n: "03",
+    icon: "clipboard-check",
+    title: "Dostajesz tygodniowy plan",
+    body: "Priorytetowa lista: co zamówić najpierw, w jakiej ilości i dlaczego — z czytelnym podsumowaniem AI.",
+  },
+] as const;
+---
+
+<section class="pt-5 pb-[72px]">
+  <div class="mx-auto max-w-[var(--container)] px-8">
+    <div class="mb-10 text-center">
+      <span
+        class="text-[length:var(--fs-2xs)] font-semibold tracking-[var(--track-wide)] text-[var(--text-subtle)] uppercase"
+      >
+        Jak to działa
+      </span>
+      <h2 class="mt-2 text-[length:var(--fs-h1)] font-semibold tracking-[var(--track-snug)] text-[var(--text-heading)]">
+        Trzy kroki od danych do decyzji
+      </h2>
+    </div>
+    <div class="relative grid grid-cols-3 gap-5">
+      {
+        steps.map((s, i) => (
+          <div class="relative">
+            <div class="border-border bg-card h-full rounded-lg border p-5 shadow-[var(--ds-shadow-sm)]">
+              <div class="flex items-center justify-between">
+                <div class="text-primary flex size-10 items-center justify-center rounded-md bg-[var(--accent-subtle)]">
+                  <Icon icon={s.icon} size={20} />
+                </div>
+                <span class="font-mono [font-feature-settings:var(--num-features)] text-[length:var(--fs-h3)] font-semibold text-[var(--gray-200)]">
+                  {s.n}
+                </span>
+              </div>
+              <h3 class="mt-4 text-[length:var(--fs-h3)] font-semibold tracking-[var(--track-snug)] text-[var(--text-heading)]">
+                {s.title}
+              </h3>
+              <p class="text-muted-foreground mt-2 text-[length:var(--fs-sm)] leading-[1.6]">{s.body}</p>
+            </div>
+            {i < steps.length - 1 && (
+              <div class="absolute top-1/2 right-[-14px] z-[1] -translate-y-1/2 text-[var(--gray-300)]">
+                <Icon icon="arrow-right" size={18} />
+              </div>
+            )}
+          </div>
+        ))
+      }
+    </div>
+  </div>
+</section>

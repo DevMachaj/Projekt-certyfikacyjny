@@ -2,6 +2,8 @@
 import Layout from "@/layouts/Layout.astro";
 import Nav from "@/components/landing/Nav.astro";
 import Hero from "@/components/landing/Hero.astro";
+import Steps from "@/components/landing/Steps.astro";
+import Preview from "@/components/landing/Preview.astro";
 import FinalCta from "@/components/landing/FinalCta.astro";
 
 // `/` stays public (not in PROTECTED_ROUTES) so anonymous visitors reach the landing.
@@ -16,5 +18,7 @@ if (user) {
 <Layout title="StockHelper — Wiedz, co zamówić" lang="pl">
   <Nav />
   <Hero />
+  <Steps />
+  <Preview />
   <FinalCta />
 </Layout>

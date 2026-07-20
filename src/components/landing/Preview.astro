@@ -1,0 +1,92 @@
+---
+import { Badge } from "@/components/ui/badge";
+import Icon from "@/components/landing/Icon.astro";
+import type { ClassificationState } from "@/types";
+
+// Static mockup — NOT real data, no query, no client directive. One row per classification
+// state (per the plan Contract), each mapped through the real <Badge state={…} /> so the pills
+// are pixel-identical to the dashboard. Restock rows ("Zamów …") carry the under-stock color.
+const rows: { name: string; state: ClassificationState; rec: string }[] = [
+  { name: "Świeca sojowa 200g", state: "Understocked", rec: "Zamów 68 szt." },
+  { name: "Olejek eukaliptusowy 30ml", state: "Watch", rec: "Obserwuj" },
+  { name: "Mydło lawendowe", state: "OK", rec: "Brak działań" },
+  { name: "Świeca wanilia XL", state: "Slow-mover", rec: "Rozważ promocję" },
+  { name: "Dyfuzor bambusowy", state: "Insufficient data", rec: "Za mało danych" },
+];
+
+const bullets = [
+  "Rekomendacja „zamów X sztuk” — z jawnym wzorem",
+  "Przejrzyste progi każdego stanu",
+  "Tygodniowy plan zamówień jednym kliknięciem",
+];
+---
+
+<section class="pt-2 pb-10">
+  <div class="mx-auto grid max-w-[var(--container)] grid-cols-[1fr_1.15fr] items-center gap-12 px-8">
+    <div>
+      <span
+        class="text-[length:var(--fs-2xs)] font-semibold tracking-[var(--track-wide)] text-[var(--text-subtle)] uppercase"
+      >
+        Narzędzie w akcji
+      </span>
+      <h2 class="mt-2 text-[length:var(--fs-h1)] font-semibold tracking-[var(--track-snug)] text-[var(--text-heading)]">
+        Cały katalog na jednym ekranie
+      </h2>
+      <p class="text-muted-foreground mt-3.5 text-[length:var(--fs-base)] leading-[1.65]">
+        Produkty pogrupowane w pięć stanów rotacji, z konkretną rekomendacją przy każdym. Nie zabraknie Ci bestsellerów
+        i nie utopisz kasy w wolno rotujących towarach.
+      </p>
+      <ul class="mt-5 flex list-none flex-col gap-2.5 p-0">
+        {
+          bullets.map((t) => (
+            <li class="text-foreground flex items-center gap-2.5 text-[length:var(--fs-sm)]">
+              <span class="text-[var(--status-ok-solid)]">
+                <Icon icon="check" size={16} />
+              </span>
+              {t}
+            </li>
+          ))
+        }
+      </ul>
+    </div>
+
+    <div class="bg-card border-border overflow-hidden rounded-xl border shadow-[var(--ds-shadow-lg)]">
+      <div class="border-border flex items-center gap-2 border-b bg-[var(--surface-muted)] px-4 py-3">
+        <div class="flex gap-1.5">
+          <span class="size-[9px] rounded-full bg-[var(--gray-300)]"></span>
+          <span class="size-[9px] rounded-full bg-[var(--gray-300)]"></span>
+          <span class="size-[9px] rounded-full bg-[var(--gray-300)]"></span>
+        </div>
+        <span class="ml-2 text-[length:var(--fs-xs)] text-[var(--text-subtle)]">StockHelper · Dashboard</span>
+      </div>
+      <div class="p-4">
+        <div class="mb-3 flex items-center justify-between">
+          <span class="text-[length:var(--fs-sm)] font-semibold text-[var(--text-heading)]">Katalog wg rotacji</span>
+          <Badge tone="accent" dot={false}>Plan AI</Badge>
+        </div>
+        <div class="flex flex-col gap-1.5">
+          {
+            rows.map((r) => (
+              <div class="flex items-center justify-between gap-3 rounded-md bg-[var(--surface-muted)] px-3 py-2.5">
+                <div class="flex min-w-0 items-center gap-2.5">
+                  <Badge state={r.state} />
+                  <span class="text-foreground truncate text-[length:var(--fs-sm)]">{r.name}</span>
+                </div>
+                <span
+                  class:list={[
+                    "text-[length:var(--fs-xs)] whitespace-nowrap",
+                    r.rec.startsWith("Zamów")
+                      ? "font-semibold text-[var(--status-under-fg)]"
+                      : "text-muted-foreground font-normal",
+                  ]}
+                >
+                  {r.rec}
+                </span>
+              </div>
+            ))
+          }
+        </div>
+      </div>
+    </div>
+  </div>
+</section>

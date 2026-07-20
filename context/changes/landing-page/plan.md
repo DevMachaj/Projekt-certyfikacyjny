@@ -280,11 +280,11 @@ Static SSR page, zero client JS (no islands). The redirect short-circuits before
 
 #### Automated
 
-- [x] 1.1 Build passes: `npm run build`
-- [x] 1.2 Lint passes: `npm run lint`
-- [x] 1.3 Type/astro check passes: `npm run astro check`
-- [x] 1.4 Unit tests pass: `npm test`
-- [x] 1.5 No dead imports: `grep -rn "Welcome\|Topbar" src` returns nothing
+- [x] 1.1 Build passes: `npm run build` — 56abd5a
+- [x] 1.2 Lint passes: `npm run lint` — 56abd5a
+- [x] 1.3 Type/astro check passes: `npm run astro check` — 56abd5a
+- [x] 1.4 Unit tests pass: `npm test` — 56abd5a
+- [x] 1.5 No dead imports: `grep -rn "Welcome\|Topbar" src` returns nothing — 56abd5a
 
 #### Manual
 
@@ -297,10 +297,10 @@ Static SSR page, zero client JS (no islands). The redirect short-circuits before
 
 #### Automated
 
-- [ ] 2.1 Build passes: `npm run build`
-- [ ] 2.2 Lint passes: `npm run lint`
-- [ ] 2.3 Type/astro check passes: `npm run astro check`
-- [ ] 2.4 Unit tests pass: `npm test`
+- [x] 2.1 Build passes: `npm run build`
+- [x] 2.2 Lint passes: `npm run lint`
+- [x] 2.3 Type/astro check passes: `npm run astro check`
+- [x] 2.4 Unit tests pass: `npm test`
 
 #### Manual
 
