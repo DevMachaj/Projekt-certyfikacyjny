@@ -1,0 +1,43 @@
+---
+import { Badge } from "@/components/ui/badge";
+import Icon from "@/components/landing/Icon.astro";
+import { buttonVariants } from "@/components/ui/button";
+
+const ticks = ["Bez integracji ze sklepem", "5 stanów rotacji", "Plan zamówień co tydzień"];
+---
+
+<section class="pt-[84px] pb-[72px] text-center">
+  <div class="mx-auto max-w-[820px] px-8">
+    <div class="inline-flex">
+      <Badge tone="accent" dot={false}>Dla właścicieli sklepów e-commerce</Badge>
+    </div>
+    <h1
+      class="mt-5 text-[length:var(--fs-display)] leading-[1.05] font-semibold tracking-[var(--track-tight)] text-[var(--text-heading)]"
+    >
+      Wiedz, co zamówić<br />w tym tygodniu
+    </h1>
+    <p class="text-muted-foreground mx-auto mt-[22px] max-w-[600px] text-[length:var(--fs-lg)] leading-[1.6]">
+      StockHelper śledzi rotację Twoich produktów i mówi Ci, co uzupełnić, zanim się skończy — bez grzebania w
+      arkuszach.
+    </p>
+    <div class="mt-[30px] flex justify-center gap-3">
+      <a href="/auth/signup" class:list={buttonVariants({ variant: "default", size: "lg" })}>
+        Zarejestruj się
+        <Icon icon="arrow-right" size={17} />
+      </a>
+      <a href="/auth/signin" class:list={buttonVariants({ variant: "secondary", size: "lg" })}>Zaloguj</a>
+    </div>
+    <div class="mt-[26px] flex flex-wrap justify-center gap-[22px]">
+      {
+        ticks.map((t) => (
+          <span class="text-muted-foreground inline-flex items-center gap-1.5 text-[length:var(--fs-sm)]">
+            <span class="text-[var(--status-ok-solid)]">
+              <Icon icon="check" size={16} />
+            </span>
+            {t}
+          </span>
+        ))
+      }
+    </div>
+  </div>
+</section>

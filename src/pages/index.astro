@@ -1,8 +1,20 @@
 ---
-import Welcome from "@/components/Welcome.astro";
 import Layout from "@/layouts/Layout.astro";
+import Nav from "@/components/landing/Nav.astro";
+import Hero from "@/components/landing/Hero.astro";
+import FinalCta from "@/components/landing/FinalCta.astro";
+
+// `/` stays public (not in PROTECTED_ROUTES) so anonymous visitors reach the landing.
+// Authenticated visitors are redirected to their dashboard before any landing markup
+// is prepared — a page-level guard, since the middleware only guards protected routes.
+const { user } = Astro.locals;
+if (user) {
+  return Astro.redirect("/dashboard");
+}
 ---
 
-<Layout>
-  <Welcome />
+<Layout title="StockHelper — Wiedz, co zamówić" lang="pl">
+  <Nav />
+  <Hero />
+  <FinalCta />
 </Layout>

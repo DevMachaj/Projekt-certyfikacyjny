@@ -1,0 +1,28 @@
+---
+import Wordmark from "@/components/landing/Wordmark.astro";
+import Icon from "@/components/landing/Icon.astro";
+import { buttonVariants } from "@/components/ui/button";
+---
+
+<section class="pt-12 pb-[72px]">
+  <div class="mx-auto max-w-[var(--container)] px-8">
+    <div class="rounded-2xl bg-[var(--gray-950)] px-10 py-14 text-center">
+      <h2 class="text-[length:var(--fs-h1)] font-semibold tracking-[var(--track-snug)] text-white">
+        Zacznij zamawiać z głową
+      </h2>
+      <p class="mx-auto mt-[14px] max-w-[480px] text-[length:var(--fs-base)] leading-[1.6] text-[var(--gray-400)]">
+        Dodaj pierwszy produkt i zobacz swój pierwszy plan zatowarowania w kilka minut.
+      </p>
+      <div class="mt-7">
+        <a href="/auth/signup" class:list={buttonVariants({ variant: "default", size: "lg" })}>
+          Zarejestruj się za darmo
+          <Icon icon="arrow-right" size={17} />
+        </a>
+      </div>
+    </div>
+  </div>
+  <div class="border-border mx-auto mt-9 flex max-w-[var(--container)] items-center justify-between border-t px-8 pt-6">
+    <Wordmark />
+    <span class="text-[length:var(--fs-xs)] text-[var(--text-subtle)]">© 2026 StockHelper</span>
+  </div>
+</section>

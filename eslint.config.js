@@ -65,11 +65,21 @@ const astroConfig = tseslint.config({
     "astro/no-set-html-directive": "error",
     "astro/no-unused-css-selector": "warn",
     "astro/prefer-class-list-directive": "warn",
+    // Astro frontmatter permits a module-level `return` (e.g. page-level guards like
+    // `return Astro.redirect("/dashboard")`). no-misused-promises' void-return check walks
+    // to the enclosing function to validate the return and throws on a top-level return
+    // (astro-eslint-parser has no function scope there). Disable just that sub-check for
+    // .astro files; the attribute check (already off) and all other checks stay as configured.
+    "@typescript-eslint/no-misused-promises": ["error", { checksVoidReturn: { attributes: false, returns: false } }],
   },
 });
 
 export default tseslint.config(
   includeIgnoreFile(gitignorePath),
+  // dependency-cruiser's config is a root dotfile that TypeScript's `include` (`**/*`) excludes
+  // from the project, so the type-checked parser hard-errors ("not found by the project service")
+  // on it. It's tooling config, not linted source — ignore it.
+  { ignores: [".dependency-cruiser.cjs"] },
   baseConfig,
   reactConfig,
   eslintPluginAstro.configs["flat/recommended"],

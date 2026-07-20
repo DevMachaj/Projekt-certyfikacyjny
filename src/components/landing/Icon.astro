@@ -1,0 +1,61 @@
+---
+// Shared inline SVG icon set for the landing sections. Path data is lifted verbatim
+// from the Claude Design `ui_kits/landing` recipe (project a1fc2530). Decorative only —
+// aria-hidden, no accessible name. Sized via `size` (px) and colored via `currentColor`.
+type IconName = "boxes" | "upload" | "layers" | "clipboard-check" | "arrow-right" | "check";
+
+interface Props {
+  // Named `icon` (not `name`) to avoid colliding with the ambient `Window.name` global.
+  icon: IconName;
+  size?: number;
+  class?: string;
+}
+
+const { icon, size = 20, class: className } = Astro.props;
+
+const PATHS: Record<string, string[]> = {
+  boxes: [
+    "M2.97 12.92A2 2 0 0 0 2 14.63v3.24a2 2 0 0 0 .97 1.71l3 1.8a2 2 0 0 0 2.06 0L12 19v-5.5l-5-3-4.03 2.42Z",
+    "M7 16.5v5.17",
+    "M12 13.5V19l3.97 2.38a2 2 0 0 0 2.06 0l3-1.8a2 2 0 0 0 .97-1.71v-3.24a2 2 0 0 0-.97-1.71L17 10.5l-5 3Z",
+    "M17 16.5v5.17",
+    "M7.97 4.42A2 2 0 0 0 7 6.13v4.37l5 3 5-3V6.13a2 2 0 0 0-.97-1.71l-3-1.8a2 2 0 0 0-2.06 0l-3 1.8Z",
+    "M12 8 7.26 5.15",
+    "m12 8 4.74-2.85",
+    "M12 13.5V8",
+  ],
+  upload: ["M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4", "M17 8l-5-5-5 5", "M12 3v12"],
+  layers: [
+    "m12.83 2.18a2 2 0 0 0-1.66 0L2.6 6.08a1 1 0 0 0 0 1.83l8.58 3.91a2 2 0 0 0 1.66 0l8.58-3.9a1 1 0 0 0 0-1.83Z",
+    "M2 12a1 1 0 0 0 .58.91l8.6 3.91a2 2 0 0 0 1.65 0l8.58-3.9A1 1 0 0 0 22 12",
+    "M2 17a1 1 0 0 0 .58.91l8.6 3.91a2 2 0 0 0 1.65 0l8.58-3.9A1 1 0 0 0 22 17",
+  ],
+  "clipboard-check": [
+    "M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2",
+    "M15 2H9a1 1 0 0 0-1 1v2a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1V3a1 1 0 0 0-1-1Z",
+    "M9 12l2 2 4-4",
+  ],
+  "arrow-right": ["M5 12h14", "m12 5 7 7-7 7"],
+  check: ["M20 6 9 17l-5-5"],
+};
+
+// `icon` is typed IconName at the call site (tsc/astro-check enforce valid names), but the
+// eslint projectService doesn't resolve the local union alias inside .astro frontmatter and
+// treats it as an error type — index via `as string` so the lookup stays a clean `string[]`.
+const paths: string[] = PATHS[icon as string];
+---
+
+<svg
+  width={size}
+  height={size}
+  viewBox="0 0 24 24"
+  fill="none"
+  stroke="currentColor"
+  stroke-width="2"
+  stroke-linecap="round"
+  stroke-linejoin="round"
+  aria-hidden="true"
+  class:list={className}
+>
+  {paths.map((d) => <path d={d} />)}
+</svg>
