@@ -1,7 +1,6 @@
 ---
 import AppLayout from "@/layouts/AppLayout.astro";
 import ProductCard from "@/components/dashboard/ProductCard.astro";
-import { RestockingPlan } from "@/components/dashboard/RestockingPlan";
 import { buttonVariants } from "@/components/ui/button";
 import { createClient } from "@/lib/supabase";
 import { getProductsByUser, getSalesEntriesByUser } from "@/lib/db";
@@ -34,8 +33,6 @@ const hasProducts = groups.length > 0;
 ---
 
 <AppLayout title="Dashboard">
-  <RestockingPlan client:load />
-
   {
     hasProducts ? (
       <div class="space-y-8">

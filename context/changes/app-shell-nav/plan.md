@@ -280,11 +280,11 @@ The shell adds one guarded products+entries query per authenticated page (for th
 
 #### Automated
 
-- [x] 1.1 Build passes: `npm run build`
-- [x] 1.2 Lint passes: `npm run lint`
-- [x] 1.3 Type/astro check passes: `npm run astro check`
-- [x] 1.4 Unit tests pass: `npm test`
-- [x] 1.5 Existing E2E stays green: `npx playwright test`
+- [x] 1.1 Build passes: `npm run build` — da02e74
+- [x] 1.2 Lint passes: `npm run lint` — da02e74
+- [x] 1.3 Type/astro check passes: `npm run astro check` — da02e74
+- [x] 1.4 Unit tests pass: `npm test` — da02e74
+- [x] 1.5 Existing E2E stays green: `npx playwright test` — da02e74
 
 #### Manual
 
@@ -297,11 +297,11 @@ The shell adds one guarded products+entries query per authenticated page (for th
 
 #### Automated
 
-- [ ] 2.1 Build passes: `npm run build`
-- [ ] 2.2 Lint passes: `npm run lint`
-- [ ] 2.3 Type/astro check passes: `npm run astro check`
-- [ ] 2.4 Unit tests pass: `npm test`
-- [ ] 2.5 No dead imports after the move: `grep -rn "dashboard/RestockingPlan" src` returns nothing (if relocated)
+- [x] 2.1 Build passes: `npm run build`
+- [x] 2.2 Lint passes: `npm run lint`
+- [x] 2.3 Type/astro check passes: `npm run astro check`
+- [x] 2.4 Unit tests pass: `npm test`
+- [x] 2.5 No dead imports after the move: `grep -rn "dashboard/RestockingPlan" src` returns nothing (if relocated)
 
 #### Manual
 

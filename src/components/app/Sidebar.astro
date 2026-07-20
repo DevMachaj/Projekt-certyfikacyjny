@@ -8,7 +8,7 @@ interface Props {
   understockedCount?: number;
 }
 
-const { active = null, email } = Astro.props;
+const { active = null, email, understockedCount = 0 } = Astro.props;
 
 // Initials for the account avatar, derived from the email local-part (no store-name concept).
 const localPart = email.split("@")[0] ?? "";
@@ -42,6 +42,17 @@ const navIdle = "text-muted-foreground hover:bg-[var(--surface-sunken)]";
     <a href="/products" class:list={[navBase, active === "products" ? navActive : navIdle]}>
       <Icon icon="package" size={17} />
       <span class="flex-1">Produkty</span>
+    </a>
+    <a href="/plan" class:list={[navBase, active === "plan" ? navActive : navIdle]}>
+      <Icon icon="clipboard" size={17} />
+      <span class="flex-1">Plan zatowarowania</span>
+      {
+        understockedCount > 0 && (
+          <span class="border-status-under-border bg-status-under-bg text-status-under-fg rounded-full border px-[7px] font-mono text-[11px] leading-[17px] font-semibold">
+            {understockedCount}
+          </span>
+        )
+      }
     </a>
   </nav>
 

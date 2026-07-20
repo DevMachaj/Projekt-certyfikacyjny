@@ -18,13 +18,13 @@ async function readError(res: Response, fallback: string): Promise<string> {
 }
 
 /**
- * Dashboard island: a button that asks the route for the prioritized weekly restocking plan and
- * renders it. The engine builds the items, their order, actions, quantities, and facts on every
- * path; the AI authors only the `headline` and each item's `reason` on the `"ai"`
- * path (deterministic otherwise). Each row pairs the reason with the engine's own facts line so AI
- * prose sits next to verifiable numbers. A `"fallback"` source shows a small note (engine numbers
- * intact); `"empty"` shows the nothing-to-reorder message. Mirrors the existing island pattern
- * (local `readError`, `useState` for pending/error).
+ * The weekly restocking plan island (hosted on /plan, moved off the dashboard in S-11): a button
+ * that asks the route for the prioritized weekly restocking plan and renders it. The engine builds
+ * the items, their order, actions, quantities, and facts on every path; the AI authors only the
+ * `headline` and each item's `reason` on the `"ai"` path (deterministic otherwise). Each row pairs
+ * the reason with the engine's own facts line so AI prose sits next to verifiable numbers. A
+ * `"fallback"` source shows a small note (engine numbers intact); `"empty"` shows the
+ * nothing-to-reorder message. Display copy is Polish (S-11); the fetch/state logic is unchanged.
  */
 export function RestockingPlan() {
   const [pending, setPending] = useState(false);
@@ -38,12 +38,12 @@ export function RestockingPlan() {
     try {
       const res = await fetch("/api/restocking-plan", { method: "POST" });
       if (!res.ok) {
-        setError(await readError(res, "Could not generate the plan. Please try again."));
+        setError(await readError(res, "Nie udało się wygenerować planu. Spróbuj ponownie."));
         return;
       }
       setPlan((await res.json()) as RestockPlanResponse);
     } catch {
-      setError("Network error — please check your connection and try again.");
+      setError("Błąd sieci — sprawdź połączenie i spróbuj ponownie.");
     } finally {
       setPending(false);
     }
@@ -55,20 +55,21 @@ export function RestockingPlan() {
         <div>
           <h2 className="text-card-foreground flex items-center gap-2 text-lg font-semibold">
             <Sparkles className="text-primary h-5 w-5" aria-hidden="true" />
-            Weekly restocking plan
+            Plan na ten tydzień
           </h2>
           <p className="text-muted-foreground mt-1 text-sm">
-            A prioritized weekly plan — what to reorder first and why, built from your engine classifications.
+            Zbudowany z bieżących klasyfikacji rotacji — co zamówić najpierw i dlaczego. Silnik ustala kolejność i
+            ilości; AI dodaje podsumowanie.
           </p>
         </div>
         <Button onClick={() => void generate()} disabled={pending}>
           {pending ? (
             <>
               <Loader2 className="h-4 w-4 animate-spin" aria-hidden="true" />
-              Generating…
+              Generuję…
             </>
           ) : (
-            "Generate weekly restocking plan"
+            "Generuj plan"
           )}
         </Button>
       </div>
@@ -98,13 +99,13 @@ export function RestockingPlan() {
       {plan && (
         <div className="mt-4">
           {plan.source === "empty" ? (
-            <p className="text-muted-foreground text-sm">Nothing to reorder this week.</p>
+            <p className="text-muted-foreground text-sm">Nic do zamówienia w tym tygodniu.</p>
           ) : (
             <>
               {plan.source === "fallback" && (
                 <p className="border-status-watch-border bg-status-watch-bg text-status-watch-fg mb-3 flex items-center gap-2 rounded-lg border px-3 py-2 text-xs">
                   <CircleAlert className="h-4 w-4 shrink-0" aria-hidden="true" />
-                  AI summary unavailable — showing a basic plan.
+                  Podsumowanie AI niedostępne — pokazuję podstawowy plan.
                 </p>
               )}
               <p className="text-card-foreground text-sm font-medium">{plan.headline}</p>
@@ -118,7 +119,7 @@ export function RestockingPlan() {
                     <p className="text-muted-foreground mt-1">{item.reason}</p>
                     {item.daysOfStock != null && item.leadTime != null && (
                       <p className="mt-1 text-xs text-[var(--text-subtle)]">
-                        {Math.round(item.daysOfStock)}d stock · {item.leadTime}d lead time
+                        {Math.round(item.daysOfStock)}d zapasu · {item.leadTime}d czas dostawy
                       </p>
                     )}
                   </li>
