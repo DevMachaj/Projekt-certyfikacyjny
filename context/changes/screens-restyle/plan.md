@@ -397,14 +397,14 @@ No data or schema migration. Transient cross-phase state is expected and benign:
 
 #### Automated
 
-- [x] 4.1 Build passes: `npm run build`
-- [x] 4.2 Lint passes: `npm run lint`
-- [x] 4.3 Typecheck passes: `npm run astro check`
-- [x] 4.4 Unit tests pass: `npm test`
-- [x] 4.5 E2E suite passes fully: `npx playwright test`
+- [x] 4.1 Build passes: `npm run build` — c3272f8
+- [x] 4.2 Lint passes: `npm run lint` — c3272f8
+- [x] 4.3 Typecheck passes: `npm run astro check` — c3272f8
+- [x] 4.4 Unit tests pass: `npm test` — c3272f8
+- [x] 4.5 E2E suite passes fully: `npx playwright test` — c3272f8
 
 #### Manual
 
-- [x] 4.6 Account + danger zone + delete-account dialog render light; danger card still reads destructive
-- [x] 4.7 Sign in / sign up / confirm-email pages render fully light and consistent
-- [x] 4.8 Whole-app pass: no residual `bg-cosmic`/`bg-white/5`/`bg-purple-600` in-scope
+- [x] 4.6 Account + danger zone + delete-account dialog render light; danger card still reads destructive — c3272f8
+- [x] 4.7 Sign in / sign up / confirm-email pages render fully light and consistent — c3272f8
+- [x] 4.8 Whole-app pass: no residual `bg-cosmic`/`bg-white/5`/`bg-purple-600` in-scope — c3272f8

@@ -1,7 +1,7 @@
 ---
 change_id: screens-restyle
 title: Screens restyle (S-09)
-status: implementing
+status: implemented
 created: 2026-07-20
 updated: 2026-07-20
 archived_at: null
