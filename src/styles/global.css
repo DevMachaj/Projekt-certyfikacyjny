@@ -1,28 +1,187 @@
 @import "tailwindcss";
 @import "tw-animate-css";
+@import "@fontsource-variable/geist";
+@import "@fontsource-variable/geist-mono";
 
 @custom-variant dark (&:is(.dark *));
 
+/* ============================================================================
+   StockHelper Design System — light reskin (S-08 / design-system-refresh)
+
+   Foundation tokens adopted from the "StockHelper Design System" Claude Design
+   project (a1fc2530). The design semantic values are MAPPED ONTO the existing
+   shadcn variable contract (--background/--primary/--card/…) so components keep
+   their current class names. Colliding design tokens (type scale, leading,
+   tracking, shadows) are namespaced (--fs- / --lh- / --track- / --ds-shadow-)
+   to avoid overriding Tailwind own theme utilities on screens not yet restyled.
+
+   Screens are NOT restyled in this slice (that is S-09). See
+   context/changes/design-system-refresh/plan.md.
+   ============================================================================ */
 :root {
+  /* ---- Neutral ramp (cool slate) ---- */
+  --gray-0: oklch(1 0 0);
+  --gray-25: oklch(0.992 0.0015 265);
+  --gray-50: oklch(0.984 0.003 265);
+  --gray-100: oklch(0.968 0.004 265);
+  --gray-150: oklch(0.951 0.005 265);
+  --gray-200: oklch(0.928 0.006 265);
+  --gray-300: oklch(0.882 0.008 265);
+  --gray-400: oklch(0.715 0.012 265);
+  --gray-500: oklch(0.586 0.014 265);
+  --gray-600: oklch(0.487 0.016 266);
+  --gray-700: oklch(0.386 0.018 266);
+  --gray-800: oklch(0.279 0.02 266);
+  --gray-900: oklch(0.211 0.02 266);
+  --gray-950: oklch(0.152 0.02 266);
+
+  /* ---- Accent: indigo ---- */
+  --indigo-50: oklch(0.972 0.018 274);
+  --indigo-100: oklch(0.935 0.042 274);
+  --indigo-200: oklch(0.885 0.07 274);
+  --indigo-300: oklch(0.79 0.12 274);
+  --indigo-500: oklch(0.585 0.176 274);
+  --indigo-600: oklch(0.532 0.188 274);
+  --indigo-700: oklch(0.468 0.17 274);
+
+  /* ---- Status: five velocity-classification states (muted) ---- */
+  --status-under-bg: oklch(0.958 0.024 27);
+  --status-under-border: oklch(0.86 0.062 27);
+  --status-under-fg: oklch(0.505 0.148 27);
+  --status-under-solid: oklch(0.578 0.163 27);
+
+  --status-watch-bg: oklch(0.966 0.036 82);
+  --status-watch-border: oklch(0.865 0.078 78);
+  --status-watch-fg: oklch(0.515 0.1 66);
+  --status-watch-solid: oklch(0.72 0.128 75);
+
+  --status-ok-bg: oklch(0.96 0.03 158);
+  --status-ok-border: oklch(0.85 0.062 158);
+  --status-ok-fg: oklch(0.475 0.098 160);
+  --status-ok-solid: oklch(0.6 0.108 158);
+
+  --status-slow-bg: oklch(0.958 0.022 315);
+  --status-slow-border: oklch(0.86 0.05 315);
+  --status-slow-fg: oklch(0.5 0.128 315);
+  --status-slow-solid: oklch(0.585 0.138 315);
+
+  --status-insuff-bg: oklch(0.965 0.004 265);
+  --status-insuff-border: oklch(0.905 0.006 265);
+  --status-insuff-fg: oklch(0.52 0.012 265);
+  --status-insuff-solid: oklch(0.68 0.012 265);
+
+  /* ---- Feedback: destructive ---- */
+  --red-600: oklch(0.55 0.17 27);
+  --red-700: oklch(0.49 0.16 27);
+
+  /* ---- Design semantic aliases (DS components + /design-preview reference these) ---- */
+  --surface: var(--gray-0);
+  --surface-muted: var(--gray-50);
+  --surface-sunken: var(--gray-100);
+  --border-strong: var(--gray-300);
+  --text-heading: var(--gray-950);
+  --text-muted: var(--gray-500);
+  --text-subtle: var(--gray-400);
+  --text-on-accent: var(--gray-0);
+  --accent-hover: var(--indigo-700);
+  --accent-fg: var(--gray-0);
+  --accent-subtle: var(--indigo-50);
+  --accent-subtle-fg: var(--indigo-700);
+  --accent-border: var(--indigo-200);
+  --destructive-hover: var(--red-700);
+  --destructive-fg: var(--gray-0);
+  --link: var(--indigo-600);
+  --link-hover: var(--indigo-700);
+
+  /* ---- Type scale (namespaced --fs-* so it never clobbers Tailwind --text-*) ---- */
+  --fs-display: 3rem; /* 48 — landing hero */
+  --fs-h1: 1.875rem; /* 30 — page titles */
+  --fs-h2: 1.5rem; /* 24 — section headers */
+  --fs-h3: 1.25rem; /* 20 — card titles */
+  --fs-lg: 1.0625rem; /* 17 — lead paragraph */
+  --fs-base: 0.9375rem; /* 15 — body copy */
+  --fs-sm: 0.875rem; /* 14 — UI default */
+  --fs-xs: 0.8125rem; /* 13 — captions */
+  --fs-2xs: 0.75rem; /* 12 — micro labels, badges */
+
+  --weight-regular: 400;
+  --weight-medium: 500;
+  --weight-semibold: 600;
+  --weight-bold: 700;
+
+  /* Line heights (namespaced --lh-* to avoid Tailwind --leading-*) */
+  --lh-tight: 1.15;
+  --lh-snug: 1.3;
+  --lh-normal: 1.5;
+  --lh-relaxed: 1.65;
+
+  /* Letter spacing (namespaced --track-* to avoid Tailwind --tracking-*) */
+  --track-tight: -0.02em;
+  --track-snug: -0.011em;
+  --track-normal: 0;
+  --track-wide: 0.04em;
+
+  /* Tabular, lining figures for aligned numeric columns */
+  --num-features: "tnum" 1, "lnum" 1, "cv01" 1;
+
+  /* ---- Spacing (4px grid; --space-* does not collide with Tailwind --spacing) ---- */
+  --space-0: 0;
+  --space-1: 0.25rem;
+  --space-2: 0.5rem;
+  --space-3: 0.75rem;
+  --space-4: 1rem;
+  --space-5: 1.25rem;
+  --space-6: 1.5rem;
+  --space-8: 2rem;
+  --space-10: 2.5rem;
+  --space-12: 3rem;
+  --space-16: 4rem;
+  --space-20: 5rem;
+  --space-24: 6rem;
+
+  /* ---- Elevation (namespaced --ds-shadow-* to avoid Tailwind --shadow-*) ---- */
+  --ds-shadow-xs: 0 1px 2px 0 oklch(0.21 0.02 266 / 0.05);
+  --ds-shadow-sm: 0 1px 2px 0 oklch(0.21 0.02 266 / 0.06), 0 1px 3px 0 oklch(0.21 0.02 266 / 0.05);
+  --ds-shadow-md: 0 2px 4px -1px oklch(0.21 0.02 266 / 0.06), 0 4px 12px -2px oklch(0.21 0.02 266 / 0.08);
+  --ds-shadow-lg: 0 8px 24px -6px oklch(0.21 0.02 266 / 0.12), 0 2px 6px -2px oklch(0.21 0.02 266 / 0.06);
+  --ds-shadow-focus: 0 0 0 3px oklch(0.585 0.176 274 / 0.45);
+
+  /* ---- Motion ---- */
+  --ease-standard: cubic-bezier(0.2, 0, 0, 1);
+  --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+  --dur-fast: 120ms;
+  --dur-base: 180ms;
+  --dur-slow: 260ms;
+
+  /* ---- Layout ---- */
+  --container: 1120px;
+  --sidebar-w: 244px;
+
+  /* ========================================================================
+     shadcn variable contract — names the existing components consume.
+     Design values mapped here; component classes are unchanged.
+     NOTE: shadcn --accent is a MUTED HOVER SURFACE, not the indigo action
+     color. The indigo action color lives in --primary (and --indigo-600).
+     ======================================================================== */
   --radius: 0.625rem;
-  --background: oklch(1 0 0);
-  --foreground: oklch(0.145 0 0);
-  --card: oklch(1 0 0);
-  --card-foreground: oklch(0.145 0 0);
-  --popover: oklch(1 0 0);
-  --popover-foreground: oklch(0.145 0 0);
-  --primary: oklch(0.205 0 0);
-  --primary-foreground: oklch(0.985 0 0);
-  --secondary: oklch(0.97 0 0);
-  --secondary-foreground: oklch(0.205 0 0);
-  --muted: oklch(0.97 0 0);
-  --muted-foreground: oklch(0.556 0 0);
-  --accent: oklch(0.97 0 0);
-  --accent-foreground: oklch(0.205 0 0);
-  --destructive: oklch(0.577 0.245 27.325);
-  --border: oklch(0.922 0 0);
-  --input: oklch(0.922 0 0);
-  --ring: oklch(0.708 0 0);
+  --background: var(--gray-25);
+  --foreground: var(--gray-900);
+  --card: var(--gray-0);
+  --card-foreground: var(--gray-900);
+  --popover: var(--gray-0);
+  --popover-foreground: var(--gray-900);
+  --primary: var(--indigo-600);
+  --primary-foreground: var(--gray-0);
+  --secondary: var(--gray-50);
+  --secondary-foreground: var(--gray-900);
+  --muted: var(--gray-50);
+  --muted-foreground: var(--gray-500);
+  --accent: var(--gray-100);
+  --accent-foreground: var(--gray-900);
+  --destructive: var(--red-600);
+  --border: var(--gray-200);
+  --input: var(--gray-300);
+  --ring: var(--indigo-500);
   --chart-1: oklch(0.646 0.222 41.116);
   --chart-2: oklch(0.6 0.118 184.704);
   --chart-3: oklch(0.398 0.07 227.392);
@@ -38,6 +197,8 @@
   --sidebar-ring: oklch(0.708 0 0);
 }
 
+/* Dark theme retained but INERT — nothing toggles .dark today. The design is a
+   light-only reskin; a real dark palette is future work (see plan §Migration Notes). */
 .dark {
   --background: oklch(0.145 0 0);
   --foreground: oklch(0.985 0 0);
@@ -77,6 +238,11 @@
   --radius-md: calc(var(--radius) - 2px);
   --radius-lg: var(--radius);
   --radius-xl: calc(var(--radius) + 4px);
+
+  /* Geist becomes the document + utility font (font-sans / font-mono) */
+  --font-sans: "Geist Variable", ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  --font-mono: "Geist Mono Variable", ui-monospace, "SF Mono", "JetBrains Mono", Menlo, monospace;
+
   --color-background: var(--background);
   --color-foreground: var(--foreground);
   --color-card: var(--card);
@@ -108,6 +274,28 @@
   --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
   --color-sidebar-border: var(--sidebar-border);
   --color-sidebar-ring: var(--sidebar-ring);
+
+  /* Status colors — expose the 5 families so Tailwind emits bg-/text-/border-status-* utilities */
+  --color-status-under-bg: var(--status-under-bg);
+  --color-status-under-border: var(--status-under-border);
+  --color-status-under-fg: var(--status-under-fg);
+  --color-status-under-solid: var(--status-under-solid);
+  --color-status-watch-bg: var(--status-watch-bg);
+  --color-status-watch-border: var(--status-watch-border);
+  --color-status-watch-fg: var(--status-watch-fg);
+  --color-status-watch-solid: var(--status-watch-solid);
+  --color-status-ok-bg: var(--status-ok-bg);
+  --color-status-ok-border: var(--status-ok-border);
+  --color-status-ok-fg: var(--status-ok-fg);
+  --color-status-ok-solid: var(--status-ok-solid);
+  --color-status-slow-bg: var(--status-slow-bg);
+  --color-status-slow-border: var(--status-slow-border);
+  --color-status-slow-fg: var(--status-slow-fg);
+  --color-status-slow-solid: var(--status-slow-solid);
+  --color-status-insuff-bg: var(--status-insuff-bg);
+  --color-status-insuff-border: var(--status-insuff-border);
+  --color-status-insuff-fg: var(--status-insuff-fg);
+  --color-status-insuff-solid: var(--status-insuff-solid);
 }
 
 @utility bg-cosmic {
