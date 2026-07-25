@@ -17,16 +17,16 @@ A "Generate weekly restocking plan" button on the dashboard calls `POST /api/res
 
 ## Key Decisions Made
 
-| Decision | Choice | Why | Source |
-| --- | --- | --- | --- |
-| Provider | Anthropic Messages API direct (not OpenRouter) | Reliable `json_schema` constrained decoding, no beta header; OpenRouter schema adherence varies per provider | Research |
-| Model | `claude-haiku-4-5` | Cheapest Claude with structured-output support; <1¢/call | Research |
-| Secret handling | `ANTHROPIC_API_KEY` via `astro:env/server`, null-guard → 503 | Mirrors the Supabase pattern; `optional:true` so build/CI don't break | Research/Plan |
-| Watch products | "Monitor", no quantity | Engine gives Watch `{kind:"none"}` — no units to restate; LLM must not invent one | Research/Plan |
-| Selection | Pure `selectRestockCandidates`, runs before any LLM call, unit-tested | Keeps the engine authoritative and the boundary testable | Plan |
-| LLM failure | Deterministic engine-built fallback, labeled | Degrade gracefully; never surface broken output | Plan |
-| Empty case | Short-circuit, no LLM call | Saves tokens, no hallucination risk | Plan |
-| Trigger/UI | React island on `/dashboard` | Same surface that lists these products; matches island-calls-`/api` pattern | Plan |
+| Decision        | Choice                                                                | Why                                                                                                          | Source        |
+| --------------- | --------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------ | ------------- |
+| Provider        | Anthropic Messages API direct (not OpenRouter)                        | Reliable `json_schema` constrained decoding, no beta header; OpenRouter schema adherence varies per provider | Research      |
+| Model           | `claude-haiku-4-5`                                                    | Cheapest Claude with structured-output support; <1¢/call                                                     | Research      |
+| Secret handling | `ANTHROPIC_API_KEY` via `astro:env/server`, null-guard → 503          | Mirrors the Supabase pattern; `optional:true` so build/CI don't break                                        | Research/Plan |
+| Watch products  | "Monitor", no quantity                                                | Engine gives Watch `{kind:"none"}` — no units to restate; LLM must not invent one                            | Research/Plan |
+| Selection       | Pure `selectRestockCandidates`, runs before any LLM call, unit-tested | Keeps the engine authoritative and the boundary testable                                                     | Plan          |
+| LLM failure     | Deterministic engine-built fallback, labeled                          | Degrade gracefully; never surface broken output                                                              | Plan          |
+| Empty case      | Short-circuit, no LLM call                                            | Saves tokens, no hallucination risk                                                                          | Plan          |
+| Trigger/UI      | React island on `/dashboard`                                          | Same surface that lists these products; matches island-calls-`/api` pattern                                  | Plan          |
 
 ## Scope
 
@@ -40,13 +40,13 @@ Inward-out along existing seams: **Phase 1** extracts the classification glue to
 
 ## Phases at a Glance
 
-| Phase | What it delivers | Key risk |
-| --- | --- | --- |
-| 1. Extract `classifyUserCatalog` | Shared pure helper; dashboard repointed, zero behavior change | Accidental output drift on the dashboard |
-| 2. Pure selection + deterministic plan | `selectRestockCandidates` + `buildDeterministicPlan` + unit tests | Watch leaking a quantity (guarded by test) |
-| 3. Anthropic service + secret | `summarizeRestockPlan` with timeout/guard/fallback; env wired | First outbound fetch on workerd; response-shape guarding |
-| 4. `POST /api/restocking-plan` | Orchestration route; empty short-circuit | Missing a 401/503/500 boundary case |
-| 5. Dashboard island | Button + result panel; labeled fallback/empty | UX of failure/empty states |
+| Phase                                  | What it delivers                                                  | Key risk                                                 |
+| -------------------------------------- | ----------------------------------------------------------------- | -------------------------------------------------------- |
+| 1. Extract `classifyUserCatalog`       | Shared pure helper; dashboard repointed, zero behavior change     | Accidental output drift on the dashboard                 |
+| 2. Pure selection + deterministic plan | `selectRestockCandidates` + `buildDeterministicPlan` + unit tests | Watch leaking a quantity (guarded by test)               |
+| 3. Anthropic service + secret          | `summarizeRestockPlan` with timeout/guard/fallback; env wired     | First outbound fetch on workerd; response-shape guarding |
+| 4. `POST /api/restocking-plan`         | Orchestration route; empty short-circuit                          | Missing a 401/503/500 boundary case                      |
+| 5. Dashboard island                    | Button + result panel; labeled fallback/empty                     | UX of failure/empty states                               |
 
 **Prerequisites:** S-03 complete (classification engine + dashboard live, which it is); an Anthropic API key for live testing (`.dev.vars`).
 **Estimated effort:** ~2–3 sessions across the 5 phases.

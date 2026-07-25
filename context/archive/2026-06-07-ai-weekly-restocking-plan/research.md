@@ -26,7 +26,7 @@ How does `/dashboard` currently fetch the user's products and group them by clas
 
 ## Summary
 
-- **Everything the new endpoint needs already exists as importable, pure `src/lib` functions.** The only logic that lives *only* inside `dashboard.astro` is a ~13-line glue block (fetch both batches → group entries by `product_id` → `classify` each). To build the endpoint, either copy that glue or extract it into a shared `src/lib` helper.
+- **Everything the new endpoint needs already exists as importable, pure `src/lib` functions.** The only logic that lives _only_ inside `dashboard.astro` is a ~13-line glue block (fetch both batches → group entries by `product_id` → `classify` each). To build the endpoint, either copy that glue or extract it into a shared `src/lib` helper.
 - **Data flow**: `Astro.locals.user` (set by middleware) → `getProductsByUser` + `getSalesEntriesByUser` (two batch queries, no N+1) → group entries into `Map<product_id, SalesEntry[]>` → `classify(product, entries)` per product → `groupProductsByState(items)` → render Astro `ProductCard`s.
 - **Classification states are**: `"Understocked" | "Watch" | "OK" | "Slow-mover" | "Insufficient data"` (`src/types.ts:1`). There is **no "Healthy"/"Overstocked"** — `OK` and `Slow-mover` are the closest.
 - **Critical for the LLM payload**: only **Understocked** carries an order quantity (`recommendation: { kind: "order"; units }`). **Watch produces `recommendation: { kind: "none" }`** — no `units`. For Watch products the payload must rely on `velocity`, `daysOfStock`, `stock_quantity`, `lead_time_days`, `buffer_days`.
@@ -49,7 +49,9 @@ The frontmatter (lines 1–46) does all the work; render (lines 78–106) just m
 
 ```ts
 const entriesByProduct = new Map<string, SalesEntry[]>();
-for (const entry of entries) { /* push into map keyed by entry.product_id */ }
+for (const entry of entries) {
+  /* push into map keyed by entry.product_id */
+}
 
 const items: ProductClassification[] = products.map((product) => ({
   product,
@@ -69,8 +71,14 @@ Grouping is a pure `src/lib` function, not in a component.
 - Types (`:5-14`):
 
 ```ts
-interface ProductClassification { product: Product; classification: ClassificationResult; }
-interface StateGroup { state: ClassificationState; items: ProductClassification[]; }
+interface ProductClassification {
+  product: Product;
+  classification: ClassificationResult;
+}
+interface StateGroup {
+  state: ClassificationState;
+  items: ProductClassification[];
+}
 ```
 
 - `STATE_ORDER` — `src/lib/classification.ts:64`: `["Understocked", "Watch", "OK", "Slow-mover", "Insufficient data"]`. Understocked + Watch are the first two buckets.
@@ -95,16 +103,17 @@ Pure, dependency-free (imports types only), server-side only. Never throws, neve
 ```ts
 export interface ClassificationResult {
   state: ClassificationState;
-  velocity: number | null;      // units/day over all history; null when no history
-  daysOfStock: number | null;   // stock_quantity ÷ velocity; null when velocity unavailable
-  totalDays: number;            // inclusive calendar days across non-overlapping entries
+  velocity: number | null; // units/day over all history; null when no history
+  daysOfStock: number | null; // stock_quantity ÷ velocity; null when velocity unavailable
+  totalDays: number; // inclusive calendar days across non-overlapping entries
   totalUnits: number;
-  thresholdLabel: string;       // = THRESHOLD_DEFINITIONS[state], human-readable
+  thresholdLabel: string; // = THRESHOLD_DEFINITIONS[state], human-readable
   recommendation: Recommendation;
 }
 ```
 
 `ClassificationState` — `src/types.ts:1`:
+
 ```ts
 export type ClassificationState = "Understocked" | "Watch" | "OK" | "Slow-mover" | "Insufficient data";
 ```
@@ -143,6 +152,7 @@ All take `(supabase, userId|id)`, `select("*")`, throw on error, rely on RLS for
 - `getProductById(supabase, id): Promise<Product | null>` — `:57`.
 
 Row shapes — `src/types.ts`:
+
 ```ts
 Product:    { id, user_id, name, stock_quantity, lead_time_days: number|null, buffer_days, created_at, updated_at }  // :3-12
 SalesEntry: { id, product_id, user_id, units_sold, start_date, end_date, created_at }                                 // :14-22
@@ -155,11 +165,13 @@ Dashboard renders **no React island** — it uses `src/components/dashboard/Prod
 ### Secrets / env on Cloudflare Workers
 
 **Read pattern** — statically-imported bindings from `astro:env/server` (NOT `getSecret()`):
+
 - `src/lib/supabase.ts:3` `import { SUPABASE_URL, SUPABASE_KEY } from "astro:env/server";`, guarded `if (!SUPABASE_URL || !SUPABASE_KEY) return null;` (`:6`).
 - `src/lib/config-status.ts:1,14`.
 - **API routes never read secrets directly** — they call `createClient(...)` from `@/lib/supabase` and only handle the `null` (unconfigured → 503) case. Mirror this: put LLM-key access in a `src/lib/services/` module.
 
 **Schema** — `astro.config.mjs:17-22` (`envField` imported `:2`):
+
 ```js
 env: {
   schema: {
@@ -168,6 +180,7 @@ env: {
   },
 },
 ```
+
 `context: "server"` (never sent to client), `access: "secret"` (read at runtime, not inlined into the public bundle), `optional: true` (app boots even when unset → hence the null guards).
 
 **Runtime provisioning** (three environments):
@@ -191,7 +204,7 @@ Zod conventions (`src/lib/validation/product.ts`): schemas in `src/lib/validatio
 
 ### External fetch / workerd
 
-No server-side outbound `fetch` exists yet — all current `fetch` calls are client-side islands hitting the project's own `/api/...` (`ProductDetail.tsx:57,85`, `ProductCatalog.tsx:66,96`). The LLM endpoint introduces the first outbound fetch. workerd notes: `fetch`/`Response`/`Request`/`Headers`/`AbortController` are globals — use directly, no `node-fetch`. `nodejs_compat` is on if an SDK needs Node APIs, but the lowest-risk path is a thin `src/lib/services/<provider>.ts` doing `fetch(url, { headers: { Authorization: \`Bearer ${KEY}\` }, ... })` at request time, with the key pulled from `astro:env/server` inside the lib.
+No server-side outbound `fetch` exists yet — all current `fetch` calls are client-side islands hitting the project's own `/api/...` (`ProductDetail.tsx:57,85`, `ProductCatalog.tsx:66,96`). The LLM endpoint introduces the first outbound fetch. workerd notes: `fetch`/`Response`/`Request`/`Headers`/`AbortController` are globals — use directly, no `node-fetch`. `nodejs_compat` is on if an SDK needs Node APIs, but the lowest-risk path is a thin `src/lib/services/<provider>.ts` doing `fetch(url, { headers: { Authorization: \`Bearer ${KEY}\` }, ... })`at request time, with the key pulled from`astro:env/server` inside the lib.
 
 ## Code References
 
@@ -245,7 +258,7 @@ Both options are plain-`fetch` and workerd-compatible. The deciding axis is **st
 
 - **Anthropic direct** — `output_config.format` (`json_schema`) uses constrained decoding, so schema adherence is guaranteed on `claude-haiku-4-5`, and **no beta header is required** anymore (`structured-outputs-2025-11-13` still works for a transition period but is optional). One account, one network hop.
   - Source: `https://platform.claude.com/docs/en/build-with-claude/structured-outputs.md` — confirms no beta header required and `claude-haiku-4-5` is in the GA list.
-- **OpenRouter** — OpenAI-shaped, also plain `fetch`, but `json_schema` support is **per-routed-provider, not per-model**. A model can advertise schema support while the provider OpenRouter routes to silently falls back to `json_object`; you must set `provider.require_parameters: true` to avoid it. OpenRouter shipped a "Response Healing" plugin because malformed JSON is common — and that only fixes JSON *syntax*, not *schema adherence*.
+- **OpenRouter** — OpenAI-shaped, also plain `fetch`, but `json_schema` support is **per-routed-provider, not per-model**. A model can advertise schema support while the provider OpenRouter routes to silently falls back to `json_object`; you must set `provider.require_parameters: true` to avoid it. OpenRouter shipped a "Response Healing" plugin because malformed JSON is common — and that only fixes JSON _syntax_, not _schema adherence_.
   - Sources: OpenRouter Structured Outputs docs; `github.com/simonw/llm-openrouter` issue #28 (documents the provider-fallback-to-`json_object` trap firsthand); OpenRouter Response Healing blog/docs.
 
 OpenRouter's value (multi-model failover, marketplace) is irrelevant to one cheap call. Cost is a wash at this volume; OpenRouter adds a small credit fee.
@@ -278,7 +291,7 @@ const res = await fetch("https://api.anthropic.com/v1/messages", {
         type: "json_schema",
         schema: {
           type: "object",
-          additionalProperties: false,        // required by structured outputs
+          additionalProperties: false, // required by structured outputs
           required: ["weekly_summary", "items"],
           properties: {
             weekly_summary: { type: "string" },

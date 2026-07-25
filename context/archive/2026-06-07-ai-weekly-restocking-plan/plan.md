@@ -49,7 +49,7 @@ Verification that the end state holds: `npm test` (pure selection/plan/parse log
 
 ## Implementation Approach
 
-Build inward-out along the existing seams: extract the shared classification glue (Phase 1), add the pure engine-side selection + deterministic plan that fixes every action *before* any LLM call (Phase 2), wrap the Anthropic call in a `src/lib/services` module that degrades to that deterministic plan (Phase 3), expose it through a conventional route that short-circuits the empty case (Phase 4), and surface it with a dashboard island (Phase 5). The deterministic plan built in Phase 2 is the single source of truth for both the LLM's input facts and the failure fallback, so the engine stays authoritative end to end.
+Build inward-out along the existing seams: extract the shared classification glue (Phase 1), add the pure engine-side selection + deterministic plan that fixes every action _before_ any LLM call (Phase 2), wrap the Anthropic call in a `src/lib/services` module that degrades to that deterministic plan (Phase 3), expose it through a conventional route that short-circuits the empty case (Phase 4), and surface it with a dashboard island (Phase 5). The deterministic plan built in Phase 2 is the single source of truth for both the LLM's input facts and the failure fallback, so the engine stays authoritative end to end.
 
 ## Critical Implementation Details
 
@@ -121,24 +121,33 @@ Add the engine-side, LLM-free core: select the `Understocked` + `Watch` products
 **File**: `src/lib/restocking.ts`
 
 **Intent**: Define the data contract and two pure functions:
+
 - `selectRestockCandidates(items: ProductClassification[]): RestockCandidate[]` — keep only `state === "Understocked" || state === "Watch"`, preserving `STATE_ORDER` precedence (Understocked before Watch) and input order within each. Map each to a `RestockCandidate` carrying the engine facts plus a **deterministic `action`**: for `Understocked`, the existing `recommendationText(recommendation, state)` (→ `"Order N units"`); for `Watch`, `"Monitor"`. Never derive `units` for `Watch`.
 - `buildDeterministicPlan(candidates: RestockCandidate[]): RestockPlan` — produce a plain-language `weekly_summary` (e.g. counts of items to order vs monitor) and `items: [{ product, action }]` straight from the candidates. For an empty list, a "Nothing to reorder this week" summary with `items: []`.
 
 **Contract**:
+
 ```ts
 export interface RestockCandidate {
-  product: string;            // product.name
+  product: string; // product.name
   state: "Understocked" | "Watch";
-  units: number | null;       // Understocked only; null for Watch
-  action: string;             // deterministic: "Order N units" | "Monitor"
+  units: number | null; // Understocked only; null for Watch
+  action: string; // deterministic: "Order N units" | "Monitor"
   daysOfStock: number | null;
   velocity: number | null;
 }
-export interface RestockPlanItem { product: string; action: string; }
-export interface RestockPlan { weekly_summary: string; items: RestockPlanItem[]; }
+export interface RestockPlanItem {
+  product: string;
+  action: string;
+}
+export interface RestockPlan {
+  weekly_summary: string;
+  items: RestockPlanItem[];
+}
 export function selectRestockCandidates(items: ProductClassification[]): RestockCandidate[];
 export function buildDeterministicPlan(candidates: RestockCandidate[]): RestockPlan;
 ```
+
 Imports `recommendationText` from `@/lib/classification` so the order wording cannot fork from the dashboard/detail views.
 
 #### 2. Unit tests
@@ -146,6 +155,7 @@ Imports `recommendationText` from `@/lib/classification` so the order wording ca
 **File**: `src/lib/restocking.test.ts`
 
 **Intent**: Cover the selection invariants and the deterministic builder:
+
 - `Understocked` candidate carries numeric `units` and `action === "Order N units"`.
 - `Watch` candidate has `units === null` and `action === "Monitor"` — assert no quantity ever appears for Watch.
 - `OK`, `Slow-mover`, `Insufficient data` are excluded.
@@ -198,7 +208,8 @@ Add the `src/lib/services` module that turns candidates into an AI-reworded plan
 
 **File**: `src/lib/services/restocking-summary.ts`
 
-**Intent**: 
+**Intent**:
+
 - `isConfigured(): boolean` — null-guard on `ANTHROPIC_API_KEY` (mirrors `supabase.ts`), so the route can return 503 cleanly.
 - `summarizeRestockPlan(candidates: RestockCandidate[]): Promise<RestockPlan & { source: "ai" | "fallback" }>` — build the deterministic plan first; if not configured, throw a typed `AiUnconfiguredError` (route → 503). Otherwise `fetch` the Anthropic Messages API (`claude-haiku-4-5`, `max_tokens` ~1024, a `json_schema` requesting **only** `weekly_summary`) with an `AbortController` timeout, a system prompt instructing restate-not-recompute, and the candidates as the user payload. Guard `res.ok` AND `stop_reason === "end_turn"`, then `parseSummaryResponse`. On success return `{ weekly_summary: parsed.weekly_summary, items: deterministicPlan.items, source: "ai" }` — the AI supplies only the summary prose; **`items` always come from the deterministic plan**. On **any** failure (non-ok, bad stop_reason, parse null, network/timeout) return `{ ...deterministicPlan, source: "fallback" }`.
 

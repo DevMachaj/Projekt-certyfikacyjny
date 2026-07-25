@@ -10,13 +10,13 @@
 
 ## Verdicts
 
-| Dimension             | Verdict (initial)        | After fixes |
-| --------------------- | ------------------------ | ----------- |
-| End-State Alignment   | FAIL (F1)                | PASS        |
-| Lean Execution        | PASS                     | PASS        |
-| Architectural Fitness | PASS                     | PASS        |
-| Blind Spots           | WARNING (F2, F3)         | PASS        |
-| Plan Completeness     | PASS                     | PASS        |
+| Dimension             | Verdict (initial) | After fixes |
+| --------------------- | ----------------- | ----------- |
+| End-State Alignment   | FAIL (F1)         | PASS        |
+| Lean Execution        | PASS              | PASS        |
+| Architectural Fitness | PASS              | PASS        |
+| Blind Spots           | WARNING (F2, F3)  | PASS        |
+| Plan Completeness     | PASS              | PASS        |
 
 ## Grounding
 
