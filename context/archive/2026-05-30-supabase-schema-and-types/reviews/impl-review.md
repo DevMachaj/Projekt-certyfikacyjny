@@ -1,4 +1,5 @@
 <!-- IMPL-REVIEW-REPORT -->
+
 # Implementation Review: Supabase Schema and Domain Types
 
 - **Plan**: context/changes/supabase-schema-and-types/plan.md
@@ -9,14 +10,14 @@
 
 ## Verdicts
 
-| Dimension | Verdict |
-|-----------|---------|
-| Plan Adherence | PASS |
-| Scope Discipline | PASS |
-| Safety & Quality | WARNING |
-| Architecture | PASS |
-| Pattern Consistency | PASS |
-| Success Criteria | PASS (automated pass; `db reset` verified at impl commit 0d5f69e + transitively by S-01/S-02/S-03; manual checks left unchecked in Progress) |
+| Dimension           | Verdict                                                                                                                                      |
+| ------------------- | -------------------------------------------------------------------------------------------------------------------------------------------- |
+| Plan Adherence      | PASS                                                                                                                                         |
+| Scope Discipline    | PASS                                                                                                                                         |
+| Safety & Quality    | WARNING                                                                                                                                      |
+| Architecture        | PASS                                                                                                                                         |
+| Pattern Consistency | PASS                                                                                                                                         |
+| Success Criteria    | PASS (automated pass; `db reset` verified at impl commit 0d5f69e + transitively by S-01/S-02/S-03; manual checks left unchecked in Progress) |
 
 ## Findings
 

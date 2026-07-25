@@ -3,7 +3,7 @@ project: StockHelper
 version: 1
 status: draft
 created: 2026-05-30
-updated: 2026-07-20
+updated: 2026-07-25
 prd_version: 1
 main_goal: market-feedback
 top_blocker: capacity
@@ -29,7 +29,7 @@ Small e-commerce store owners have sales history in their shop platforms (Shopif
 
 | ID   | Change ID                           | Outcome (user can …)                                                                                                                                                                              | Prerequisites | PRD refs                                             | Status        |
 | ---- | ----------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------- | ---------------------------------------------------- | ------------- |
-| F-01 | supabase-schema-and-types           | (foundation) schema + RLS policies + domain types in place                                                                                                                                        | —             | NFR-003, FR-001, FR-002, FR-003, FR-005              | impl_reviewed |
+| F-01 | supabase-schema-and-types           | (foundation) schema + RLS policies + domain types in place                                                                                                                                        | —             | NFR-003, FR-001, FR-002, FR-003, FR-005              | done          |
 | S-01 | product-catalog-crud                | add, edit, and delete products in their catalog                                                                                                                                                   | F-01          | US-02, FR-003, FR-004, FR-011                        | impl_reviewed |
 | S-02 | sales-entry-and-classification      | log and delete sales entries and see the classification + recommendation                                                                                                                          | F-01, S-01    | US-01, US-03, FR-005, FR-006, FR-007, FR-008, FR-012 | impl_reviewed |
 | S-03 | classification-dashboard            | view all products grouped by classification state on the dashboard                                                                                                                                | S-02          | FR-009                                               | impl_reviewed |
@@ -68,7 +68,7 @@ Foundations below assume these are present and do NOT re-scaffold them.
 - **Blockers:** —
 - **Unknowns:** —
 - **Risk:** Schema decisions (column types for `start_date`/`end_date` in `sales_entries`, whether `lead_time_days` is nullable, cascade-delete behavior from `products` → `sales_entries`) propagate to all downstream slices; an incorrect schema requires a Supabase migration plus a type refactor across the codebase. Sequenced first to contain this risk before any domain logic is written.
-- **Status:** impl_reviewed
+- **Status:** done
 
 ## Slices
 
@@ -261,3 +261,4 @@ None — all product questions were resolved during shaping (PRD v1 `## Open Que
 - **S-05: get a prioritized, explained weekly restocking decision (not just a restatement)** — Archived 2026-06-22 → `context/archive/2026-06-17-restocking-plan-decision-support/`. Lesson: —.
 - **S-06: bulk-action a candidate review, reset a review session, see clear loading states** — Archived 2026-06-22 → `context/archive/2026-06-22-ux-improvements/`. Lesson: —.
 - **S-07: delete their account (hard delete; F-01 cascade wipes products + sales entries)** — Archived 2026-06-22 → `context/archive/2026-06-22-account-deletion-and-data-retention/`. Lesson: —.
+- **F-01: (foundation) `products` and `sales_entries` tables exist in Supabase with row-level security (RLS) policies enforcing per-user data isolation; TypeScript domain entity types declared in `src/types.ts`; Supabase client query patterns for domain reads established as a reference for downstream slices.** — Archived 2026-07-25 → `context/archive/2026-05-30-supabase-schema-and-types/`. Lesson: —.
