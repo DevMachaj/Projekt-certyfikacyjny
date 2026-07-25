@@ -1,4 +1,5 @@
 <!-- IMPL-REVIEW-REPORT -->
+
 # Implementation Review: Sales Entry Logging + Velocity Classification (S-02, North star)
 
 - **Plan**: context/changes/sales-entry-and-classification/plan.md
@@ -9,14 +10,14 @@
 
 ## Verdicts
 
-| Dimension | Verdict |
-|-----------|---------|
-| Plan Adherence | PASS |
-| Scope Discipline | WARNING |
-| Safety & Quality | WARNING |
-| Architecture | PASS |
-| Pattern Consistency | PASS |
-| Success Criteria | PASS (npm test 28 passing; lint + build verified 2026-06-07; format passed at impl; migration verified at impl 9a1e587 + transitively by S-03; manual checks marked complete and code-backed) |
+| Dimension           | Verdict                                                                                                                                                                                       |
+| ------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Plan Adherence      | PASS                                                                                                                                                                                          |
+| Scope Discipline    | WARNING                                                                                                                                                                                       |
+| Safety & Quality    | WARNING                                                                                                                                                                                       |
+| Architecture        | PASS                                                                                                                                                                                          |
+| Pattern Consistency | PASS                                                                                                                                                                                          |
+| Success Criteria    | PASS (npm test 28 passing; lint + build verified 2026-06-07; format passed at impl; migration verified at impl 9a1e587 + transitively by S-03; manual checks marked complete and code-backed) |
 
 ## Findings
 
