@@ -1,10 +1,10 @@
 ---
 change_id: landing-page
 title: Landing page (S-10)
-status: implemented
+status: archived
 created: 2026-07-20
-updated: 2026-07-20
-archived_at: null
+updated: 2026-07-25
+archived_at: 2026-07-25T17:44:59Z
 ---
 
 ## Notes
