@@ -1,4 +1,5 @@
 <!-- IMPL-REVIEW-REPORT -->
+
 # Implementation Review: Classification Dashboard (S-03)
 
 - **Plan**: context/changes/classification-dashboard/plan.md
@@ -9,14 +10,14 @@
 
 ## Verdicts
 
-| Dimension | Verdict |
-|-----------|---------|
-| Plan Adherence | PASS |
-| Scope Discipline | PASS |
-| Safety & Quality | WARNING |
-| Architecture | PASS |
-| Pattern Consistency | PASS |
-| Success Criteria | PASS (npm test 28 passing incl. groupProductsByState; lint + build verified 2026-06-07; manual checks marked complete and code-backed; two-query/no-N+1 verified by review) |
+| Dimension           | Verdict                                                                                                                                                                     |
+| ------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Plan Adherence      | PASS                                                                                                                                                                        |
+| Scope Discipline    | PASS                                                                                                                                                                        |
+| Safety & Quality    | WARNING                                                                                                                                                                     |
+| Architecture        | PASS                                                                                                                                                                        |
+| Pattern Consistency | PASS                                                                                                                                                                        |
+| Success Criteria    | PASS (npm test 28 passing incl. groupProductsByState; lint + build verified 2026-06-07; manual checks marked complete and code-backed; two-query/no-N+1 verified by review) |
 
 ## Findings
 

@@ -31,17 +31,17 @@ unchanged.
 
 ## Key Decisions Made
 
-| Decision              | Choice                                                              | Why (1 sentence)                                                                          | Source |
-| --------------------- | ------------------------------------------------------------------ | ----------------------------------------------------------------------------------------- | ------ |
-| Card content          | Name + state badge + recommended action                            | Makes the dashboard a decision surface, not just a sorted index — StockHelper's value prop | Plan   |
-| Empty groups          | Hide states with no products                                       | Keeps focus on states that need attention; avoids empty headers for small catalogs         | Plan   |
-| No-products state     | Friendly empty panel with "add product" CTA                        | Guides the new owner to the obvious next step; standard onboarding                          | Plan   |
-| Navigation            | Cards link to `/products/[id]`; keep Manage-products + Sign out    | Dashboard becomes the landing surface with clear paths to act                               | Plan   |
-| Catalog list scope    | Dashboard-only; `/products` stays the plain CRUD list              | Matches FR-009 and the S-02 boundary; dashboard is the dedicated classification surface     | Plan   |
-| Query shape           | Two batch queries (products + all entries), group in memory        | Kills the roadmap's named N+1 risk; constant query count as the catalog grows (NFR-001)     | Plan   |
-| Rendering             | Pure Astro SSR, no React island                                    | Dashboard is view + click-through only; the engine must stay server-side anyway             | Plan   |
-| Shared constants      | Lift `STATE_ORDER` + recommendation text → engine; styles → UI module | One source of truth so detail page and dashboard can't drift on order/colors/wording      | Plan   |
-| Grouping helper       | Pure `groupProductsByState()`, unit-tested in Vitest               | The one bit of new logic with an ordering contract worth locking with tests                 | Plan   |
+| Decision           | Choice                                                                | Why (1 sentence)                                                                           | Source |
+| ------------------ | --------------------------------------------------------------------- | ------------------------------------------------------------------------------------------ | ------ |
+| Card content       | Name + state badge + recommended action                               | Makes the dashboard a decision surface, not just a sorted index — StockHelper's value prop | Plan   |
+| Empty groups       | Hide states with no products                                          | Keeps focus on states that need attention; avoids empty headers for small catalogs         | Plan   |
+| No-products state  | Friendly empty panel with "add product" CTA                           | Guides the new owner to the obvious next step; standard onboarding                         | Plan   |
+| Navigation         | Cards link to `/products/[id]`; keep Manage-products + Sign out       | Dashboard becomes the landing surface with clear paths to act                              | Plan   |
+| Catalog list scope | Dashboard-only; `/products` stays the plain CRUD list                 | Matches FR-009 and the S-02 boundary; dashboard is the dedicated classification surface    | Plan   |
+| Query shape        | Two batch queries (products + all entries), group in memory           | Kills the roadmap's named N+1 risk; constant query count as the catalog grows (NFR-001)    | Plan   |
+| Rendering          | Pure Astro SSR, no React island                                       | Dashboard is view + click-through only; the engine must stay server-side anyway            | Plan   |
+| Shared constants   | Lift `STATE_ORDER` + recommendation text → engine; styles → UI module | One source of truth so detail page and dashboard can't drift on order/colors/wording       | Plan   |
+| Grouping helper    | Pure `groupProductsByState()`, unit-tested in Vitest                  | The one bit of new logic with an ordering contract worth locking with tests                | Plan   |
 
 ## Scope
 
@@ -66,10 +66,10 @@ beside it.
 
 ## Phases at a Glance
 
-| Phase                          | What it delivers                                                            | Key risk                                                       |
-| ------------------------------ | --------------------------------------------------------------------------- | -------------------------------------------------------------- |
-| 1. Data layer + constants      | Batch query, lifted shared constants/wording, pure tested grouping helper   | Constant extraction must leave the detail page visually identical |
-| 2. Dashboard page              | Rewritten `dashboard.astro` + `ProductCard.astro`: groups, empty state, nav | Group order/sort correctness; two-query (non-N+1) data fetch    |
+| Phase                     | What it delivers                                                            | Key risk                                                          |
+| ------------------------- | --------------------------------------------------------------------------- | ----------------------------------------------------------------- |
+| 1. Data layer + constants | Batch query, lifted shared constants/wording, pure tested grouping helper   | Constant extraction must leave the detail page visually identical |
+| 2. Dashboard page         | Rewritten `dashboard.astro` + `ProductCard.astro`: groups, empty state, nav | Group order/sort correctness; two-query (non-N+1) data fetch      |
 
 **Prerequisites:** F-01 + S-01 + S-02 done (they are). Local Supabase
 (`npx supabase start`) with seeded multi-state products for manual verification.

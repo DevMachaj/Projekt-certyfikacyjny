@@ -113,7 +113,7 @@ next to it and is cheap to test.
 - **Within-group order is free:** `getProductsByUser` returns products name-sorted;
   if `groupProductsByState` iterates products in input order and appends into each
   bucket, every bucket stays alphabetical without a second sort. (The helper should
-  still not *reorder* — it must preserve input order — so the contract is "input is
+  still not _reorder_ — it must preserve input order — so the contract is "input is
   pre-sorted by name.")
 - **Recommendation wording must not fork:** the detail panel and the dashboard card
   must show identical action text. Extract the text into a pure
