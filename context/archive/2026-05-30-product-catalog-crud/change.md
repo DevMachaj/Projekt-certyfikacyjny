@@ -2,9 +2,10 @@
 change_id: product-catalog-crud
 roadmap_id: S-01
 title: Product catalog CRUD — add / edit / delete
-status: impl_reviewed
+status: archived
 created: 2026-05-30
-updated: 2026-06-07
+updated: 2026-07-25
+archived_at: 2026-07-25T17:44:59Z
 prd_refs: [US-02, FR-003, FR-004, FR-011]
 prerequisites: [F-01 supabase-schema-and-types]
 ---

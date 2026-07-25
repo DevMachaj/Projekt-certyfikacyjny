@@ -1,4 +1,5 @@
 <!-- IMPL-REVIEW-REPORT -->
+
 # Implementation Review: Product Catalog CRUD (S-01)
 
 - **Plan**: context/changes/product-catalog-crud/plan.md
@@ -9,14 +10,14 @@
 
 ## Verdicts
 
-| Dimension | Verdict |
-|-----------|---------|
-| Plan Adherence | PASS |
-| Scope Discipline | PASS |
-| Safety & Quality | WARNING |
-| Architecture | PASS |
-| Pattern Consistency | PASS |
-| Success Criteria | PASS (lint + build verified 2026-06-07; `npm run format` passed at implementation; manual checks marked complete and backed by code) |
+| Dimension           | Verdict                                                                                                                              |
+| ------------------- | ------------------------------------------------------------------------------------------------------------------------------------ |
+| Plan Adherence      | PASS                                                                                                                                 |
+| Scope Discipline    | PASS                                                                                                                                 |
+| Safety & Quality    | WARNING                                                                                                                              |
+| Architecture        | PASS                                                                                                                                 |
+| Pattern Consistency | PASS                                                                                                                                 |
+| Success Criteria    | PASS (lint + build verified 2026-06-07; `npm run format` passed at implementation; manual checks marked complete and backed by code) |
 
 ## Findings
 

@@ -30,7 +30,7 @@ Small e-commerce store owners have sales history in their shop platforms (Shopif
 | ID   | Change ID                           | Outcome (user can …)                                                                                                                                                                              | Prerequisites | PRD refs                                             | Status        |
 | ---- | ----------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------- | ---------------------------------------------------- | ------------- |
 | F-01 | supabase-schema-and-types           | (foundation) schema + RLS policies + domain types in place                                                                                                                                        | —             | NFR-003, FR-001, FR-002, FR-003, FR-005              | done          |
-| S-01 | product-catalog-crud                | add, edit, and delete products in their catalog                                                                                                                                                   | F-01          | US-02, FR-003, FR-004, FR-011                        | impl_reviewed |
+| S-01 | product-catalog-crud                | add, edit, and delete products in their catalog                                                                                                                                                   | F-01          | US-02, FR-003, FR-004, FR-011                        | done          |
 | S-02 | sales-entry-and-classification      | log and delete sales entries and see the classification + recommendation                                                                                                                          | F-01, S-01    | US-01, US-03, FR-005, FR-006, FR-007, FR-008, FR-012 | impl_reviewed |
 | S-03 | classification-dashboard            | view all products grouped by classification state on the dashboard                                                                                                                                | S-02          | FR-009                                               | impl_reviewed |
 | S-04 | ai-weekly-restocking-plan           | click a button to get one AI-generated weekly restocking summary                                                                                                                                  | S-03          | US-01, FR-006, FR-007                                | impl_reviewed |
@@ -82,7 +82,7 @@ Foundations below assume these are present and do NOT re-scaffold them.
 - **Blockers:** —
 - **Unknowns:** —
 - **Risk:** Cascade-delete behavior (FR-011: deleting a product must remove all associated sales entries) must be implemented at the database level (foreign key cascade) or explicitly in the API handler; misimplementation risks orphaned `sales_entries` rows that later classification queries silently pick up, producing wrong velocity calculations.
-- **Status:** impl_reviewed
+- **Status:** done
 
 ### S-02: Sales entry logging and velocity classification _(North star)_
 
@@ -262,3 +262,4 @@ None — all product questions were resolved during shaping (PRD v1 `## Open Que
 - **S-06: bulk-action a candidate review, reset a review session, see clear loading states** — Archived 2026-06-22 → `context/archive/2026-06-22-ux-improvements/`. Lesson: —.
 - **S-07: delete their account (hard delete; F-01 cascade wipes products + sales entries)** — Archived 2026-06-22 → `context/archive/2026-06-22-account-deletion-and-data-retention/`. Lesson: —.
 - **F-01: (foundation) `products` and `sales_entries` tables exist in Supabase with row-level security (RLS) policies enforcing per-user data isolation; TypeScript domain entity types declared in `src/types.ts`; Supabase client query patterns for domain reads established as a reference for downstream slices.** — Archived 2026-07-25 → `context/archive/2026-05-30-supabase-schema-and-types/`. Lesson: —.
+- **S-01: owner can add, edit, and delete products in their catalog (name, stock quantity, lead time in days, buffer days), with each change reflected immediately; no other account can see their products.** — Archived 2026-07-25 → `context/archive/2026-05-30-product-catalog-crud/`. Lesson: —.
