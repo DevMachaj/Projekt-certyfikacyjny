@@ -12,6 +12,8 @@ export default defineConfig({
   },
   test: {
     environment: "node",
-    include: ["src/**/*.test.ts"],
+    // The CI review agent is a zero-dependency .mjs under a dot-directory, but its pure logic is
+    // covered by the same gate as the rest of the repo.
+    include: ["src/**/*.test.ts", ".github/actions/ai-review/*.test.mjs"],
   },
 });

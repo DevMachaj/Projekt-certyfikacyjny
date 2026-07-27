@@ -74,6 +74,46 @@ const astroConfig = tseslint.config({
   },
 });
 
+// Same dot-directory bug class as `.dependency-cruiser.cjs` below: TypeScript's wildcard matching
+// excludes dot-prefixed directories, so `.github/**` is outside the project and the type-checked
+// parser hard-errors on it. Unlike that dotfile this is real logic, so lint it for real errors with
+// a non-type-checked parser rather than ignoring it. Node globals are declared by hand because the
+// repo has no `globals` dependency (see the `window`/`document` block in reactConfig).
+const githubScriptsConfig = tseslint.config({
+  files: [".github/actions/**/*.mjs"],
+  extends: [eslint.configs.recommended, tseslint.configs.disableTypeChecked],
+  languageOptions: {
+    parserOptions: { projectService: false, project: false },
+    globals: {
+      process: "readonly",
+      console: "readonly",
+      Buffer: "readonly",
+      fetch: "readonly",
+      AbortController: "readonly",
+      setTimeout: "readonly",
+      clearTimeout: "readonly",
+      URL: "readonly",
+    },
+  },
+  rules: {
+    // stdout is this script's interface, and its structured diagnostics are the only way a
+    // degraded CI run can be debugged.
+    "no-console": "off",
+    // These files use the core rule, not the type-checked one, so the `_`-prefix escape hatch
+    // configured in baseConfig has to be repeated here.
+    "no-unused-vars": [
+      "error",
+      {
+        argsIgnorePattern: "^_",
+        varsIgnorePattern: "^_",
+        caughtErrorsIgnorePattern: "^_",
+        destructuredArrayIgnorePattern: "^_",
+        ignoreRestSiblings: true,
+      },
+    ],
+  },
+});
+
 export default tseslint.config(
   includeIgnoreFile(gitignorePath),
   // dependency-cruiser's config is a root dotfile that TypeScript's `include` (`**/*`) excludes
@@ -85,5 +125,6 @@ export default tseslint.config(
   eslintPluginAstro.configs["flat/recommended"],
   ...eslintPluginAstro.configs["flat/jsx-a11y-recommended"],
   astroConfig,
+  githubScriptsConfig,
   eslintPluginPrettier,
 );

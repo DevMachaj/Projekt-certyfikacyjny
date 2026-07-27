@@ -1,0 +1,79 @@
+name: AI review (manual)
+
+# Manual entry point for the review agent: pick a PR number, get a verdict and a job summary.
+#
+# Deliberately read-only — it posts no comment and applies no label, so it is safe to run against
+# any pull request at any time. The automatic reporting path is `ai-review.yml`.
+#
+# This is also how the composite action is verified without touching the PR flow.
+
+on:
+  workflow_dispatch:
+    inputs:
+      pr-number:
+        description: "Pull request number to review"
+        required: true
+        type: string
+      effort:
+        description: "Reasoning effort"
+        required: false
+        default: "medium"
+        type: choice
+        options: ["low", "medium", "high", "xhigh", "max"]
+      model:
+        description: "Anthropic model id"
+        required: false
+        default: "claude-opus-5"
+        type: string
+
+# Specifying any permission sets every unspecified one to `none`.
+permissions:
+  contents: read # checkout, and `git fetch` of the base ref for the DoD
+  pull-requests: read # `gh pr diff` / `gh pr view`
+
+concurrency:
+  group: ${{ github.workflow }}-${{ inputs.pr-number }}
+  cancel-in-progress: true
+
+jobs:
+  review:
+    name: AI review (manual)
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Review
+        id: ai
+        uses: ./.github/actions/ai-review
+        with:
+          # The `secrets` context is unavailable inside a composite action, so the key is passed
+          # explicitly as an input here.
+          anthropic-api-key: ${{ secrets.ANTHROPIC_API_KEY }}
+          pr-number: ${{ inputs.pr-number }}
+          base-ref: ${{ github.event.repository.default_branch }}
+          model: ${{ inputs.model }}
+          effort: ${{ inputs.effort }}
+
+      - name: Report
+        if: always()
+        shell: bash
+        env:
+          VERDICT: ${{ steps.ai.outputs.verdict }}
+          REASON: ${{ steps.ai.outputs.reason }}
+          FINDINGS: ${{ steps.ai.outputs.findings-count }}
+          SUMMARY_PATH: ${{ steps.ai.outputs.summary-path }}
+        run: |
+          set -uo pipefail
+          echo "verdict=${VERDICT:-<none>} reason=${REASON:-none} findings=${FINDINGS:-0}"
+          if [ -n "${SUMMARY_PATH:-}" ] && [ -f "$SUMMARY_PATH" ]; then
+            cat "$SUMMARY_PATH" >> "$GITHUB_STEP_SUMMARY"
+          else
+            echo "No summary produced (verdict=${VERDICT:-<none>} reason=${REASON:-none})." >> "$GITHUB_STEP_SUMMARY"
+          fi
+          # Advisory: this entry point never fails on a verdict.
+          if [ "${VERDICT:-}" = "error" ]; then
+            echo "::warning::ai-review: degraded — ${REASON:-unknown}"
+          fi
