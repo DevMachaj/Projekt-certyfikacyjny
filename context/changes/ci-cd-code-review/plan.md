@@ -615,43 +615,43 @@ No data migration. Three operational notes:
 
 #### Manual
 
-- [ ] 1.7 Actions run shows five distinct gate steps
+- [x] 1.7 Actions run shows five distinct gate steps — 2241da7
 - [x] 1.8 A second push cancels the first run rather than queueing it — verified by inspection, not by triggering: `concurrency.group` + `cancel-in-progress: true` in `ci.yml` is declarative and correct by reading; the two real pushes to PR #8 landed 3m16s apart (run `30264276901` ended 12:04:05, run `30264604559` started 12:07:21), so nothing was in flight to cancel, and forcing the race would have cost two throwaway commits and a force-push on an open PR.
-- [ ] 1.9 `test-plan.md` gate table matches what CI actually does
+- [x] 1.9 `test-plan.md` gate table matches what CI actually does — 2241da7
 
 ### Phase 2: Author the Definition of Done
 
 #### Automated
 
-- [x] 2.1 `npm run format` leaves the file unchanged
-- [x] 2.2 `npm run lint` passes
-- [x] 2.3 Every `#N` id appears exactly once
-- [x] 2.4 Every criterion carries a source reference and an enforcement tag
+- [x] 2.1 `npm run format` leaves the file unchanged — 0446728
+- [x] 2.2 `npm run lint` passes — 0446728
+- [x] 2.3 Every `#N` id appears exactly once — 0446728
+- [x] 2.4 Every criterion carries a source reference and an enforcement tag — 0446728
 
 #### Manual
 
-- [x] 2.5 Top-ranked criteria per group match your sense of what actually breaks here
-- [x] 2.6 Negative-space criteria read as deliberate decisions
-- [x] 2.7 Ownership header names a trigger you would actually act on
-- [x] 2.8 `CLAUDE.md` still under 200 non-blank lines
+- [x] 2.5 Top-ranked criteria per group match your sense of what actually breaks here — 0446728
+- [x] 2.6 Negative-space criteria read as deliberate decisions — 0446728
+- [x] 2.7 Ownership header names a trigger you would actually act on — 0446728
+- [x] 2.8 `CLAUDE.md` still under 200 non-blank lines — 0446728
 
 ### Phase 3: The review agent, standalone and locally runnable
 
 #### Automated
 
-- [ ] 3.1 `npm run lint` passes, incl. no `project service` error on `review.mjs`
-- [ ] 3.2 `npm test` passes and collects `review.test.mjs`
-- [ ] 3.3 `npm run typecheck` passes
-- [ ] 3.4 `npm run depcruise` passes
-- [ ] 3.5 `npm run build` passes
+- [x] 3.1 `npm run lint` passes, incl. no `project service` error on `review.mjs`
+- [x] 3.2 `npm test` passes and collects `review.test.mjs`
+- [x] 3.3 `npm run typecheck` passes
+- [x] 3.4 `npm run depcruise` passes
+- [x] 3.5 `npm run build` passes
 
 #### Manual
 
-- [ ] 3.6 Local run against a real saved diff produces agreeable findings
-- [ ] 3.7 Unguarded `db.ts` call produces a CRITICAL citing the `lessons.md` criterion
-- [ ] 3.8 `context/`-only diff produces zero manufactured findings
-- [ ] 3.9 Invalid key produces `verdict: error` / `http_error`, no stack trace, no key in output
-- [ ] 3.10 Rendered comment markdown is readable and reasonably sized
+- [x] 3.6 Local run against a real saved diff produces agreeable findings
+- [x] 3.7 Unguarded `db.ts` call produces a CRITICAL citing the `lessons.md` criterion
+- [x] 3.8 `context/`-only diff produces zero manufactured findings
+- [x] 3.9 Invalid key produces `verdict: error` / `http_error`, no stack trace, no key in output
+- [x] 3.10 Rendered comment markdown is readable and reasonably sized
 
 ### Phase 4: Composite action
 
