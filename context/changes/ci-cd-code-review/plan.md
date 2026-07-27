@@ -639,25 +639,25 @@ No data migration. Three operational notes:
 
 #### Automated
 
-- [x] 3.1 `npm run lint` passes, incl. no `project service` error on `review.mjs`
-- [x] 3.2 `npm test` passes and collects `review.test.mjs`
-- [x] 3.3 `npm run typecheck` passes
-- [x] 3.4 `npm run depcruise` passes
-- [x] 3.5 `npm run build` passes
+- [x] 3.1 `npm run lint` passes, incl. no `project service` error on `review.mjs` — 0862737
+- [x] 3.2 `npm test` passes and collects `review.test.mjs` — 0862737
+- [x] 3.3 `npm run typecheck` passes — 0862737
+- [x] 3.4 `npm run depcruise` passes — 0862737
+- [x] 3.5 `npm run build` passes — 0862737
 
 #### Manual
 
-- [x] 3.6 Local run against a real saved diff produces agreeable findings
-- [x] 3.7 Unguarded `db.ts` call produces a CRITICAL citing the `lessons.md` criterion
-- [x] 3.8 `context/`-only diff produces zero manufactured findings
-- [x] 3.9 Invalid key produces `verdict: error` / `http_error`, no stack trace, no key in output
-- [x] 3.10 Rendered comment markdown is readable and reasonably sized
+- [x] 3.6 Local run against a real saved diff produces agreeable findings — 0862737
+- [x] 3.7 Unguarded `db.ts` call produces a CRITICAL citing the `lessons.md` criterion — 0862737
+- [x] 3.8 `context/`-only diff produces zero manufactured findings — 0862737
+- [x] 3.9 Invalid key produces `verdict: error` / `http_error`, no stack trace, no key in output — 0862737
+- [x] 3.10 Rendered comment markdown is readable and reasonably sized — 0862737
 
 ### Phase 4: Composite action
 
 #### Automated
 
-- [ ] 4.1 `npm run lint`, `npm test`, `npm run typecheck`, `npm run build` pass
+- [x] 4.1 `npm run lint`, `npm test`, `npm run typecheck`, `npm run build` pass
 - [ ] 4.2 `workflow_dispatch` invocation emits a non-empty `verdict` output
 - [ ] 4.3 Omitting `anthropic-api-key` fails with the explicit validation message
 

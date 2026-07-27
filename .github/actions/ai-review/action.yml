@@ -1,0 +1,212 @@
+name: "AI code review"
+description: "Score a pull request diff against the base branch's Definition of Done and return a verdict. Reporting and the exit code belong to the caller."
+
+# Verdict-only by design. Keeping reporting out of the action makes it reusable in both advisory
+# and blocking mode, and lets the caller post a comment after a failure without needing
+# `if: always()` on every reporting step.
+
+inputs:
+  anthropic-api-key:
+    description: "Anthropic API key. The `secrets` context is NOT available to composite actions, so this must be passed explicitly by the caller."
+    required: true
+  pr-number:
+    description: "Pull request number to review."
+    required: true
+  base-ref:
+    description: "Base branch. The Definition of Done is read from here, never from the PR head."
+    required: false
+    default: "main"
+  github-token:
+    description: "Token for `gh pr diff` / `gh pr view`. Needs `pull-requests: read`. `github.token` IS available to composite actions (it lives on the `github` context, unlike `secrets`)."
+    required: false
+    default: ${{ github.token }}
+  model:
+    description: "Anthropic model id."
+    required: false
+    default: "claude-opus-5"
+  effort:
+    description: "low | medium | high | xhigh | max."
+    required: false
+    default: "medium"
+  max-diff-bytes:
+    description: "Byte cap applied to the diff, cut on `diff --git` boundaries."
+    required: false
+    default: "300000"
+  dod-path:
+    description: "Path to the Definition of Done, resolved against the base branch."
+    required: false
+    default: "context/foundation/definition-of-done.md"
+
+outputs:
+  verdict:
+    description: "pass | fail | error"
+    value: ${{ steps.result.outputs.verdict }}
+  reason:
+    description: "Degradation reason slug when verdict is `error`, otherwise empty."
+    value: ${{ steps.result.outputs.reason }}
+  comment-path:
+    description: "Path to the rendered PR comment markdown."
+    value: ${{ steps.result.outputs.comment-path }}
+  summary-path:
+    description: "Path to the rendered job summary markdown."
+    value: ${{ steps.result.outputs.summary-path }}
+  findings-count:
+    description: "Number of findings in the review."
+    value: ${{ steps.result.outputs.findings-count }}
+
+runs:
+  using: "composite"
+  steps:
+    # `required: true` above is documentation only — the Actions runner does NOT enforce it, so
+    # every required input is checked by hand. Composite actions also do not receive
+    # INPUT_<NAME> env vars automatically, which is why every step wires `env:` explicitly.
+    - name: Validate required inputs
+      shell: bash
+      env:
+        ANTHROPIC_API_KEY: ${{ inputs.anthropic-api-key }}
+        PR_NUMBER: ${{ inputs.pr-number }}
+        BASE_REF: ${{ inputs.base-ref }}
+      run: |
+        set -uo pipefail
+        missing=""
+        [ -n "${ANTHROPIC_API_KEY:-}" ] || missing="$missing anthropic-api-key"
+        [ -n "${PR_NUMBER:-}" ]         || missing="$missing pr-number"
+        [ -n "${BASE_REF:-}" ]          || missing="$missing base-ref"
+        if [ -n "$missing" ]; then
+          echo "::error::ai-review: missing required input(s):$missing. The Actions runner does not enforce \`required: true\`, so this is validated by the action itself."
+          exit 1
+        fi
+        echo "ai-review: required inputs present."
+
+    - name: Fetch the PR diff and metadata
+      id: diff
+      shell: bash
+      env:
+        GH_TOKEN: ${{ inputs.github-token }}
+        GH_REPO: ${{ github.repository }}
+        PR_NUMBER: ${{ inputs.pr-number }}
+      run: |
+        set -uo pipefail
+        diff_file="$RUNNER_TEMP/pr.diff"
+
+        # Three-dot diff over the API, as data — no checkout of PR head, so nothing from the pull
+        # request is ever executed. `--exclude` drops lockfile noise before we pay for tokens.
+        if gh pr diff "$PR_NUMBER" --patch \
+             --exclude 'package-lock.json' --exclude 'dist/**' > "$diff_file" 2> "$RUNNER_TEMP/diff.err"; then
+          mode=patch
+        else
+          # GitHub caps diffs at 20,000 lines / 1 MB total / 500 KB per file / 300 files and
+          # returns HTTP 406 beyond that. Degrade to a file list rather than reviewing nothing.
+          echo "::warning::ai-review: full patch unavailable for PR #${PR_NUMBER} (GitHub caps diffs at 20,000 lines / 1 MB / 300 files); falling back to a file list."
+          head -3 "$RUNNER_TEMP/diff.err" >&2 || true
+          gh pr diff "$PR_NUMBER" --name-only > "$diff_file"
+          mode=name-only
+        fi
+
+        # Title and body are attacker-controlled. They are written to files here and read by the
+        # reviewer from those files — they never pass through `${{ }}` interpolation, which is
+        # substituted into the shell script text before the shell runs.
+        gh pr view "$PR_NUMBER" --json title --jq '.title'     > "$RUNNER_TEMP/pr-title.txt"
+        gh pr view "$PR_NUMBER" --json body  --jq '.body // ""' > "$RUNNER_TEMP/pr-body.txt"
+
+        bytes=$(wc -c < "$diff_file" | tr -d ' ')
+        {
+          echo "mode=$mode"
+          echo "bytes=$bytes"
+          echo "path=$diff_file"
+        } >> "$GITHUB_OUTPUT"
+        echo "ai-review: diff acquired for PR #${PR_NUMBER} — mode=${mode} bytes=${bytes}"
+
+    - name: Read the Definition of Done from the base branch
+      id: dod
+      shell: bash
+      env:
+        BASE_REF: ${{ inputs.base-ref }}
+        DOD_PATH: ${{ inputs.dod-path }}
+      run: |
+        set -uo pipefail
+        dod_file="$RUNNER_TEMP/dod.md"
+
+        # Resolved against the base branch so a pull request cannot weaken the rubric it is judged
+        # by. Fetched explicitly rather than relying on the caller's checkout depth.
+        git fetch --no-tags --depth=1 origin "$BASE_REF" >/dev/null 2>&1 || true
+
+        if git show "FETCH_HEAD:${DOD_PATH}" > "$dod_file" 2>/dev/null && [ -s "$dod_file" ]; then
+          echo "found=1" >> "$GITHUB_OUTPUT"
+          echo "ai-review: DoD read from origin/${BASE_REF} @ $(git rev-parse --short FETCH_HEAD) ($(wc -c < "$dod_file" | tr -d ' ') bytes)"
+          echo "ai-review: DoD first line: $(head -1 "$dod_file")"
+        else
+          echo "found=0" >> "$GITHUB_OUTPUT"
+          echo "::warning::ai-review: ${DOD_PATH} not found on origin/${BASE_REF}; scoring skipped. Expected until the Definition of Done merges to ${BASE_REF}."
+        fi
+        echo "path=$dod_file" >> "$GITHUB_OUTPUT"
+
+    - name: Run the reviewer
+      id: run
+      if: steps.dod.outputs.found == '1'
+      shell: bash
+      env:
+        ANTHROPIC_API_KEY: ${{ inputs.anthropic-api-key }}
+        DIFF_PATH: ${{ steps.diff.outputs.path }}
+        DOD_PATH: ${{ steps.dod.outputs.path }}
+        MODEL: ${{ inputs.model }}
+        EFFORT: ${{ inputs.effort }}
+        MAX_DIFF_BYTES: ${{ inputs.max-diff-bytes }}
+        BASE_REF: ${{ inputs.base-ref }}
+        COMMENT_PATH: ${{ runner.temp }}/review-comment.md
+        SUMMARY_PATH: ${{ runner.temp }}/review-summary.md
+      run: |
+        set -uo pipefail
+        # Read from files into the environment. A crafted title such as `a"; echo pwned; #` is
+        # inert here: this is a variable assignment from command substitution, not an eval, and
+        # the value never reaches the shell as script text.
+        PR_TITLE=$(cat "$RUNNER_TEMP/pr-title.txt")
+        PR_BODY=$(cat "$RUNNER_TEMP/pr-body.txt")
+        export PR_TITLE PR_BODY
+
+        # stdout carries exactly one JSON line; diagnostics go to stderr.
+        node "$GITHUB_ACTION_PATH/review.mjs" > "$RUNNER_TEMP/review.out" 2> "$RUNNER_TEMP/review.err" || true
+        cat "$RUNNER_TEMP/review.err" >&2 || true
+        tail -n 1 "$RUNNER_TEMP/review.out" > "$RUNNER_TEMP/result.json"
+
+    - name: Marshal outputs
+      id: result
+      if: always()
+      shell: bash
+      env:
+        DOD_FOUND: ${{ steps.dod.outputs.found }}
+        COMMENT_PATH: ${{ runner.temp }}/review-comment.md
+        SUMMARY_PATH: ${{ runner.temp }}/review-summary.md
+      run: |
+        set -uo pipefail
+        result="$RUNNER_TEMP/result.json"
+
+        if [ -s "$result" ]; then
+          verdict=$(jq -r '.verdict // "error"' "$result")
+          reason=$(jq -r '.reason // ""' "$result")
+          count=$(jq -r '.findings_count // 0' "$result")
+        else
+          verdict="error"
+          if [ "${DOD_FOUND:-0}" != "1" ]; then reason="dod-missing"; else reason="no-result"; fi
+          count=0
+        fi
+        [ "$reason" = "null" ] && reason=""
+
+        # The reviewer writes both markdown surfaces itself; synthesise them only when it never ran.
+        if [ ! -f "$COMMENT_PATH" ]; then
+          printf '## 🤖 AI code review\n\n**Review unavailable** — `%s`.\n\nThe deterministic gates in `ci.yml` are unaffected.\n' "$reason" > "$COMMENT_PATH"
+        fi
+        [ -f "$SUMMARY_PATH" ] || cp "$COMMENT_PATH" "$SUMMARY_PATH"
+
+        # Every output is a single-line scalar or a file path, so no delimiter form is needed at
+        # all — which is the point. A fixed `EOF` heredoc delimiter is an injection vector when
+        # model-authored text can contain `EOF` on a line of its own; emitting the markdown as a
+        # *path* sidesteps both that and the 1 MB per-job output cap.
+        {
+          echo "verdict=$(printf '%s' "$verdict" | tr -d '\n\r')"
+          echo "reason=$(printf '%s' "$reason" | tr -d '\n\r')"
+          echo "findings-count=$(printf '%s' "$count" | tr -d '\n\r')"
+          echo "comment-path=$COMMENT_PATH"
+          echo "summary-path=$SUMMARY_PATH"
+        } >> "$GITHUB_OUTPUT"
+        echo "ai-review: verdict=${verdict} reason=${reason:-none} findings=${count}"
