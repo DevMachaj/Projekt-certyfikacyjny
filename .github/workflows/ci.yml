@@ -6,20 +6,38 @@ on:
   pull_request:
     branches: [main]
 
+# This workflow only reads the repo — it neither comments nor writes.
+# Specifying any permission sets every unspecified one to `none`.
+permissions:
+  contents: read
+
+# A superseded push cancels its predecessor instead of queueing behind it.
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   ci:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
         with:
-          node-version: 22
+          node-version-file: .nvmrc
           cache: npm
       - run: npm ci
-      - run: npx astro sync
-      - run: npm run lint
-      - run: npm test
-      - run: npm run build
+      # `typecheck` is `astro sync && astro check` — its first half generates the
+      # types `lint` needs, so it replaces the standalone `astro sync` step.
+      - name: typecheck
+        run: npm run typecheck
+      - name: depcruise
+        run: npm run depcruise
+      - name: lint
+        run: npm run lint
+      - name: test
+        run: npm test
+      - name: build
+        run: npm run build
         env:
           SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
           SUPABASE_KEY: ${{ secrets.SUPABASE_KEY }}
