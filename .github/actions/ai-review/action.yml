@@ -104,8 +104,12 @@ runs:
         fi
 
         # Title and body are attacker-controlled. They are written to files here and read by the
-        # reviewer from those files — they never pass through `${{ }}` interpolation, which is
-        # substituted into the shell script text before the shell runs.
+        # reviewer from those files — they never pass through GitHub expression interpolation,
+        # which is substituted into the shell script text before the shell runs.
+        #
+        # NB: do not write a literal GitHub expression in a run: block, even inside a shell
+        # comment. The whole block is templated before bash sees it, so an empty one fails the
+        # action load with "An expression was expected".
         gh pr view "$PR_NUMBER" --json title --jq '.title'     > "$RUNNER_TEMP/pr-title.txt"
         gh pr view "$PR_NUMBER" --json body  --jq '.body // ""' > "$RUNNER_TEMP/pr-body.txt"
 
