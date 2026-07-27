@@ -659,7 +659,7 @@ No data migration. Three operational notes:
 
 - [x] 4.1 `npm run lint`, `npm test`, `npm run typecheck`, `npm run build` pass
 - [ ] 4.2 `workflow_dispatch` invocation emits a non-empty `verdict` output
-- [ ] 4.3 Omitting `anthropic-api-key` fails with the explicit validation message
+- [x] 4.3 Omitting `anthropic-api-key` fails with the explicit validation message
 
 #### Manual
 
@@ -673,8 +673,8 @@ No data migration. Three operational notes:
 
 #### Automated
 
-- [ ] 5.1 `npm run lint`, `npm test`, `npm run typecheck`, `npm run depcruise`, `npm run build` pass
-- [ ] 5.2 Workflow YAML validation reports no errors on both workflows
+- [x] 5.1 `npm run lint`, `npm test`, `npm run typecheck`, `npm run depcruise`, `npm run build` pass
+- [x] 5.2 Workflow YAML validation reports no errors on both workflows
 - [ ] 5.3 Opening a PR triggers the workflow and the job completes green
 
 #### Manual
