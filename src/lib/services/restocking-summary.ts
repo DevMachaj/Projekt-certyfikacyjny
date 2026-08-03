@@ -4,8 +4,23 @@ import { buildDeterministicPlan, type RestockCandidate, type RestockPlan } from 
 const ANTHROPIC_API_URL = "https://api.anthropic.com/v1/messages";
 const ANTHROPIC_VERSION = "2023-06-01";
 const MODEL = "claude-haiku-4-5";
-const MAX_TOKENS = 1024;
-const TIMEOUT_MS = 10_000;
+const MAX_TOKENS = 2048;
+const TIMEOUT_MS = 20_000;
+
+/**
+ * How many of the most-urgent candidates are sent to the model. Candidates arrive ordered
+ * most-urgent-first, so this is a prefix, not a sample.
+ *
+ * Both cost and latency scale with the item count, and a real catalog outgrew the unbounded version:
+ * 57 candidates needed ~2550 output tokens and ~14.5s, so it blew the token cap *and* the timeout and
+ * silently degraded to the deterministic plan on every request. Capping the prompt keeps both flat as
+ * the catalog grows (~860 tokens / ~6.5s at this limit) instead of failing again at the next size.
+ *
+ * Items beyond the cap are **not** dropped from the plan — `buildDeterministicPlan` still receives every
+ * candidate, and `mergeAiReasons` only overwrites reasons the model actually supplied, so the tail keeps
+ * its deterministic reason. The AI's contribution stays the headline plus the reasons that matter most.
+ */
+const AI_ITEM_LIMIT = 20;
 
 /**
  * The model returns **only** a headline plus a per-product `reason` keyed by product name. The
@@ -44,6 +59,17 @@ const SYSTEM_PROMPT =
   "WHY it needs attention now, grounded in the supplied numbers (e.g. days of stock against the lead time). " +
   "Do NOT change the order, the actions, the quantities, or invent products — those are already decided by the engine. " +
   "Reference each product by its exact name in the items array.";
+
+/**
+ * Record *why* a request degraded to the deterministic plan. The UI renders every failure path as the
+ * same "Podsumowanie AI niedostępne" note, so without this the cause is unrecoverable in production
+ * (Cloudflare `observability` is on — these surface in `wrangler tail` and the Workers dashboard).
+ * Only the reason, HTTP status, and Anthropic's own error envelope are logged — never the API key.
+ */
+function logFallback(reason: string, detail: string, total: number, prompted: number): void {
+  // eslint-disable-next-line no-console -- deliberate server-side diagnostic; the UI cannot surface the cause
+  console.warn(`[restocking-summary] fallback reason=${reason} candidates=${total} prompted=${prompted} ${detail}`);
+}
 
 /** Thrown when the AI summary feature is not configured (no `ANTHROPIC_API_KEY`). Routes map this to a 503. */
 export class AiUnconfiguredError extends Error {
@@ -128,11 +154,16 @@ export function mergeAiReasons(plan: RestockPlan, parsed: AiPlanResponse): Resto
  * product name (`mergeAiReasons`). Throws `AiUnconfiguredError` when no key is set (route → 503). Any
  * other failure — non-2xx, a `stop_reason` other than `end_turn`, unparseable output, network error,
  * or timeout — is caught here and resolves to `source: "fallback"`; it is never propagated.
+ *
+ * The plan is built from **every** candidate, but only the `AI_ITEM_LIMIT` most urgent are sent to the
+ * model, so prompt size and latency stay bounded on large catalogs. Items past the cap keep their
+ * deterministic reason.
  */
 export async function summarizeRestockPlan(
   candidates: RestockCandidate[],
 ): Promise<RestockPlan & { source: "ai" | "fallback" }> {
   const plan = buildDeterministicPlan(candidates);
+  const prompted = candidates.slice(0, AI_ITEM_LIMIT);
 
   if (!ANTHROPIC_API_KEY) {
     throw new AiUnconfiguredError();
@@ -154,23 +185,51 @@ export async function summarizeRestockPlan(
         model: MODEL,
         max_tokens: MAX_TOKENS,
         system: SYSTEM_PROMPT,
-        messages: [{ role: "user", content: JSON.stringify({ candidates }) }],
+        messages: [{ role: "user", content: JSON.stringify({ candidates: prompted }) }],
         output_config: { format: { type: "json_schema", schema: PLAN_SCHEMA } },
       }),
       signal: controller.signal,
     });
 
-    if (!res.ok) return { ...plan, source: "fallback" };
-    const data = (await res.json()) as { stop_reason?: string };
+    if (!res.ok) {
+      // Body is an Anthropic error envelope ({ error: { type, message } }) — never the key.
+      logFallback(
+        "http_error",
+        `status=${res.status} body=${(await res.text()).slice(0, 300)}`,
+        candidates.length,
+        prompted.length,
+      );
+      return { ...plan, source: "fallback" };
+    }
+    const data = (await res.json()) as { stop_reason?: string; usage?: { output_tokens?: number } };
     // A "refusal" or "max_tokens" stop_reason yields unusable/truncated JSON — fall back.
-    if (data.stop_reason !== "end_turn") return { ...plan, source: "fallback" };
+    if (data.stop_reason !== "end_turn") {
+      logFallback(
+        "stop_reason",
+        `stop_reason=${data.stop_reason} output_tokens=${data.usage?.output_tokens} max_tokens=${MAX_TOKENS}`,
+        candidates.length,
+        prompted.length,
+      );
+      return { ...plan, source: "fallback" };
+    }
 
     const parsed = parsePlanResponse(data);
-    if (!parsed) return { ...plan, source: "fallback" };
+    if (!parsed) {
+      logFallback("unparseable", "response did not match the plan contract", candidates.length, prompted.length);
+      return { ...plan, source: "fallback" };
+    }
 
     return { ...mergeAiReasons(plan, parsed), source: "ai" };
-  } catch {
+  } catch (e) {
     // Network error, timeout/abort, or malformed JSON — degrade to the deterministic plan.
+    const err = e instanceof Error ? e : undefined;
+    const aborted = err?.name === "AbortError";
+    logFallback(
+      aborted ? "timeout" : "exception",
+      aborted ? `exceeded TIMEOUT_MS=${TIMEOUT_MS}` : `${err?.name ?? "unknown"}: ${err?.message ?? String(e)}`,
+      candidates.length,
+      prompted.length,
+    );
     return { ...plan, source: "fallback" };
   } finally {
     clearTimeout(timeout);

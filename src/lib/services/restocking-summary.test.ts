@@ -84,4 +84,30 @@ describe("mergeAiReasons", () => {
     const merged = mergeAiReasons(plan, { headline: "AI headline.", items: [] });
     expect(merged.items.map((i) => i.reason)).toEqual(["deterministic widget reason", "deterministic gadget reason"]);
   });
+
+  // Guards the AI_ITEM_LIMIT design: only the most-urgent slice is sent to the model, so a large plan
+  // comes back part AI-authored and part deterministic. Regression cover for the 57-candidate catalog
+  // that blew both the token cap and the timeout when every item was prompted.
+  it("covers a large plan with a partial AI response — prompted items get AI prose, the tail keeps engine prose", () => {
+    const TOTAL = 57;
+    const PROMPTED = 20;
+    const large: RestockPlan = {
+      headline: "engine headline",
+      items: Array.from({ length: TOTAL }, (_, i) => item(`Product ${i}`, `deterministic reason ${i}`)),
+    };
+
+    const merged = mergeAiReasons(large, {
+      headline: "AI headline.",
+      items: Array.from({ length: PROMPTED }, (_, i) => ({ product: `Product ${i}`, reason: `ai reason ${i}` })),
+    });
+
+    expect(merged.items).toHaveLength(TOTAL);
+    expect(merged.headline).toBe("AI headline.");
+    expect(merged.items[0].reason).toBe("ai reason 0");
+    expect(merged.items[PROMPTED - 1].reason).toBe(`ai reason ${PROMPTED - 1}`);
+    expect(merged.items[PROMPTED].reason).toBe(`deterministic reason ${PROMPTED}`);
+    expect(merged.items[TOTAL - 1].reason).toBe(`deterministic reason ${TOTAL - 1}`);
+    // Order and engine-authoritative facts survive the partial overlay.
+    expect(merged.items.map((i) => i.product)).toEqual(large.items.map((i) => i.product));
+  });
 });
