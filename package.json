@@ -13,6 +13,8 @@
     "format": "prettier --write .",
     "test": "vitest run",
     "test:watch": "vitest",
+    "test:e2e": "playwright test",
+    "test:e2e:ui": "playwright test --ui",
     "depcruise": "depcruise src",
     "depcruise:graph": "depcruise src --output-type dot | dot -T svg > dependency-graph.svg",
     "depcruise:archi": "depcruise src --output-type archi | dot -T svg > dependency-archi.svg",

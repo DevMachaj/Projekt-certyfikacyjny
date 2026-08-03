@@ -100,8 +100,9 @@ npm run dev
 - `npm run lint` / `npm run lint:fix` — ESLint with type-checked rules
 - `npm run format` — Prettier
 - `npm test` — run the Vitest unit suite (`npm run test:watch` for watch mode)
+- `npm run test:e2e` — run the Playwright E2E suite (`npm run test:e2e:ui` for the UI mode)
 
-E2E tests run with `npx playwright test` (see [Testing](#testing)).
+E2E tests start their own dev server — see [Testing](#testing).
 
 ## Project Structure
 
@@ -211,8 +212,15 @@ isolation is additionally enforced by Row-Level Security policies in
 - **Unit tests (Vitest)** — the velocity/classification engine and restocking
   logic: `src/lib/*.test.ts` and `src/lib/services/*.test.ts`. Run with `npm test`.
 - **E2E tests (Playwright)** — browser-level, risk-driven flows in `e2e/`. Run with
-  `npx playwright test`. First-time setup: `npx playwright install chromium`.
-  Auth is reused from `playwright/.auth/user.json` (a signed-in storage state).
+  `npm run test:e2e`. First-time setup: `npx playwright install chromium`, plus a
+  running local Supabase stack (`npx supabase start`).
+
+  The run is self-contained: `playwright.config.ts` starts `npm run dev` itself
+  (reusing an already-running server outside CI), and the `setup` project
+  (`e2e/auth.setup.ts`) signs in as a shared E2E user — creating it on first run
+  against a fresh database — and writes the session to `playwright/.auth/user.json`.
+  That file is gitignored and regenerated every run, so it cannot go stale.
+  Override the account with `E2E_EMAIL` / `E2E_PASSWORD` (see `.env.example`).
 
 Tests are tied to the risk map in
 [`context/foundation/test-plan.md`](./context/foundation/test-plan.md) — e.g.
