@@ -246,6 +246,35 @@ GitHub Actions runs typecheck + depcruise + lint + test + build on every push
 and PR to `main`. Configure `SUPABASE_URL` and `SUPABASE_KEY` as repository
 secrets in GitHub for the build step.
 
+### Keeping the Supabase project awake
+
+A free-tier Supabase project is paused after **7 days without database
+activity**, and a paused project serves a dead link until someone restores it by
+hand. `.github/workflows/keepalive.yml` writes one row to `public.keepalive`
+every day at 06:17 UTC to keep that timer from running out. Opening the Supabase
+dashboard does _not_ count — only a request that reaches Postgres does.
+
+Setup, once, on the deployed project:
+
+1. Push the schema so the table exists: `npx supabase db push`.
+2. Add `SUPABASE_SERVICE_ROLE_KEY` as a repository secret (Supabase dashboard →
+   Settings → API → `service_role` key). `SUPABASE_URL` is already configured for
+   the CI build step.
+3. Run the workflow once by hand (Actions → _Supabase keep-alive_ → _Run
+   workflow_) to confirm it lands. The run summary prints the updated row.
+
+The table is one row, updated in place, so it never grows; `ping_count` doubles
+as a record of how many pings actually landed. RLS is on with no policies and the
+`anon`/`authenticated` grants are revoked, so the table is reachable only with
+the `service_role` key.
+
+Two limits worth knowing:
+
+- Keep-alive **prevents** a pause; it cannot wake a project that is already
+  paused. Restore that one from the dashboard first.
+- GitHub disables scheduled workflows in a repository after **60 days without
+  commits**. Push something, or re-enable the workflow from the Actions tab.
+
 ## License
 
 MIT

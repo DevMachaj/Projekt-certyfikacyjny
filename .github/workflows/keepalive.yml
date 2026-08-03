@@ -1,0 +1,67 @@
+name: Supabase keep-alive
+
+# A free-tier Supabase project pauses after 7 days without database activity, and a
+# paused project is a dead link for anyone reviewing the deployment. One write a day
+# keeps that timer from running out — it would take 7 consecutive failed runs to lose
+# the project, and GitHub emails the repo owner on the first failure.
+on:
+  schedule:
+    # 06:17 UTC. Off the hour on purpose: on-the-hour crons queue behind everyone else's.
+    - cron: "17 6 * * *"
+  workflow_dispatch:
+
+# This workflow talks only to Supabase — it neither reads the repo nor writes to it.
+permissions: {}
+
+# A manual run while the scheduled one is in flight waits rather than cancelling it;
+# a cancelled ping is a skipped day.
+concurrency:
+  group: ${{ github.workflow }}
+  cancel-in-progress: false
+
+jobs:
+  ping:
+    runs-on: ubuntu-latest
+    steps:
+      - name: ping the database
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+        run: |
+          set -euo pipefail
+
+          if [ -z "${SUPABASE_URL}" ] || [ -z "${SUPABASE_SERVICE_ROLE_KEY}" ]; then
+            echo "::error::SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY must be set as repository secrets."
+            exit 1
+          fi
+
+          # The body is a no-op write of the primary key; the BEFORE UPDATE trigger is
+          # what stamps last_ping_at and bumps ping_count. Retries cover a transient
+          # network blip, not a paused project — keep-alive prevents a pause, it cannot
+          # undo one.
+          for attempt in 1 2 3; do
+            if response=$(curl --silent --show-error --fail-with-body --max-time 30 \
+              --request PATCH "${SUPABASE_URL}/rest/v1/keepalive?id=eq.1" \
+              --header "apikey: ${SUPABASE_SERVICE_ROLE_KEY}" \
+              --header "Authorization: Bearer ${SUPABASE_SERVICE_ROLE_KEY}" \
+              --header "Content-Type: application/json" \
+              --header "Prefer: return=representation" \
+              --data '{"id":1}'); then
+              echo "ping ok: ${response}"
+              {
+                echo "### Supabase keep-alive"
+                echo ""
+                echo '```json'
+                echo "${response}"
+                echo '```'
+              } >> "${GITHUB_STEP_SUMMARY}"
+              exit 0
+            fi
+            # --fail-with-body captured PostgREST's error body into $response; print it,
+            # or a 401 says nothing about which of the two secrets is wrong.
+            echo "attempt ${attempt} failed: ${response:-<no response body>}"
+            if [ "${attempt}" -lt 3 ]; then sleep 30; fi
+          done
+
+          echo "::error::Supabase keep-alive ping failed after 3 attempts."
+          exit 1
