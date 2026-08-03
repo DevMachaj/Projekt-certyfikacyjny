@@ -1,0 +1,205 @@
+name: AI review
+
+# Advisory AI code review on every pull request to main.
+#
+# `pull_request`, never `pull_request_target`. On a fork PR the GITHUB_TOKEN is read-only and
+# secrets are not passed to the runner, so the fork guard below skips cleanly rather than failing
+# confusingly. `pull_request_target` would hand full secrets to fork PRs, which is exactly why it
+# is dangerous and exactly why it is not used here.
+
+on:
+  pull_request:
+    branches: [main]
+    # `ready_for_review` is required: without it a PR that starts as a draft is never reviewed
+    # until its next push.
+    types: [opened, synchronize, reopened, ready_for_review]
+
+# Written explicitly. Specifying any permission sets every unspecified one to `none`, which makes
+# this immune to the repository default changing in either direction. `pull-requests: write` alone
+# is enough to post the comment — PR comments go through the issues endpoint, but that endpoint
+# accepts `Issues: write` OR `Pull requests: write`.
+permissions:
+  contents: read # checkout, to reach the local composite action
+  pull-requests: write # read the PR and diff, post/update the comment, manage labels
+
+# Keyed on the PR number rather than github.ref, so this stays correct if it ever moves to
+# pull_request_target — where github.ref becomes the base branch and would collapse every open PR
+# into a single group.
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+jobs:
+  ai-review:
+    # This string is what branch protection would reference when Phase 6 makes the check required.
+    # Renaming it silently unrequires the check. Do not rename it.
+    name: AI review
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    # Every skip condition is a job-level `if:`, never a workflow-level `paths:` filter. A workflow
+    # skipped by branch/path filtering or `[skip ci]` leaves its check **Pending**, not skipped —
+    # and a required check stuck Pending blocks the merge forever. Only a job-level `if:` yields a
+    # real `skipped` status, which branch protection accepts.
+    #
+    # The fork guard is first: on a fork PR secrets.ANTHROPIC_API_KEY is the empty string and
+    # pull-requests: write is ignored, so the job would fail confusingly instead of skipping.
+    if: >-
+      github.event.pull_request.head.repo.full_name == github.repository
+      && github.event.pull_request.draft == false
+      && github.event.pull_request.user.type != 'Bot'
+      && !contains(github.event.pull_request.labels.*.name, 'skip-ai-review')
+      && !contains(github.event.pull_request.title, '[skip review]')
+
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      # Docs-only detection lives here rather than in a workflow-level `paths-ignore:` for the
+      # Pending-vs-skipped reason above. This repository generates a large amount of planning
+      # markdown, so this filter removes the biggest source of wasted spend.
+      - name: Determine whether anything reviewable changed
+        id: scope
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+        run: |
+          set -uo pipefail
+          files="$RUNNER_TEMP/files.txt"
+          gh pr diff "$PR_NUMBER" --name-only > "$files"
+          total=$(grep -c . "$files" || true)
+          # A path is documentation if it sits under context/ or docs/, or ends in .md.
+          # Anything else is code. A PR mixing code and docs is NOT docs-only and must be reviewed.
+          code=$(grep -cvE '^(context/|docs/)|\.md$' "$files" || true)
+
+          if [ "${total:-0}" -eq 0 ]; then
+            echo "reviewable=false" >> "$GITHUB_OUTPUT"
+            echo "skip-reason=no files changed" >> "$GITHUB_OUTPUT"
+          elif [ "${code:-0}" -eq 0 ]; then
+            echo "reviewable=false" >> "$GITHUB_OUTPUT"
+            echo "skip-reason=documentation only" >> "$GITHUB_OUTPUT"
+          else
+            echo "reviewable=true" >> "$GITHUB_OUTPUT"
+            echo "skip-reason=" >> "$GITHUB_OUTPUT"
+          fi
+          echo "ai-review: ${total:-0} changed file(s), ${code:-0} reviewable"
+
+      - name: Report skip
+        if: steps.scope.outputs.reviewable == 'false'
+        shell: bash
+        env:
+          SKIP_REASON: ${{ steps.scope.outputs.skip-reason }}
+        run: |
+          {
+            echo "## 🤖 AI code review"
+            echo
+            echo "**Skipped** — ${SKIP_REASON}."
+            echo
+            echo "No model call was made, and no \`ai-review:\` label was applied."
+            echo "An absent label is honest here; a \`pass\` label would not be."
+          } >> "$GITHUB_STEP_SUMMARY"
+          echo "ai-review: skipped (${SKIP_REASON})"
+
+      - name: Review
+        id: ai
+        if: steps.scope.outputs.reviewable == 'true'
+        uses: ./.github/actions/ai-review
+        with:
+          # The `secrets` context is unavailable inside a composite action, so the key is passed
+          # explicitly here.
+          anthropic-api-key: ${{ secrets.ANTHROPIC_API_KEY }}
+          pr-number: ${{ github.event.pull_request.number }}
+          base-ref: ${{ github.event.pull_request.base.ref }}
+
+      # The three reporting surfaces degrade independently and all run under `if: always()`, so a
+      # failed model call still reports.
+
+      - name: Post sticky comment
+        if: always() && steps.scope.outputs.reviewable == 'true'
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+          COMMENT_PATH: ${{ steps.ai.outputs.comment-path }}
+        run: |
+          set -uo pipefail
+          if [ -z "${COMMENT_PATH:-}" ] || [ ! -f "$COMMENT_PATH" ]; then
+            echo "::warning::ai-review: no comment body was produced; skipping the PR comment."
+            exit 0
+          fi
+          # Always --body-file, never --body "$REVIEW": model output containing backticks or $()
+          # is another injection surface. --edit-last makes the comment sticky; it matches on the
+          # last comment by the current user rather than on a marker, which is the least code with
+          # a single bot commenter.
+          gh pr comment "$PR_NUMBER" --edit-last --create-if-none --body-file "$COMMENT_PATH" \
+            || echo "::warning::ai-review: could not post the PR comment (the job summary still has the review)."
+
+      - name: Write job summary
+        if: always() && steps.scope.outputs.reviewable == 'true'
+        shell: bash
+        env:
+          SUMMARY_PATH: ${{ steps.ai.outputs.summary-path }}
+          VERDICT: ${{ steps.ai.outputs.verdict }}
+          REASON: ${{ steps.ai.outputs.reason }}
+        run: |
+          set -uo pipefail
+          # The summary survives when commenting fails (403, missing scope, fork PR) and is the
+          # natural home for token counts and model metadata.
+          if [ -n "${SUMMARY_PATH:-}" ] && [ -f "$SUMMARY_PATH" ]; then
+            cat "$SUMMARY_PATH" >> "$GITHUB_STEP_SUMMARY"
+          else
+            {
+              echo "## 🤖 AI code review"
+              echo
+              echo "No summary was produced (verdict=\`${VERDICT:-none}\` reason=\`${REASON:-unknown}\`)."
+            } >> "$GITHUB_STEP_SUMMARY"
+          fi
+
+      - name: Apply verdict label
+        if: always() && steps.scope.outputs.reviewable == 'true'
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+          VERDICT: ${{ steps.ai.outputs.verdict }}
+        run: |
+          set -uo pipefail
+          if [ -z "${VERDICT:-}" ]; then
+            echo "::warning::ai-review: no verdict produced; leaving labels untouched."
+            exit 0
+          fi
+          want="ai-review: ${VERDICT}"
+          # Apply the new label AND remove the other two on every run: a PR that fails, is fixed,
+          # and passes must not end up carrying both. Removing an absent label 404s — tolerated.
+          for label in "ai-review: pass" "ai-review: fail" "ai-review: error"; do
+            if [ "$label" = "$want" ]; then
+              gh pr edit "$PR_NUMBER" --add-label "$label" \
+                || echo "::warning::ai-review: could not add label '$label'."
+            else
+              gh pr edit "$PR_NUMBER" --remove-label "$label" >/dev/null 2>&1 || true
+            fi
+          done
+          echo "ai-review: label set to '${want}'"
+
+      - name: Result
+        if: always()
+        shell: bash
+        env:
+          VERDICT: ${{ steps.ai.outputs.verdict }}
+          REASON: ${{ steps.ai.outputs.reason }}
+        run: |
+          set -uo pipefail
+          echo "ai-review: verdict=${VERDICT:-skipped} reason=${REASON:-none}"
+          if [ "${VERDICT:-}" = "error" ]; then
+            # Surface a persistent outage in the Actions UI, not only in the label.
+            echo "::warning::ai-review: degraded — ${REASON:-unknown}. The review did not complete."
+          fi
+          # Advisory rollout: always exit 0, whatever the verdict. Phase 6 flips this to exit 1 on
+          # `fail`. Deliberately NOT `continue-on-error: true`, which renders the job green and
+          # makes failure() false downstream — that reads as a fake-green check.
+          exit 0
